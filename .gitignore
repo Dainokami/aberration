@@ -1,0 +1,14 @@
+# Godot 4+ ignores
+.godot/
+
+# Exported builds
+builds/
+exports/
+
+# Imported translations
+*.translation
+
+# Mono / C#
+.mono/
+data_*/
+mono_crash.*.json
