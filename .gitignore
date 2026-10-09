@@ -1,6 +1,11 @@
 # Godot 4+ ignores
 .godot/
+.godot_appdata/
 .DS_Store
+/android/
+
+# Local PSD tooling, not part of the game.
+.psd_tools/
 
 # Local validation font copied from macOS; licensing is not cleared for redistribution.
 assets/fonts/ArialUnicode.ttf
