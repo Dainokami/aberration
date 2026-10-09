@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_7soyv"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_1w6bw"]
+
+[resource]
+script = ExtResource("2_1w6bw")
+asset_id = "demo_tent"
+display_name = "帐篷"
+category = "帐篷"
+source_image = "res://assets/placeholders/v2/tent.png"
+scene_path = "res://assets/generated/demo_tent/asset.tscn"
+thumbnail_path = "res://assets/generated/demo_tent/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.875)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("1_7soyv")

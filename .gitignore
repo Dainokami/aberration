@@ -1,5 +1,10 @@
 # Godot 4+ ignores
 .godot/
+.DS_Store
+
+# Local validation font copied from macOS; licensing is not cleared for redistribution.
+assets/fonts/ArialUnicode.ttf
+assets/fonts/ArialUnicode.ttf.import
 
 # Exported builds
 builds/

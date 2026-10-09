@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/placeholders/v2/fence.png" id="1_xy5s4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a5mdu"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_xy5s4")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_6alxr"]
+_surfaces = [{
+"aabb": AABB(-1.8018425, -0.20474806, -1.7070975, 3.0828857, 1.6379845, 2.7289329),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(198, 162, 230, 191, 75, 116, 183, 63, 232, 126, 221, 61, 181, 192, 141, 191, 122, 169, 81, 190, 127, 203, 130, 63, 57, 249, 163, 63, 122, 169, 81, 190, 54, 29, 75, 191, 80, 46, 22, 63, 75, 116, 183, 63, 44, 130, 218, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uly8d"]
+size = Vector3(2.5, 1, 0.3)
+
+[node name="demo_fence" type="Node3D" unique_id=831475752]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1480684567]
+material_override = SubResource("StandardMaterial3D_a5mdu")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_6alxr")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=1950212846]
+
+[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="ProxyCollision" unique_id=1735375295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_uly8d")

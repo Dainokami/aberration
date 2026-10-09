@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ArtProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/assets/art_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+camera_offset = Vector3(19, 22, 25)
+orthographic_size = 25.0
+version = 1

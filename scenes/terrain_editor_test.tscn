@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://dchli2ifq4di8"]
+
+[ext_resource type="Script" uid="uid://bqvhguh03ucph" path="res://scripts/level/terrain_builder.gd" id="1"]
+[ext_resource type="Resource" path="res://data/levels/acceptance_map.tres" id="2_22oej"]
+
+[node name="TerrainEditorTest" type="Node3D" unique_id=776474972]
+
+[node name="TerrainBuilder" type="Node3D" parent="." unique_id=1368683670]
+script = ExtResource("1")
+level_data = ExtResource("2_22oej")
+
+[node name="@Node3D@20749" type="Node3D" parent="TerrainBuilder" unique_id=1072666680]

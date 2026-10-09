@@ -1,0 +1,70 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/placeholders/v2/trunk.png" id="1_oybn0"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/v2/crown.png" id="2_i7l4r"]
+[ext_resource type="Script" path="res://scripts/assets/foreground_fade.gd" id="3_cqpkw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wr7wr"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_oybn0")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_tbmob"]
+_surfaces = [{
+"aabb": AABB(-3.1113222, -0.51187015, -3.208848, 4.920646, 4.094961, 4.7045403),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(231, 31, 71, 192, 93, 81, 101, 64, 32, 220, 73, 191, 164, 10, 176, 191, 236, 9, 3, 191, 217, 114, 191, 63, 238, 151, 231, 63, 236, 9, 3, 191, 62, 181, 108, 191, 64, 44, 150, 61, 93, 81, 101, 64, 196, 93, 77, 192)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_acgk0"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("2_i7l4r")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_lhax1"]
+_surfaces = [{
+"aabb": AABB(-3.1113222, -0.51187015, -3.208848, 4.920646, 4.094961, 4.7045403),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(231, 31, 71, 192, 93, 81, 101, 64, 32, 220, 73, 191, 164, 10, 176, 191, 236, 9, 3, 191, 217, 114, 191, 63, 238, 151, 231, 63, 236, 9, 3, 191, 62, 181, 108, 191, 64, 44, 150, 61, 93, 81, 101, 64, 196, 93, 77, 192)
+}]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_6uwja"]
+radius = 0.35
+
+[node name="demo_tree" type="Node3D" unique_id=190742991]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1670851168]
+material_override = SubResource("StandardMaterial3D_wr7wr")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_tbmob")
+
+[node name="Foreground" type="MeshInstance3D" parent="." unique_id=973307781]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.007433377, 0.008607068, 0.00978076)
+material_override = SubResource("StandardMaterial3D_acgk0")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_lhax1")
+script = ExtResource("3_cqpkw")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=223653563]
+
+[node name="@CollisionShape3D@2" type="CollisionShape3D" parent="ProxyCollision" unique_id=437072866]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_6uwja")

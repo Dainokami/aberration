@@ -1,0 +1,175 @@
+[gd_resource type="Resource" script_class="LevelPrefab" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/level_data.gd" id="1_onx8s"]
+[ext_resource type="Script" path="res://scripts/level/level_prefab.gd" id="2_bwvoe"]
+
+[sub_resource type="Resource" id="Resource_vwlcf"]
+script = ExtResource("1_onx8s")
+map_size = Vector2i(5, 6)
+cells = Array[Dictionary]([{
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 1,
+"terrain": 1
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}, {
+"exists": true,
+"height": 0,
+"terrain": 0
+}])
+stairs = Array[Dictionary]([{
+"cell": Vector2i(2, 3),
+"direction": 0
+}])
+objects = Array[Dictionary]([{
+"definition": "res://assets/generated/demo_tree/definition.tres",
+"id": "4ee7de29f2b3bf4efa9bf5067eba8864",
+"position": Vector3(-4, 0, 3),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"definition": "res://assets/generated/demo_tree/definition.tres",
+"id": "bd9a3d22347f9becc1399d55cbbcd78c",
+"position": Vector3(4, 0, 3),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"definition": "res://assets/generated/demo_tent/definition.tres",
+"id": "b5547a35cf533e37fcc8ba529d0bb522",
+"position": Vector3(-2, 2, -3),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"definition": "res://assets/generated/demo_rock/definition.tres",
+"id": "cfdd62794ccc5abb3d03ff13d68e33ca",
+"position": Vector3(4, 2, -3),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"definition": "res://assets/generated/demo_fence/definition.tres",
+"id": "559945f81a9f4f043a1e467a72c963af",
+"position": Vector3(-2, 0, 5),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"definition": "res://assets/generated/demo_grass/definition.tres",
+"id": "19b7ed5dff7a5ef2c25c15e0e82b2558",
+"position": Vector3(2, 0, 3),
+"scale": 1.0,
+"yaw": 0.0
+}])
+
+[resource]
+script = ExtResource("2_bwvoe")
+display_name = "高地林间营地"
+fragment = SubResource("Resource_vwlcf")

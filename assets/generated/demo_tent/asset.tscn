@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/placeholders/v2/tent.png" id="1_fnk5w"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_irajj"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_fnk5w")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_2msyf"]
+_surfaces = [{
+"aabb": AABB(-2.8075228, -0.40949613, -2.8091116, 4.5734468, 3.275969, 4.247699),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(116, 174, 51, 192, 75, 116, 55, 64, 4, 14, 199, 190, 197, 152, 181, 191, 122, 169, 209, 190, 160, 35, 184, 63, 205, 9, 226, 63, 122, 169, 209, 190, 176, 83, 123, 191, 172, 22, 193, 62, 75, 116, 55, 64, 124, 200, 51, 192)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_re70k"]
+size = Vector3(2, 2, 2)
+
+[node name="demo_tent" type="Node3D" unique_id=1651765484]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=54526261]
+material_override = SubResource("StandardMaterial3D_irajj")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_2msyf")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=1009974391]
+
+[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="ProxyCollision" unique_id=265585971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_re70k")
