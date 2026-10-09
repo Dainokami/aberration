@@ -1,0 +1,23 @@
+canvas=(1024, 1024)
+0	pixel	True	(-1408, -568, 2432, 1592)	'圖層 1'	layer_0_00_pixel_-1408_-568_2432_1592.png
+1	group	True	(280, 413, 770, 532)	'資料夾 1'	layer_1_01_group_280_413_770_532.png
+1_0	pixel	True	(568, 413, 770, 532)	'翅膀 右'	layer_1_0_00_pixel_568_413_770_532.png
+1_1	pixel	True	(280, 413, 482, 532)	'翅膀 左'	layer_1_1_01_pixel_280_413_482_532.png
+2	group	False	(0, 0, 0, 0)	'蛇行+双臂不同形态'	layer_2_02_group_0_0_0_0.png
+2_0	pixel	True	(413, 466, 847, 748)	'躯干+腿 蛇身'	layer_2_0_00_pixel_413_466_847_748.png
+2_1	pixel	True	(566, 385, 719, 566)	'手-海盗臂 左'	layer_2_1_01_pixel_566_385_719_566.png
+2_2	pixel	False	(324, 385, 477, 566)	'手-海盗臂 右'	layer_2_2_02_pixel_324_385_477_566.png
+2_3	pixel	True	(231, 276, 484, 566)	'手-猩猩臂'	layer_2_3_03_pixel_231_276_484_566.png
+3	group	True	(356, 472, 671, 719)	'直立行走'	layer_3_03_group_356_472_671_719.png
+3_0	pixel	True	(544, 485, 671, 605)	'手-右 左的镜像'	layer_3_0_00_pixel_544_485_671_605.png
+3_1	pixel	True	(356, 485, 483, 605)	'手-左'	layer_3_1_01_pixel_356_485_483_605.png
+3_2	pixel	True	(431, 555, 627, 719)	'腿-双足'	layer_3_2_02_pixel_431_555_627_719.png
+3_3	pixel	True	(449, 472, 575, 600)	'躯干-双足'	layer_3_3_03_pixel_449_472_575_600.png
+4	group	False	(0, 0, 0, 0)	'双臂移动'	layer_4_04_group_0_0_0_0.png
+4_0	pixel	True	(551, 489, 634, 760)	'手-海盗臂 右 的複製'	layer_4_0_00_pixel_551_489_634_760.png
+4_1	pixel	True	(233, 495, 511, 738)	'手-猩猩臂 的複製'	layer_4_1_01_pixel_233_495_511_738.png
+5	group	False	(0, 0, 0, 0)	'单臂移动'	layer_5_05_group_0_0_0_0.png
+5_0	pixel	True	(487, 516, 563, 661)	'手-右 左的镜像 的複製'	layer_5_0_00_pixel_487_516_563_661.png
+6	group	True	(431, 200, 618, 568)	'头&胸毛'	layer_6_06_group_431_200_618_568.png
+6_0	pixel	True	(451, 474, 581, 568)	'胸毛 披风'	layer_6_0_00_pixel_451_474_581_568.png
+6_1	pixel	True	(431, 200, 618, 496)	'头'	layer_6_1_01_pixel_431_200_618_496.png

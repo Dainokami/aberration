@@ -1,0 +1,7 @@
+# Godot 4+ specific ignores
+.godot/
+.godot_appdata/
+/android/
+
+# Local PSD tooling, not part of the game.
+.psd_tools/

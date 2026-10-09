@@ -1,0 +1,284 @@
+{
+  "canvas": [
+    1024,
+    1024
+  ],
+  "body_anchor": [
+    515,
+    536
+  ],
+  "parts": {
+    "head": {
+      "bbox": [
+        431,
+        200,
+        618,
+        496
+      ],
+      "size": [
+        187,
+        296
+      ],
+      "name": "head"
+    },
+    "chest": {
+      "bbox": [
+        451,
+        474,
+        581,
+        568
+      ],
+      "size": [
+        130,
+        94
+      ],
+      "name": "chest"
+    },
+    "torso_biped": {
+      "bbox": [
+        449,
+        472,
+        575,
+        600
+      ],
+      "size": [
+        126,
+        128
+      ],
+      "name": "torso_biped"
+    },
+    "arm_biped_left": {
+      "bbox": [
+        356,
+        485,
+        483,
+        605
+      ],
+      "size": [
+        127,
+        120
+      ],
+      "name": "arm_biped_left"
+    },
+    "arm_biped_right": {
+      "bbox": [
+        544,
+        485,
+        671,
+        605
+      ],
+      "size": [
+        127,
+        120
+      ],
+      "name": "arm_biped_right"
+    },
+    "legs_biped": {
+      "bbox": [
+        431,
+        555,
+        627,
+        719
+      ],
+      "size": [
+        196,
+        164
+      ],
+      "name": "legs_biped"
+    },
+    "wing_left": {
+      "bbox": [
+        280,
+        413,
+        482,
+        532
+      ],
+      "size": [
+        202,
+        119
+      ],
+      "name": "wing_left"
+    },
+    "wing_right": {
+      "bbox": [
+        568,
+        413,
+        770,
+        532
+      ],
+      "size": [
+        202,
+        119
+      ],
+      "name": "wing_right"
+    },
+    "snake_body": {
+      "bbox": [
+        413,
+        466,
+        847,
+        748
+      ],
+      "size": [
+        434,
+        282
+      ],
+      "name": "snake_body"
+    },
+    "arm_pirate_left": {
+      "bbox": [
+        566,
+        385,
+        719,
+        566
+      ],
+      "size": [
+        153,
+        181
+      ],
+      "name": "arm_pirate_left"
+    },
+    "arm_pirate_right": {
+      "bbox": [
+        324,
+        385,
+        477,
+        566
+      ],
+      "size": [
+        153,
+        181
+      ],
+      "name": "arm_pirate_right"
+    },
+    "arm_gorilla": {
+      "bbox": [
+        231,
+        276,
+        484,
+        566
+      ],
+      "size": [
+        253,
+        290
+      ],
+      "name": "arm_gorilla"
+    },
+    "arm_crawl_pirate": {
+      "bbox": [
+        551,
+        489,
+        634,
+        760
+      ],
+      "size": [
+        83,
+        271
+      ],
+      "name": "arm_crawl_pirate"
+    },
+    "arm_crawl_gorilla": {
+      "bbox": [
+        233,
+        495,
+        511,
+        738
+      ],
+      "size": [
+        278,
+        243
+      ],
+      "name": "arm_crawl_gorilla"
+    },
+    "arm_hop": {
+      "bbox": [
+        487,
+        516,
+        563,
+        661
+      ],
+      "size": [
+        76,
+        145
+      ],
+      "name": "arm_hop"
+    },
+    "leg_left": {
+      "bbox": [
+        432,
+        555,
+        517,
+        719
+      ],
+      "size": [
+        85,
+        164
+      ],
+      "name": "leg_left"
+    },
+    "leg_right": {
+      "bbox": [
+        518,
+        564,
+        627,
+        701
+      ],
+      "size": [
+        109,
+        137
+      ],
+      "name": "leg_right"
+    }
+  },
+  "forms": {
+    "biped_full": [
+      "wing_left",
+      "wing_right",
+      "leg_left",
+      "leg_right",
+      "torso_biped",
+      "chest",
+      "arm_biped_left",
+      "arm_biped_right",
+      "head"
+    ],
+    "biped_no_wings": [
+      "leg_left",
+      "leg_right",
+      "torso_biped",
+      "chest",
+      "arm_biped_left",
+      "arm_biped_right",
+      "head"
+    ],
+    "no_legs": [
+      "torso_biped",
+      "chest",
+      "arm_biped_left",
+      "arm_biped_right",
+      "head"
+    ],
+    "crawl": [
+      "arm_crawl_gorilla",
+      "arm_crawl_pirate",
+      "head"
+    ],
+    "hop": [
+      "arm_hop",
+      "head"
+    ],
+    "head_only": [
+      "head"
+    ],
+    "snake": [
+      "snake_body",
+      "arm_gorilla",
+      "arm_pirate_left",
+      "head"
+    ],
+    "snake_no_arms": [
+      "snake_body",
+      "head"
+    ]
+  }
+}

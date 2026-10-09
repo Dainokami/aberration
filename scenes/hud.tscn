@@ -1,0 +1,106 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_info"]
+bg_color = Color(0.075, 0.067, 0.102, 0.86)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.58, 0.52, 0.69, 0.65)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_objective"]
+bg_color = Color(0.96, 0.9, 0.73, 0.94)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="SafeArea" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopLeft" type="PanelContainer" parent="SafeArea"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 574.0
+offset_bottom = 218.0
+theme_override_styles/panel = SubResource("StyleBox_info")
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/TopLeft"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="SafeArea/TopLeft/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.52, 1)
+theme_override_font_sizes/font_size = 22
+text = "2.5D 关卡白盒"
+
+[node name="Controls" type="Label" parent="SafeArea/TopLeft/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.92, 0.96, 1)
+text = "WASD：移动   C：换肢体   Q：翅膀   J：攻击"
+
+[node name="Mode" type="Label" parent="SafeArea/TopLeft/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.78, 0.91, 1)
+text = "空格：按住起飞 / 松开缓降"
+
+[node name="Status" type="Label" parent="SafeArea/TopLeft/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.82, 0.86, 1)
+text = "速度 0.0   高度 0.0   地面"
+
+[node name="Assembly" type="Label" parent="SafeArea/TopLeft/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.9, 0.7, 1)
+text = "移动：双足行走  |  上肢：2  下肢：双足  翅膀：有"
+
+[node name="Conflict" type="Label" parent="SafeArea/TopLeft/Content"]
+custom_minimum_size = Vector2(500, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.66, 0.38, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+
+[node name="ObjectivePanel" type="PanelContainer" parent="SafeArea"]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -205.0
+offset_top = 24.0
+offset_right = 205.0
+offset_bottom = 70.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBox_objective")
+
+[node name="Objective" type="Label" parent="SafeArea/ObjectivePanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.15, 0.19, 1)
+theme_override_font_sizes/font_size = 17
+text = "穿过河谷，前往北侧高台的金色目标区"
+horizontal_alignment = 1
+vertical_alignment = 1
