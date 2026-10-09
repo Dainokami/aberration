@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_n3enk"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_melcn"]
+
+[resource]
+script = ExtResource("2_melcn")
+asset_id = "demo_tree"
+display_name = "分层树木"
+category = "分层树木"
+source_image = "res://assets/placeholders/v2/trunk.png"
+foreground_image = "res://assets/placeholders/v2/crown.png"
+scene_path = "res://assets/generated/demo_tree/asset.tscn"
+thumbnail_path = "res://assets/generated/demo_tree/thumbnail.png"
+pivot = Vector2(0.5, 0.875)
+collision = 2
+collision_size = Vector3(0.7, 2, 0.7)
+fade_foreground = true
+profile = ExtResource("1_n3enk")

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ProjectionProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/projection/projection_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+camera_position = Vector3(14, 16, 20)
+camera_target = Vector3(0, 1.8, -0.5)
+orthographic_size = 17.0
+design_resolution = Vector2i(1280, 720)
+cell_size = 2.0
+elevation_step = 2.0
