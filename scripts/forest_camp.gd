@@ -31,7 +31,7 @@ func environment_setup() -> void:
 	camera = Camera3D.new()
 	add_child(camera)
 	var profile := load("res://data/art_profile.tres") as ArtProfile
-	profile.configure(camera, Vector3.ZERO, 24)
+	profile.configure(camera, Vector3.ZERO)
 	camera.current = true
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR

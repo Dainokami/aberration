@@ -9,3 +9,6 @@ orthographic_size = 25.0
 version = 2
 perspective = true
 field_of_view = 38.0
+pitch_degrees = 22.0
+camera_distance = 36.8
+target_height = 0.0

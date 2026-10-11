@@ -18,7 +18,7 @@ func render() -> void:
 	var camera := Camera3D.new()
 	world.add_child(camera)
 	var profile := load("res://data/art_profile.tres") as ArtProfile
-	profile.configure(camera, Vector3.ZERO, 39)
+	profile.configure(camera, Vector3.ZERO)
 	camera.current = true
 	var environment := WorldEnvironment.new()
 	environment.environment = Environment.new()

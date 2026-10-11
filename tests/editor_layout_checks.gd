@@ -2,6 +2,10 @@
 extends RefCounted
 
 func run(plugin: EditorPlugin, suite: RefCounted) -> void:
+	suite.check(plugin.launcher_button != null and plugin.launcher_button.text == "关卡编辑器",
+		"persistent toolbar launcher exists")
+	suite.check(plugin._find_terrain_builder(EditorInterface.get_edited_scene_root()) != null,
+		"workspace builder is discoverable without scene-tree selection")
 	var real_builder: TerrainBuilder = plugin.builder
 	var real_data: LevelData = plugin.data
 	plugin.builder = null
@@ -26,6 +30,8 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = real_data
 	suite.check(plugin.mode_select.buttons.size() == 4 and not plugin.mode_select.buttons.has(1),
 		"terrain has four horizontal modes and no height mode")
+	suite.check(plugin.tabs.get_child_count() == 5 and
+		plugin.tabs.get_child(4).name == "视角", "view settings tab exists")
 	for mode in [0, 2, 3, 4]:
 		plugin.mode_select.selected = mode
 		var correct := true
@@ -59,17 +65,19 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.get_tree().root.add_child(camera)
 	camera.position = Vector3(2, 8, 7)
 	var initial := camera.transform
+	plugin._disable_2_5d_view()
 	plugin.editing_camera = camera
 	plugin._fixed_view_pressed()
 	var profile := load("res://data/art_profile.tres") as ArtProfile
 	suite.check(camera.projection == Camera3D.PROJECTION_PERSPECTIVE and
 		camera.fov == profile.field_of_view and
 		camera.global_basis.is_equal_approx(profile.camera_basis()),
-		"2.5D reset uses front perspective camera orientation and FOV")
-	plugin.reset_view_frames = 0
-	camera.global_transform = initial
+		"2.5D mode uses front perspective camera orientation and FOV")
+	suite.check(plugin.fixed_view_active and plugin.fixed_view_button.button_pressed,
+		"2.5D mode stays active after entry")
+	plugin._disable_2_5d_view()
 	suite.check(camera.transform.is_equal_approx(initial),
-		"camera remains freely movable after reset")
+		"leaving 2.5D mode restores previous editor camera")
 	camera.queue_free()
 	plugin.editing_camera = null
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
@@ -80,9 +88,37 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		var actual: Camera3D = plugin.editing_camera
 		suite.check(actual.projection == Camera3D.PROJECTION_PERSPECTIVE and
 			actual.global_basis.is_equal_approx(profile.camera_basis()),
-			"actual editor camera receives perspective reset")
-		suite.check(plugin.reset_view_frames == 0 and not plugin.fixed_view_button.toggle_mode,
-			"2.5D button does not lock editor navigation")
+			"actual editor camera receives fixed perspective mode")
+		suite.check(plugin.fixed_view_active and plugin.fixed_view_button.toggle_mode,
+			"2.5D button is active fixed-navigation mode")
+		var old_center: Vector3 = plugin.view_pan_offset
+		plugin.view_move_keys[KEY_D] = true
+		plugin._process(0.5)
+		plugin.view_move_keys[KEY_D] = false
+		suite.check(plugin.view_pan_offset.x > old_center.x,
+			"WASD pans fixed view center")
+		var old_distance: float = plugin._effective_distance()
+		plugin._zoom_fixed_view(0.88)
+		suite.check(plugin._effective_distance() < old_distance,
+			"mouse wheel zoom changes fixed view distance")
+		plugin._disable_2_5d_view()
+	var live := Camera3D.new()
+	plugin.get_tree().root.add_child(live)
+	plugin.editing_camera = live
+	plugin.apply_view_parameters(52, 18, 20, 1.5)
+	suite.check(live.projection == Camera3D.PROJECTION_PERSPECTIVE and
+		is_equal_approx(live.fov, 52) and
+		is_equal_approx(live.global_position.distance_to(
+			plugin.builder.global_position + Vector3.UP * 1.5), 20.0) and
+		live.global_basis.is_equal_approx(
+			Basis.looking_at(-Vector3(0, sin(deg_to_rad(18)), cos(deg_to_rad(18))), Vector3.UP)),
+		"view parameters apply FOV pitch distance and target height live")
+	plugin._disable_2_5d_view()
+	live.queue_free()
+	plugin.preview_fov = -1
+	plugin.preview_pitch = -1
+	plugin.preview_distance = -1
+	plugin.preview_target_height = INF
 
 	# Test the native ItemList's actual content layout, not just property values.
 	for source: ItemList in [plugin.tile_list, plugin.world_tools.library, plugin.world_tools.prefab_library]:

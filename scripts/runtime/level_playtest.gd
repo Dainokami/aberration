@@ -43,8 +43,7 @@ func _setup_camera() -> void:
 	camera = Camera3D.new()
 	var profile := load("res://data/art_profile.tres") as ArtProfile
 	add_child(camera)
-	var framing := maxf(data.map_size.x, data.map_size.y) * LevelData.CELL_SIZE * 1.2
-	profile.configure(camera, Vector3.ZERO, framing)
+	profile.configure(camera, Vector3.ZERO)
 	camera.current = true
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR

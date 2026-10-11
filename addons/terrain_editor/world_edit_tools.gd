@@ -406,8 +406,8 @@ func _candidate(position: Vector3) -> Dictionary:
 func handle(camera: Camera3D, event: InputEvent) -> int:
 	if host.preview and is_instance_valid(host.preview):
 		host.preview.visible = false
-	# Tab 2 = import, pass through
-	if tabs.current_tab == 2:
+	# Import and view settings do not own 3D editing input.
+	if tabs.current_tab in [2, 4]:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode in [KEY_Q, KEY_E]:

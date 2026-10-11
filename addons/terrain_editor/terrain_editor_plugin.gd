@@ -22,10 +22,18 @@ var tile_rotation_label: Label
 var hover_cell := Vector2i(-999, -999)
 var fixed_view_button: Button
 var editing_camera: Camera3D
-var reset_view_frames := 0
+var fixed_view_active := false
+var fixed_view_cameras: Array[Camera3D] = []
+var fixed_view_states: Dictionary = {}
+var view_pan_offset := Vector3.ZERO
+var view_move_keys := {KEY_W: false, KEY_A: false, KEY_S: false, KEY_D: false}
 var preview: MeshInstance3D
 var pending_action := ""
 var last_stroke_cell := Vector2i(-999, -999)
+var launcher_button: Button
+var opening_workspace := false
+
+const EDITOR_WORKSPACE_SCENE := "res://scenes/terrain_editor_v2.tscn"
 
 # --- UI references -----------------------------------------
 var dock_root: VBoxContainer
@@ -48,13 +56,27 @@ var tile_height_label: Label
 
 # Object & import & prefab managed by world_edit_tools
 var world_tools
+var view_settings
+var preview_fov := -1.0
+var preview_pitch := -1.0
+var preview_distance := -1.0
+var preview_target_height := INF
 
 func _enter_tree() -> void:
+	launcher_button = Button.new()
+	launcher_button.text = "关卡编辑器"
+	launcher_button.tooltip_text = "打开关卡编辑工作区，并自动选择 TerrainBuilder"
+	launcher_button.pressed.connect(_open_editor_workspace)
+	add_control_to_container(EditorPlugin.CONTAINER_TOOLBAR, launcher_button)
 	_build_dock()
 	world_tools = load("res://addons/terrain_editor/world_edit_tools.gd").new()
 	world_tools.setup(self, tabs)
+	view_settings = load("res://addons/terrain_editor/view_settings.gd").new()
+	_add_page("视角", view_settings)
+	view_settings.setup(self)
 	add_control_to_dock(DOCK_SLOT_LEFT_BR, dock_root)
 	set_input_event_forwarding_always_enabled()
+	RenderingServer.frame_pre_draw.connect(_apply_fixed_view)
 	if "--test-v2-editor" in OS.get_cmdline_user_args():
 		_run_editor_checks.call_deferred()
 
@@ -64,10 +86,16 @@ func _run_editor_checks() -> void:
 	await suite.run(self)
 
 func _exit_tree() -> void:
+	_disable_2_5d_view()
+	if RenderingServer.frame_pre_draw.is_connected(_apply_fixed_view):
+		RenderingServer.frame_pre_draw.disconnect(_apply_fixed_view)
 	if world_tools:
 		world_tools.reset()
 	if preview and is_instance_valid(preview):
 		preview.queue_free()
+	if is_instance_valid(launcher_button):
+		remove_control_from_container(EditorPlugin.CONTAINER_TOOLBAR, launcher_button)
+		launcher_button.queue_free()
 	remove_control_from_docks(dock_root)
 	dock_root.queue_free()
 	world_tools = null
@@ -86,12 +114,50 @@ func _edit(object: Object) -> void:
 			current_path = data.resource_path
 			_set_status("已载入：" + current_path)
 			_make_preview()
-			_reset_2_5d_view.call_deferred()
+			_enable_2_5d_view.call_deferred()
 	else:
 		builder = null
 		data = null
 		if preview and is_instance_valid(preview):
 			preview.queue_free()
+
+func _open_editor_workspace() -> void:
+	if opening_workspace:
+		return
+	opening_workspace = true
+	launcher_button.disabled = true
+	var target := _find_terrain_builder(EditorInterface.get_edited_scene_root())
+	if target == null:
+		EditorInterface.open_scene_from_path(EDITOR_WORKSPACE_SCENE)
+		for frame in 12:
+			await get_tree().process_frame
+			target = _find_terrain_builder(EditorInterface.get_edited_scene_root())
+			if target != null:
+				break
+	if target == null:
+		_set_status("无法打开关卡编辑工作区：" + EDITOR_WORKSPACE_SCENE)
+	else:
+		EditorInterface.set_main_screen_editor("3D")
+		var selection := EditorInterface.get_selection()
+		selection.clear()
+		selection.add_node(target)
+		EditorInterface.edit_node(target)
+		_edit(target)
+		_set_status("关卡编辑器已打开")
+	opening_workspace = false
+	if is_instance_valid(launcher_button):
+		launcher_button.disabled = false
+
+func _find_terrain_builder(root: Node) -> TerrainBuilder:
+	if root == null:
+		return null
+	if root is TerrainBuilder:
+		return root as TerrainBuilder
+	for child in root.get_children():
+		var found := _find_terrain_builder(child)
+		if found != null:
+			return found
+	return null
 
 # ============================================================
 # Build dock — tab order: 地形 / 物件 / 导入 / 预制
@@ -119,7 +185,8 @@ func _build_dock() -> void:
 		files.add_child(button)
 		if spec[1] == "_fixed_view_pressed":
 			fixed_view_button = button
-			button.tooltip_text = "将当前3D视口重置到游戏透视视角；之后仍可自由平移、缩放和旋转。"
+			button.toggle_mode = true
+			button.tooltip_text = "固定游戏视角；WASD平移，滚轮缩放。再次点击恢复普通Godot视口。"
 	process_priority = 100
 
 	# Tabs
@@ -235,6 +302,14 @@ func _build_terrain_tab() -> void:
 
 	refresh_tile_list()
 	_terrain_mode_changed(ToolMode.GROUND)
+
+func _add_page(title: String, content: Control) -> void:
+	var scroll := ScrollContainer.new()
+	scroll.name = title
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tabs.add_child(scroll)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
 
 func _terrain_mode_changed(value: int) -> void:
 	if drawing and data != null:
@@ -529,6 +604,23 @@ func _refresh_brush_preview() -> void:
 # ============================================================
 func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 	editing_camera = camera
+	if fixed_view_active:
+		if event is InputEventKey and event.keycode in view_move_keys and not (
+				get_viewport().gui_get_focus_owner() is LineEdit):
+			view_move_keys[event.keycode] = event.pressed
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		if event is InputEventMouseButton and event.pressed:
+			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				_zoom_fixed_view(0.88)
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				_zoom_fixed_view(1.14)
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			if event.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+		if event is InputEventMouseMotion and event.button_mask & (
+				MOUSE_BUTTON_MASK_RIGHT | MOUSE_BUTTON_MASK_MIDDLE):
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
 	if not is_instance_valid(builder) or data == null:
 		builder = null
 		data = null
@@ -570,45 +662,128 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
 
 func _fixed_view_pressed() -> void:
-	_reset_2_5d_view()
+	if fixed_view_active:
+		_disable_2_5d_view()
+	else:
+		_enable_2_5d_view()
 
-func _reset_2_5d_view() -> void:
+func _enable_2_5d_view() -> void:
 	if not is_instance_valid(builder):
 		return
 	var previous_camera := editing_camera
-	var cameras: Array[Camera3D] = []
+	fixed_view_cameras.clear()
+	fixed_view_states.clear()
 	for index in 4:
 		var viewport := EditorInterface.get_editor_viewport_3d(index)
 		if viewport != null and is_instance_valid(viewport.get_camera_3d()):
 			var camera := viewport.get_camera_3d()
-			if camera not in cameras:
-				cameras.append(camera)
-	if is_instance_valid(previous_camera) and previous_camera not in cameras:
-		cameras.append(previous_camera)
-	if cameras.is_empty():
+			if camera not in fixed_view_cameras:
+				fixed_view_cameras.append(camera)
+	if is_instance_valid(previous_camera) and previous_camera not in fixed_view_cameras:
+		fixed_view_cameras.append(previous_camera)
+	if fixed_view_cameras.is_empty():
 		_set_status("没有可用的3D编辑视口")
+		fixed_view_button.set_pressed_no_signal(false)
 		return
-	editing_camera = cameras[0]
+	editing_camera = fixed_view_cameras[0]
+	for camera in fixed_view_cameras:
+		fixed_view_states[camera.get_instance_id()] = {
+			"camera": camera,
+			"transform": camera.global_transform,
+			"projection": camera.projection,
+			"fov": camera.fov,
+			"size": camera.size,
+		}
 	EditorInterface.set_main_screen_editor("3D")
-	var profile := load("res://data/art_profile.tres") as ArtProfile
-	for camera in cameras:
-		profile.configure(camera, builder.global_position)
-	reset_view_frames = 3
-	_set_status("已重置为游戏透视视角；可继续平移、缩放和旋转")
+	view_pan_offset = Vector3.ZERO
+	fixed_view_active = true
+	fixed_view_button.set_pressed_no_signal(true)
+	for key in view_move_keys:
+		view_move_keys[key] = false
+	_apply_fixed_view()
+	_set_status("2.5D视角已固定；WASD平移，滚轮缩放")
 
-func _process(_delta: float) -> void:
-	if reset_view_frames > 0:
-		_apply_reset_view()
-		reset_view_frames -= 1
+func _disable_2_5d_view() -> void:
+	if fixed_view_active:
+		for state: Dictionary in fixed_view_states.values():
+			var camera: Camera3D = state["camera"]
+			if not is_instance_valid(camera):
+				continue
+			camera.global_transform = state["transform"]
+			camera.projection = state["projection"]
+			camera.fov = state["fov"]
+			camera.size = state["size"]
+	fixed_view_active = false
+	fixed_view_cameras.clear()
+	fixed_view_states.clear()
+	for key in view_move_keys:
+		view_move_keys[key] = false
+	if is_instance_valid(fixed_view_button):
+		fixed_view_button.set_pressed_no_signal(false)
 
-func _apply_reset_view() -> void:
-	if not is_instance_valid(editing_camera) or not is_instance_valid(builder):
+func _process(delta: float) -> void:
+	if not fixed_view_active or not is_instance_valid(builder):
+		return
+	var camera := editing_camera
+	if not is_instance_valid(camera) and not fixed_view_cameras.is_empty():
+		camera = fixed_view_cameras[0]
+	if is_instance_valid(camera):
+		var right := camera.global_basis.x
+		right.y = 0
+		right = right.normalized()
+		var up_screen := camera.global_basis.y
+		up_screen.y = 0
+		up_screen = up_screen.normalized()
+		var input := Vector2(
+			float(view_move_keys[KEY_D]) - float(view_move_keys[KEY_A]),
+			float(view_move_keys[KEY_W]) - float(view_move_keys[KEY_S]))
+		if input.length_squared() > 0:
+			var speed := maxf(_effective_distance() * 0.45, 4.0)
+			view_pan_offset += (right * input.x + up_screen * input.y).normalized() * speed * delta
+	_apply_fixed_view()
+
+func _apply_fixed_view() -> void:
+	if not fixed_view_active or not is_instance_valid(builder):
 		return
 	var profile := load("res://data/art_profile.tres") as ArtProfile
-	var framing := profile.orthographic_size
-	if data != null:
-		framing = maxf(data.map_size.x, data.map_size.y) * LevelData.CELL_SIZE * 1.2
-	profile.configure(editing_camera, builder.global_position, framing)
+	for camera in fixed_view_cameras:
+		if is_instance_valid(camera):
+			_configure_view_camera(camera, profile)
+
+func _zoom_fixed_view(factor: float) -> void:
+	var profile := load("res://data/art_profile.tres") as ArtProfile
+	if preview_distance < 0:
+		preview_distance = profile.camera_distance
+	preview_distance = clampf(preview_distance * factor, 8.0, 120.0)
+	if view_settings != null:
+		view_settings.set_distance_from_viewport(preview_distance)
+	_apply_fixed_view()
+
+func _effective_distance() -> float:
+	return preview_distance if preview_distance >= 0 else (
+		load("res://data/art_profile.tres") as ArtProfile).camera_distance
+
+func apply_view_parameters(fov: float, pitch: float, distance: float, target_height: float) -> void:
+	preview_fov = fov
+	preview_pitch = pitch
+	preview_distance = distance
+	preview_target_height = target_height
+	if not fixed_view_active:
+		_enable_2_5d_view()
+	else:
+		_apply_fixed_view()
+
+func _configure_view_camera(camera: Camera3D, source: ArtProfile) -> void:
+	var profile := source.duplicate() as ArtProfile
+	if preview_fov >= 0:
+		profile.field_of_view = preview_fov
+	if preview_pitch >= 0:
+		profile.pitch_degrees = preview_pitch
+	if preview_distance >= 0:
+		profile.camera_distance = preview_distance
+	if not is_inf(preview_target_height):
+		profile.target_height = preview_target_height
+	profile.configure(camera, builder.global_position + view_pan_offset)
 
 func _commit_external(before: Dictionary, after: Dictionary, label: String) -> void:
 	if data == null or not is_instance_valid(builder) or before == after:
