@@ -11,6 +11,7 @@ var grass_material: ShaderMaterial
 var rock_material: ShaderMaterial
 var side_material: ShaderMaterial
 var stair_material: StandardMaterial3D
+var _tile_material_cache: Dictionary = {}
 
 func _ready() -> void:
 	rebuild()
@@ -35,6 +36,7 @@ func rebuild() -> void:
 			var cell := Vector2i(x, y)
 			if level_data.cell_exists(cell) and level_data.stair_at(cell) < 0:
 				_build_cell(cell)
+	_build_same_height_transitions()
 	for stair in level_data.stairs:
 		_build_stair(stair)
 	if show_grid:
@@ -45,12 +47,13 @@ func rebuild() -> void:
 func _build_objects() -> void:
 	for record in level_data.objects:
 		var definition := ObjectRules.definition(record)
-		if definition == null or not ResourceLoader.exists(definition.scene_path):
+		if definition == null or not definition.validate_asset().is_empty():
 			continue
-		var packed := load(definition.scene_path) as PackedScene
-		if packed == null:
-			continue
-		var object := packed.instantiate() as Node3D
+		# Rebuild visual carriers from the current camera profile. Packed scenes
+		# may contain card geometry baked for an older camera angle.
+		var object := AssetFactory.make_asset(definition)
+		if definition.fade_when_occluding and object.get_script() == null:
+			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
 		object.position = record.get("position", Vector3.ZERO)
 		object.rotation.y = float(record.get("yaw", 0.0))
 		object.scale = Vector3.ONE * float(record.get("scale", 1.0))
@@ -61,6 +64,7 @@ func _terrain_shader() -> Shader:
 	var shader := Shader.new()
 	shader.code = """
 shader_type spatial;
+render_mode unshaded;
 uniform vec4 base : source_color;
 varying vec3 world_pos;
 void vertex(){ world_pos=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz; }
@@ -75,6 +79,7 @@ void fragment(){
 
 func _prepare_materials() -> void:
 	var shader := _terrain_shader()
+	_tile_material_cache = {}
 	grass_material = ShaderMaterial.new()
 	grass_material.shader = shader
 	grass_material.set_shader_parameter("base", Color("#738858"))
@@ -91,9 +96,12 @@ func _prepare_materials() -> void:
 func _build_cell(cell: Vector2i) -> void:
 	var data := level_data.get_cell(cell)
 	var center := level_data.world_center(cell)
+	var mat: Material = _material_for_cell(data)
+	var tile := TileRegistry.find(level_data.tile_id(cell))
+	var wall: Material = tile.wall_material() if tile != null and not tile.is_builtin else side_material
 	var top := _box("Top_%d_%d" % [cell.x, cell.y], center - Vector3(0, 0.05, 0),
-		Vector3(LevelData.CELL_SIZE, 0.1, LevelData.CELL_SIZE),
-		grass_material if int(data["terrain"]) == LevelData.TERRAIN_GRASS else rock_material, true)
+		Vector3(LevelData.CELL_SIZE, 0.1, LevelData.CELL_SIZE), mat, true)
+	top.rotation.y = -posmod(int(data.get("rotation", 0)), 4) * PI * 0.5
 	top.set_meta("terrain_cell", cell)
 	if top.get_child_count() > 0:
 		top.get_child(0).set_meta("terrain_cell", cell)
@@ -112,7 +120,48 @@ func _build_cell(cell: Vector2i) -> void:
 		var size := Vector3(LevelData.CELL_SIZE, height, 0.08)
 		if direction % 2 == 1:
 			size = Vector3(0.08, height, LevelData.CELL_SIZE)
-		_box("Side", side_center, size, side_material, true)
+		_box("Side", side_center, size, wall, true)
+
+func _build_same_height_transitions() -> void:
+	# Process east/south once per pair. Height differences remain cliffs and do
+	# not receive this top-surface blend.
+	for y in level_data.map_size.y:
+		for x in level_data.map_size.x:
+			var a := Vector2i(x, y)
+			if not level_data.cell_exists(a) or level_data.stair_at(a) >= 0:
+				continue
+			for direction: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN]:
+				var b: Vector2i = a + direction
+				if not level_data.cell_exists(b) or level_data.stair_at(b) >= 0:
+					continue
+				if level_data.elevation(a) != level_data.elevation(b):
+					continue
+				var a_id := level_data.tile_id(a)
+				var b_id := level_data.tile_id(b)
+				if a_id == b_id:
+					continue
+				var a_tile := TileRegistry.find(a_id)
+				var b_tile := TileRegistry.find(b_id)
+				if a_tile == null or b_tile == null:
+					continue
+				var upper: TileDefinition = a_tile if TerrainTransition.dominant(a_tile, b_tile) else b_tile
+				var lower: TileDefinition = b_tile if upper == a_tile else a_tile
+				var lower_cell: Vector2i = b if upper == a_tile else a
+				var upper_cell: Vector2i = a if upper == a_tile else b
+				var toward_upper: Vector2i = upper_cell - lower_cell
+				var node := MeshInstance3D.new()
+				node.name = "Transition_%d_%d_%d_%d" % [a.x, a.y, b.x, b.y]
+				var plane := PlaneMesh.new()
+				plane.size = Vector2(0.9, LevelData.CELL_SIZE)
+				node.mesh = plane
+				node.material_override = TerrainTransition.edge_material(upper, lower)
+				node.position = (level_data.world_center(a) + level_data.world_center(b)) * 0.5
+				# Establish deterministic visual layering at three-way corners.
+				node.position.y += 0.012 + clampf(upper.transition_priority, -100, 100) * 0.00002
+				node.rotation.y = atan2(-toward_upper.y, toward_upper.x)
+				node.set_meta("transition_upper", upper.tile_id)
+				node.set_meta("transition_lower", lower.tile_id)
+				generated.add_child(node)
 
 func _box(label: String, position_value: Vector3, size: Vector3,
 		material: Material, collision: bool) -> MeshInstance3D:
@@ -206,3 +255,20 @@ func _build_spawn_marker() -> void:
 	marker.material_override = material
 	marker.position = level_data.world_center(level_data.spawn_cell) + Vector3(0, 0.12, 0)
 	generated.add_child(marker)
+
+func _material_for_cell(data: Dictionary) -> Material:
+	var tid: String = data.get("tile_id", "")
+	if tid.is_empty():
+		tid = TileRegistry.legacy_terrain_to_id(int(data.get("terrain", 0)))
+	if tid == "grass":
+		return grass_material
+	if tid == "rock":
+		return rock_material
+	if _tile_material_cache.has(tid):
+		return _tile_material_cache[tid]
+	var tile := TileRegistry.find(tid)
+	if tile == null:
+		return grass_material
+	var mat := tile.top_material()
+	_tile_material_cache[tid] = mat
+	return mat

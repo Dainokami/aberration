@@ -21,6 +21,8 @@ enum Collision { NONE, BOX, CYLINDER }
 @export var collision_size := Vector3(1, 2, 1)
 @export var collision_offset := Vector3.ZERO
 @export var fade_foreground := false
+## Fade the complete object when it sits between the gameplay camera and player.
+@export var fade_when_occluding := true
 @export var profile: ArtProfile
 @export var generator_version := 2
 

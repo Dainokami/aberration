@@ -13,7 +13,7 @@ const DIRS := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
 @export var cells: Array[Dictionary] = []
 @export var stairs: Array[Dictionary] = []
 @export var spawn_cell := Vector2i(-1, -1)
-@export var format_version := 2
+@export var format_version := 3
 @export var objects: Array[Dictionary] = []
 
 func setup_blank(size := Vector2i(16, 16)) -> void:
@@ -21,7 +21,7 @@ func setup_blank(size := Vector2i(16, 16)) -> void:
 	cells.clear()
 	cells.resize(size.x * size.y)
 	for i in cells.size():
-		cells[i] = {"exists": false, "terrain": TERRAIN_GRASS, "height": 0}
+		cells[i] = {"exists": false, "terrain": TERRAIN_GRASS, "height": 0, "tile_id": "grass"}
 	stairs.clear()
 	objects.clear()
 	spawn_cell = Vector2i(-1, -1)
@@ -33,8 +33,17 @@ func ensure_layout() -> void:
 	var old := cells.duplicate(true)
 	cells.resize(wanted)
 	for i in wanted:
-		cells[i] = old[i] if i < old.size() and old[i] is Dictionary else {
-			"exists": false, "terrain": TERRAIN_GRASS, "height": 0}
+		if i < old.size() and old[i] is Dictionary:
+			var c: Dictionary = old[i]
+			# Migrate v2 cells that lack tile_id.
+			if not c.has("tile_id"):
+				c["tile_id"] = "rock" if int(c.get("terrain", 0)) == TERRAIN_ROCK else "grass"
+			cells[i] = c
+		else:
+			cells[i] = {"exists": false, "terrain": TERRAIN_GRASS, "height": 0, "tile_id": "grass"}
+
+func tile_id(cell: Vector2i) -> String:
+	return str(get_cell(cell).get("tile_id", ("rock" if int(get_cell(cell).get("terrain", 0)) == TERRAIN_ROCK else "grass")))
 
 func in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < map_size.x and cell.y < map_size.y

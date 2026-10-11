@@ -16,12 +16,9 @@ func render() -> void:
 	terrain.show_grid = false
 	world.add_child(terrain)
 	var camera := Camera3D.new()
-	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = 39
 	world.add_child(camera)
 	var profile := load("res://data/art_profile.tres") as ArtProfile
-	camera.position = profile.camera_offset
-	camera.look_at(Vector3.ZERO)
+	profile.configure(camera, Vector3.ZERO, 39)
 	camera.current = true
 	var environment := WorldEnvironment.new()
 	environment.environment = Environment.new()

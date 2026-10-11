@@ -74,7 +74,9 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 		for y in fragment.map_size.y:
 			for x in fragment.map_size.x:
 				var cell := Vector2i(x, y)
-				candidate.set_cell(anchor + rotate_cell(cell, turns), fragment.get_cell(cell))
+				var rotated := fragment.get_cell(cell).duplicate(true)
+				rotated["rotation"] = posmod(int(rotated.get("rotation", 0)) + turns, 4)
+				candidate.set_cell(anchor + rotate_cell(cell, turns), rotated)
 		for stair in fragment.stairs:
 			candidate.stairs.append({"cell": anchor + rotate_cell(stair["cell"], turns),
 				"direction": posmod(int(stair["direction"]) + turns, 4)})

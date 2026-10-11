@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TileDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/tile_definition.gd" id="1_kp6b5"]
+
+[resource]
+script = ExtResource("1_kp6b5")
+tile_id = "decal_marsh"
+display_name = "沼泽地面"
+texture_path = "res://assets/source_art/ground_tree_pack_01/decal_marsh_tile.png"
+base_color = Color(0.12156863, 0.19215687, 0.16862746, 1)
+transition_priority = 30

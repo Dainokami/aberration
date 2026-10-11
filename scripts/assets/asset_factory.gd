@@ -75,8 +75,7 @@ static func _visual(d: PlaceableDefinition, image_path: String) -> MeshInstance3
 				p.x *= 0.05
 			vertices[i] = p
 			# Orthographic projection into the source image; anchor stays at ground.
-			var screen := basis.inverse() * p
-			uvs.append(Vector2(screen.x / d.image_size.x + d.pivot.x, d.pivot.y - screen.y / d.image_size.y))
+			uvs.append(d.profile.project_art(p, d.image_size, d.pivot))
 		mat.texture_repeat = false
 	var output := []
 	output.resize(Mesh.ARRAY_MAX)
@@ -106,9 +105,16 @@ static func generate(d: PlaceableDefinition, directory: String) -> String:
 	if err == OK:
 		err = ResourceSaver.save(packed, d.scene_path)
 	if err == OK:
-		var image := (load(d.source_image) as Texture2D).get_image()
-		image.resize(128, 128, Image.INTERPOLATE_LANCZOS)
-		err = image.save_png(d.thumbnail_path)
+		var image := (load(d.source_image) as Texture2D).get_image().duplicate() as Image
+		if image.is_compressed():
+			image.decompress()
+		var ratio := minf(128.0 / image.get_width(), 128.0 / image.get_height())
+		image.resize(maxi(1, roundi(image.get_width() * ratio)),
+			maxi(1, roundi(image.get_height() * ratio)), Image.INTERPOLATE_LANCZOS)
+		var thumbnail := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+		thumbnail.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()),
+			(Vector2i(128, 128) - image.get_size()) / 2)
+		err = thumbnail.save_png(d.thumbnail_path)
 	if err == OK:
 		err = ResourceSaver.save(d, directory.path_join("definition.tres"))
 	if err != OK:

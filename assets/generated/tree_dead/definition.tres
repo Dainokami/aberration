@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_p8v5r"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_2o0jh"]
+
+[resource]
+script = ExtResource("2_2o0jh")
+asset_id = "tree_dead"
+display_name = "枯死树"
+category = "树木"
+source_image = "res://assets/source_art/ground_tree_pack_01/tree_dead.png"
+scene_path = "res://assets/generated/tree_dead/asset.tscn"
+thumbnail_path = "res://assets/generated/tree_dead/thumbnail.png"
+image_size = Vector2(4, 4.8)
+pivot = Vector2(0.57304037, 0.9956332)
+volume_size = Vector3(4, 4.8, 0.4)
+collision = 2
+collision_size = Vector3(0.85, 2.2, 0.85)
+profile = ExtResource("1_p8v5r")

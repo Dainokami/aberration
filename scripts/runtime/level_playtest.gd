@@ -10,15 +10,11 @@ var testing := false
 var test_direction := Vector3.ZERO
 
 func _ready() -> void:
-	var requested := ProjectSettings.get_setting("terrain_editor/playtest_level", DEFAULT_LEVEL) as String
 	var request := ConfigFile.new()
-	if request.load("user://terrain_playtest.cfg") == OK:
-		requested = request.get_value("playtest", "level", requested)
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--level="):
-			requested = arg.trim_prefix("--level=")
+	request.load("user://terrain_playtest.cfg")
+	var requested := resolve_level_path(request, OS.get_cmdline_user_args())
 	testing = "--test-editor-level" in OS.get_cmdline_user_args()
-	data = load(requested) as LevelData
+	data = ResourceLoader.load(requested, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
 	if data == null:
 		push_error("无法加载关卡：" + requested)
 		get_tree().quit(2)
@@ -35,14 +31,20 @@ func _ready() -> void:
 	if testing:
 		run_physics_checks.call_deferred()
 
+static func resolve_level_path(request: ConfigFile, args: PackedStringArray) -> String:
+	var requested: String = request.get_value("playtest", "level_path",
+		request.get_value("playtest", "level", DEFAULT_LEVEL))
+	for arg in args:
+		if arg.begins_with("--level="):
+			requested = arg.trim_prefix("--level=")
+	return requested
+
 func _setup_camera() -> void:
 	camera = Camera3D.new()
-	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	var profile := load("res://data/art_profile.tres") as ArtProfile
-	camera.size = profile.orthographic_size
-	camera.position = profile.camera_offset
 	add_child(camera)
-	camera.look_at(Vector3.ZERO)
+	var framing := maxf(data.map_size.x, data.map_size.y) * LevelData.CELL_SIZE * 1.2
+	profile.configure(camera, Vector3.ZERO, framing)
 	camera.current = true
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
@@ -50,6 +52,9 @@ func _setup_camera() -> void:
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color("#b8c0d6")
 	environment.ambient_light_energy = 0.75
+	var grade: Resource = load("res://data/color_grade_profile.tres")
+	if grade != null:
+		grade.apply(environment)
 	var world := WorldEnvironment.new()
 	world.environment = environment
 	add_child(world)

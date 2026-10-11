@@ -71,8 +71,8 @@ func run() -> void:
 		var okay := true
 		for i in arrays[Mesh.ARRAY_VERTEX].size():
 			var vertex: Vector3 = basis.inverse() * arrays[Mesh.ARRAY_VERTEX][i]
-			var uv := Vector2(vertex.x / projected.image_size.x + projected.pivot.x,
-				projected.pivot.y - vertex.y / projected.image_size.y)
+			var uv := projected.profile.project_art(arrays[Mesh.ARRAY_VERTEX][i],
+				projected.image_size, projected.pivot)
 			okay = okay and uv.is_equal_approx(arrays[Mesh.ARRAY_TEX_UV][i])
 		check(okay, "projected UV carrier %d" % carrier)
 		node.free()

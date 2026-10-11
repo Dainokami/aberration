@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TileDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/tile_definition.gd" id="1_w02g3"]
+
+[resource]
+script = ExtResource("1_w02g3")
+tile_id = "ground_stone"
+display_name = "石板地面"
+texture_path = "res://assets/source_art/ground_tree_pack_01/ground_stone.png"
+base_color = Color(0.20784314, 0.16862746, 0.1882353, 1)
+transition_priority = 20
