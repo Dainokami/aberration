@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/whitebox_level.gd" id="1_level"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
 [ext_resource type="Script" path="res://scripts/camera_rig.gd" id="3_camera"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://scripts/parts/part_test_range.gd" id="5_range"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -27,6 +28,9 @@ directional_shadow_max_distance = 60.0
 
 [node name="Level" type="Node3D" parent="."]
 script = ExtResource("1_level")
+
+[node name="PartTestRange" type="Node3D" parent="."]
+script = ExtResource("5_range")
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector3(0, 0.8, 10.5)

@@ -40,6 +40,7 @@ var _coyote_remaining := 0.0
 var _jump_buffer_remaining := 0.0
 var _was_grounded := false
 var _is_flying := false
+var parts: PartLoadout
 
 
 func _ready() -> void:
@@ -49,7 +50,14 @@ func _ready() -> void:
 	respawn_position = global_position
 	# 场景里的子资源可能被多个实例共享，运行时调整前先复制。
 	collision.shape = collision.shape.duplicate()
+	parts = PartLoadout.new()
+	parts.name = "PartLoadout"
+	add_child(parts)
+	var blocks := PartBlocks.new()
+	blocks.name = "PartBlocks"
+	add_child(blocks)
 	assembly.loadout_changed.connect(_update_collision_for_loadout)
+	parts.changed_loadout.connect(_update_collision_for_loadout)
 	_update_collision_for_loadout()
 
 
@@ -114,6 +122,11 @@ func _update_horizontal_velocity(delta: float) -> void:
 	var current_horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var motion_amount := maxf(input_vector.length(), current_horizontal.length() / maxf(move_speed, 0.01))
 	assembly.advance_locomotion(delta, motion_amount)
+	if parts and parts.overrides_horizontal():
+		var planar := parts.horizontal_velocity(move_direction, delta)
+		velocity.x = planar.x
+		velocity.z = planar.z
+		return
 	var target_velocity := move_direction * move_speed * assembly.get_speed_multiplier() * assembly.get_drive_multiplier()
 	var control_multiplier := 1.0 if is_on_floor() else air_control
 	var acceleration := ground_acceleration * assembly.get_acceleration_multiplier() if move_direction.length_squared() > 0.01 else ground_deceleration * assembly.get_deceleration_multiplier()
@@ -123,6 +136,9 @@ func _update_horizontal_velocity(delta: float) -> void:
 
 
 func _update_vertical_velocity(delta: float) -> void:
+	if parts and parts.controls_vertical():
+		parts.apply_vertical(self, delta)
+		return
 	if air_action == AirAction.JUMP:
 		_update_jump(delta)
 	else:
@@ -183,6 +199,10 @@ func _update_visuals(delta: float) -> void:
 	visual_rig.set_motion_state(horizontal_velocity, is_on_floor(), velocity.y, screen_direction, delta)
 
 
+func camera_planar_axes() -> Array[Vector3]:
+	return _camera_planar_axes()
+
+
 func _camera_planar_axes() -> Array[Vector3]:
 	var camera := get_viewport().get_camera_3d()
 	if camera and camera.get_parent() is FollowCameraRig:
@@ -203,6 +223,8 @@ func _update_collision_for_loadout() -> void:
 	if capsule == null:
 		return
 	var target_height := assembly.get_collision_height()
+	if parts and parts.is_burrowed():
+		target_height = 0.9
 	capsule.height = target_height
 	capsule.radius = minf(0.42, target_height * 0.42)
 	collision.position.y = target_height * 0.5

@@ -3,6 +3,10 @@ extends Node3D
 
 const PIXEL := 0.0043
 const ANCHOR := Vector2(515.0, 536.0)
+# 新拆分稿是 1850 宽的立绘。按参考画面把角色身高收到大约 2.2 米，和关卡里的人物比例接近。
+const ANIM_PIXEL := 0.0022
+const ANIM_NECK := Vector2(1064.14, 718.11)
+const ANIM_LOWEST_Y := 1117.0
 
 const HEAD_TEXTURE := preload("res://art/characters/psd/head.png")
 const TORSO_TEXTURE := preload("res://art/characters/psd/torso.png")
@@ -19,6 +23,16 @@ const CRAWL_RIGHT_TEXTURE := preload("res://art/characters/psd/arm_crawl_pirate.
 const SNAKE_BODY_TEXTURE := preload("res://art/characters/psd/snake_body.png")
 const SNAKE_LEFT_TEXTURE := preload("res://art/characters/psd/arm_snake_gorilla.png")
 const SNAKE_RIGHT_TEXTURE := preload("res://art/characters/psd/arm_snake_pirate.png")
+const ANIM_HEAD := preload("res://art/characters/anim/head.png")
+const ANIM_EAR := preload("res://art/characters/anim/ear.png")
+const ANIM_HOOD := preload("res://art/characters/anim/hood.png")
+const ANIM_BANDAGE := preload("res://art/characters/anim/bandage.png")
+const ANIM_TAIL := preload("res://art/characters/anim/tail.png")
+const ANIM_ARM_UPPER := preload("res://art/characters/anim/arm_upper.png")
+const ANIM_ARM_FORE := preload("res://art/characters/anim/arm_fore.png")
+const ANIM_SCYTHE_GRIP := preload("res://art/characters/anim/scythe_grip.png")
+const ANIM_SCYTHE_SHAFT := preload("res://art/characters/anim/scythe_shaft.png")
+const ANIM_SCYTHE_BLADE := preload("res://art/characters/anim/scythe_blade.png")
 
 # PSD 画布上的紧裁切框。拆分形态按这些框放回同一身体锚点，静止时和源文件重合。
 const HOP_BOUNDS := Rect2(487, 516, 76, 145)
@@ -37,6 +51,7 @@ var _bones: Dictionary = {}
 var _base_positions: Dictionary = {}
 var _attachments: Dictionary = {}
 var _sprites: Dictionary = {}
+var _anim_sockets: Array[String] = []
 const HEAD_ROLL_RADIUS := 0.636
 
 var _horizontal_speed := 0.0
@@ -52,6 +67,7 @@ var _wing_phase := 0.0
 var _attack_time := 0.0
 var _attack_channel: StringName = &""
 var _air_blend := 0.0
+var _snake_mirror := false
 
 
 func _ready() -> void:
@@ -85,14 +101,14 @@ func set_motion_state(horizontal_velocity: Vector3, grounded: bool, vertical_spe
 		var axes := _planar_axes()
 		_slide_right = axes[0].dot(horizontal_velocity)
 		_slide_forward = axes[1].dot(horizontal_velocity)
-	# 和物理帧对齐。右移顺时针，远离镜头逆时针。对角时沿用来向，避免两个分量抵消后只滑不转。
+	# 和物理帧对齐。右移逆时针，远离镜头顺时针。对角时沿用来向，避免两个分量抵消后只滑不转。
 	if assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
 		var speed := Vector2(_slide_right, _slide_forward).length()
-		var turn := -_slide_right + _slide_forward
+		var turn := _slide_right - _slide_forward
 		if absf(turn) > 0.45:
 			_roll_sign = signf(turn)
 		elif speed > 0.2 and _roll_sign == 0.0:
-			_roll_sign = signf((-_slide_right) if absf(_slide_right) >= absf(_slide_forward) else _slide_forward)
+			_roll_sign = signf(_slide_right if absf(_slide_right) >= absf(_slide_forward) else -_slide_forward)
 		if speed > 0.05 and _roll_sign != 0.0:
 			_head_roll_angle += _roll_sign * speed * delta / HEAD_ROLL_RADIUS
 	if absf(screen_direction) > 0.05:
@@ -159,6 +175,50 @@ func _build_skeleton() -> void:
 	# 相机看到的是贴图背面，头和躯干再翻一次，脸和胸口的左右才和行进方向一致。
 	(_sprites["HeadSocket"] as Sprite3D).flip_h = true
 	(_sprites["BodySocket"] as Sprite3D).flip_h = true
+	_build_anim_skeleton()
+
+
+func _anim_delta(point: Vector2, origin: Vector2, depth: float) -> Vector3:
+	return Vector3((point.x - origin.x) * ANIM_PIXEL, (origin.y - point.y) * ANIM_PIXEL, depth)
+
+
+func _bind_anim_sprite(bone_name: String, socket_name: String, texture: Texture2D, pivot: Vector2, center: Vector2, depth: float, priority: int) -> void:
+	var placed := _anim_delta(center, pivot, depth)
+	_attach_sprite(bone_name, socket_name, texture, placed, ANIM_PIXEL, priority, false)
+	_anim_sockets.append(socket_name)
+	_sprite_rest_position[socket_name] = placed
+
+
+func _build_anim_skeleton() -> void:
+	# 关节取两张贴图重叠区域的中心，父子关系按原画的连接来。
+	var neck := ANIM_NECK
+	var ear_joint := Vector2(934.95, 480.59)
+	var hood_joint := Vector2(1166.05, 497.49)
+	var tail_joint := Vector2(1069.98, 762.50)
+	var shoulder := Vector2(1264.18, 739.11)
+	var elbow := Vector2(1693.23, 615.27)
+	var grip_joint := Vector2(855.99, 648.25)
+	var shaft_joint := Vector2(655.97, 271.04)
+	var blade_joint := Vector2(378.08, 212.21)
+	_add_bone("anim_head", "body", Vector3.ZERO)
+	_add_bone("anim_ear", "anim_head", _anim_delta(ear_joint, neck, 0.0))
+	_add_bone("anim_hood", "anim_head", _anim_delta(hood_joint, neck, 0.0))
+	_add_bone("anim_tail", "body", _anim_delta(tail_joint, neck, 0.0))
+	_add_bone("anim_arm_upper", "body", _anim_delta(shoulder, neck, 0.0))
+	_add_bone("anim_arm_fore", "anim_arm_upper", _anim_delta(elbow, shoulder, 0.0))
+	_add_bone("anim_scythe_grip", "body", _anim_delta(grip_joint, neck, 0.0))
+	_add_bone("anim_scythe_shaft", "anim_scythe_grip", _anim_delta(shaft_joint, grip_joint, 0.0))
+	_add_bone("anim_scythe_blade", "anim_scythe_shaft", _anim_delta(blade_joint, shaft_joint, 0.0))
+	_bind_anim_sprite("body", "AnimBandage", ANIM_BANDAGE, neck, Vector2(1067.0, 746.5), 0.01, 5)
+	_bind_anim_sprite("anim_head", "AnimHead", ANIM_HEAD, neck, Vector2(1054.0, 617.0), 0.03, 9)
+	_bind_anim_sprite("anim_ear", "AnimEar", ANIM_EAR, ear_joint, Vector2(920.5, 343.5), 0.0, 6)
+	_bind_anim_sprite("anim_hood", "AnimHood", ANIM_HOOD, hood_joint, Vector2(1295.0, 468.5), -0.02, 3)
+	_bind_anim_sprite("anim_tail", "AnimTail", ANIM_TAIL, tail_joint, Vector2(820.5, 835.5), -0.01, 2)
+	_bind_anim_sprite("anim_arm_upper", "AnimArmUpper", ANIM_ARM_UPPER, shoulder, Vector2(1500.0, 672.5), 0.02, 7)
+	_bind_anim_sprite("anim_arm_fore", "AnimArmFore", ANIM_ARM_FORE, elbow, Vector2(1655.5, 408.5), 0.03, 8)
+	_bind_anim_sprite("anim_scythe_grip", "AnimScytheGrip", ANIM_SCYTHE_GRIP, grip_joint, Vector2(755.5, 488.0), 0.04, 10)
+	_bind_anim_sprite("anim_scythe_shaft", "AnimScytheShaft", ANIM_SCYTHE_SHAFT, shaft_joint, Vector2(537.0, 246.5), 0.045, 10)
+	_bind_anim_sprite("anim_scythe_blade", "AnimScytheBlade", ANIM_SCYTHE_BLADE, blade_joint, Vector2(203.0, 453.5), 0.05, 10)
 
 
 func _add_bone(bone_name: String, parent_name: String, rest_position: Vector3) -> void:
@@ -194,28 +254,25 @@ func _attach_sprite(bone_name: String, socket_name: String, texture: Texture2D, 
 func _apply_loadout() -> void:
 	if _attachments.is_empty():
 		return
-	var mode := assembly.resolve_locomotion()
-	var snake := mode == CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER
-	var quadruped := mode == CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK
-	var biped := mode == CharacterAssemblyController.LocomotionMode.BIPED_WALK
-	var hop := mode == CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP
-	# 双足和单臂都带躯干。双腿只和双足一起出现。
-	_attachments["HeadSocket"].visible = true
-	_attachments["BodySocket"].visible = biped or hop
-	_attachments["LeftLegSocket"].visible = biped
-	_attachments["RightLegSocket"].visible = biped
-	_attachments["LeftHandSocket"].visible = (biped or quadruped) and assembly.arm_count >= 1
-	_attachments["RightHandSocket"].visible = (biped or quadruped) and assembly.arm_count >= 2
-	for socket_name in ["QuadFrontLeftSocket", "QuadFrontRightSocket", "QuadBackLeftSocket", "QuadBackRightSocket"]:
-		_attachments[socket_name].visible = quadruped
-	_attachments["HopArmSocket"].visible = mode == CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP
-	_attachments["CrawlLeftSocket"].visible = mode == CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK
-	_attachments["CrawlRightSocket"].visible = mode == CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK
-	_attachments["SnakeBodySocket"].visible = snake
-	_attachments["SnakeArmLeftSocket"].visible = snake and assembly.arm_count >= 1
-	_attachments["SnakeArmRightSocket"].visible = snake and assembly.arm_count >= 2
-	_attachments["LeftWingSocket"].visible = assembly.wings_equipped
-	_attachments["RightWingSocket"].visible = assembly.wings_equipped
+	for socket_name in [
+		"HeadSocket", "BodySocket", "LeftLegSocket", "RightLegSocket",
+		"LeftHandSocket", "RightHandSocket",
+		"QuadFrontLeftSocket", "QuadFrontRightSocket", "QuadBackLeftSocket", "QuadBackRightSocket",
+		"HopArmSocket", "CrawlLeftSocket", "CrawlRightSocket",
+		"SnakeBodySocket", "SnakeArmLeftSocket", "SnakeArmRightSocket",
+		"LeftWingSocket", "RightWingSocket",
+	]:
+		_attachments[socket_name].visible = false
+	var snake := assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER
+	var show_arm := assembly.arm_count >= 1
+	var show_bug_leg := assembly.arm_count >= 2
+	for socket_name in ["AnimHead", "AnimEar", "AnimHood", "AnimBandage"]:
+		_attachments[socket_name].visible = true
+	_attachments["AnimTail"].visible = snake
+	_attachments["AnimArmUpper"].visible = show_arm
+	_attachments["AnimArmFore"].visible = show_arm
+	for socket_name in ["AnimScytheGrip", "AnimScytheShaft", "AnimScytheBlade"]:
+		_attachments[socket_name].visible = show_bug_leg
 
 
 func _reset_pose() -> void:
@@ -235,54 +292,48 @@ func _animate_locomotion() -> void:
 
 	match assembly.resolve_locomotion():
 		CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
-			# 贴图绕自身中心转。转骨骼会把整颗头甩离地面，BoneAttachment 也跟不住补偿后的位置。
-			_set_bone_position("root", Vector3(0.0, _ground_root(496.0), 0.0))
-			_spin_with_head("HeadSocket", _head_roll_angle)
-			_spin_with_head("LeftWingSocket", _head_roll_angle)
-			_spin_with_head("RightWingSocket", _head_roll_angle)
+			# 本体绕头心滚。耳朵离头心最远，半径按耳朵顶端留出。
+			var center := _anim_delta(Vector2(1054.0, 617.0), ANIM_NECK, 0.0)
+			_set_bone_position("root", Vector3(0.0, 0.02 + 1.08 - _base_positions["body"].y - center.y, 0.0))
+			var turned := Basis(Vector3.FORWARD, _head_roll_angle)
+			var body_index: int = _bones["body"]
+			_skeleton.set_bone_pose_position(body_index, _base_positions["body"] + center - turned * center)
+			_skeleton.set_bone_pose_rotation(body_index, Quaternion(Vector3.FORWARD, _head_roll_angle))
 
 		CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP:
-			# 单臂是 PSD 里已经画好的支撑锥，枢轴在锥顶。弹跳主要抬根节点，避免把贴图甩离接缝。
+			# 猩猩臂是唯一的支撑。起跳抬根，落地时手臂多弯一点。
 			var hop := maxf(sin(phase), 0.0) if moving else 0.0
 			var compression := maxf(-sin(phase), 0.0) if moving else 0.0
-			_set_bone_position("root", Vector3(0.0, _ground_root(737.0) + hop * 0.42 - compression * 0.045, 0.0))
-			_set_bone_rotation("hop_arm", deg_to_rad(-6.0 - compression * 16.0 + hop * 8.0) * amount)
+			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0) + hop * 0.42 - compression * 0.045, 0.0))
+			_set_bone_rotation("anim_arm_upper", (-compression * 0.45 + hop * 0.25) * amount)
+			_set_bone_rotation("anim_arm_fore", (-compression * 0.35 + hop * 0.15) * amount)
 
 		CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK:
+			# 猩猩臂和虫子腿交替撑地，身体横着穿过行进方向。
 			var support := sin(phase) if moving else 0.0
-			# 猩猩臂横着画的，肩头插进下巴后转 90 度，拳头朝下。钩手本来就竖直。
-			_set_bone_position("root", Vector3(support * 0.04 * amount, _ground_root(748.0) + absf(support) * 0.02 * amount, 0.0))
-			_set_bone_rotation("crawl_left", deg_to_rad(-90.0) + support * 0.1 * amount)
-			_set_bone_rotation("crawl_right", deg_to_rad(-4.0) - support * 0.08 * amount)
+			var brace := _weave_offset(support * 0.05 * amount)
+			_set_bone_position("root", Vector3(brace.x, _anim_ground(848.0) + absf(support) * 0.03 * amount + brace.y, brace.z))
+			_set_bone_rotation("anim_arm_upper", support * 0.28 * amount)
+			_set_bone_rotation("anim_arm_fore", support * 0.16 * amount)
+			_set_bone_rotation("anim_scythe_grip", -support * 0.22 * amount)
+			_set_bone_rotation("anim_scythe_shaft", -support * 0.1 * amount)
 
-		CharacterAssemblyController.LocomotionMode.BIPED_WALK:
-			# 标准步行作为基准步态：速度平滑、上下起伏最小。
-			var stride := sin(phase) if moving else 0.0
-			# PSD 的脚底位于身体锚点下约 183px，root 下沉后脚底落到关卡地面。
-			# 空中腿和摆臂都回到站立，只留翅膀拍动和机身俯仰。
-			_set_bone_position("root", Vector3(0.0, -0.135 + absf(sin(phase * 2.0)) * 0.038 * amount * gait, 0.0))
-			_set_bone_rotation("left_leg", stride * 0.42 * amount * gait)
-			_set_bone_rotation("right_leg", -stride * 0.42 * amount * gait)
-			_set_bone_rotation("left_arm", -stride * 0.17 * amount * gait)
-			_set_bone_rotation("right_arm", stride * 0.17 * amount * gait)
-
-		CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK:
-			# 四足采用对角小跑，身体压低，步频和响应都高于双足。
-			var trot := sin(phase) if moving else 0.0
-			_set_bone_position("root", Vector3(0.0, -0.08 + absf(sin(phase * 2.0)) * 0.025 * amount * gait, 0.0))
-			_set_bone_rotation("body", trot * 0.035 * amount * gait)
-			_set_bone_rotation("quad_front_left", trot * 0.48 * amount * gait)
-			_set_bone_rotation("quad_front_right", -trot * 0.48 * amount * gait)
-			_set_bone_rotation("quad_back_left", -trot * 0.48 * amount * gait)
-			_set_bone_rotation("quad_back_right", trot * 0.48 * amount * gait)
+		CharacterAssemblyController.LocomotionMode.BIPED_WALK, CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK:
+			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0), 0.0))
 
 		CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
-			# 整条蛇身是一张贴图，绕颈根小幅摆动。尾尖离枢轴较远，幅度保持得很小。
+			# 身子横着穿过路线，尾巴比身体晚一拍，波从头部往后传。
 			var wave := sin(phase) if moving else 0.0
-			_set_bone_position("root", Vector3(wave * 0.06 * amount * gait, _ground_root(748.0), 0.0))
-			_set_bone_rotation("snake_body", wave * 0.16 * amount * gait)
-			_set_bone_rotation("snake_arm_left", wave * 0.1 * amount * gait)
-			_set_bone_rotation("snake_arm_right", -wave * 0.1 * amount * gait)
+			var tail_wave := sin(phase - 1.15) if moving else 0.0
+			var weave := _weave_offset(wave * 0.22 * amount * gait)
+			_set_bone_position("root", Vector3(weave.x, _anim_ground(ANIM_LOWEST_Y) + weave.y, weave.z))
+			_set_bone_rotation("body", -wave * 0.16 * amount * gait)
+			_set_bone_rotation("anim_tail", tail_wave * 0.55 * amount * gait)
+			if assembly.arm_count >= 1:
+				_set_bone_rotation("anim_arm_upper", -wave * 0.12 * amount * gait)
+				_set_bone_rotation("anim_arm_fore", -wave * 0.08 * amount * gait)
+			if assembly.arm_count >= 2:
+				_set_bone_rotation("anim_scythe_grip", wave * 0.1 * amount * gait)
 	_face_travel()
 
 
@@ -354,6 +405,10 @@ func _layout_baked_part(bone_name: String, socket_name: String, bounds: Rect2, p
 	sprite.position = center_pos - pivot_pos
 
 
+func _anim_ground(lowest_psd_y: float) -> float:
+	return 0.02 - _base_positions["body"].y - (ANIM_NECK.y - lowest_psd_y) * ANIM_PIXEL
+
+
 func _ground_root(lowest_psd_y: float) -> float:
 	# 把指定 PSD 像素的底边放到骨架原点上方一点点。身体骨骼本身在 0.92。
 	return 0.02 - _base_positions["body"].y - (ANCHOR.y - lowest_psd_y) * PIXEL
@@ -393,21 +448,60 @@ func _planar_axes() -> Array[Vector3]:
 	return [right, forward]
 
 
+func _travel_yaw() -> float:
+	var speed := Vector2(_slide_right, _slide_forward).length()
+	if speed < 0.25:
+		return 0.0
+	# 其他形态只轻轻侧过脸，避免立绘转到侧面。
+	if assembly.resolve_locomotion() != CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
+		_snake_mirror = false
+		return clampf(_slide_right / 4.5, -1.0, 1.0) * 0.5
+	# 静止时尾巴伸向画面左侧。正偏航把脑袋转向画面上方，所以尾巴落后于行进方向。
+	# 偏航超过约 100° 时改镜像，避免立绘转到侧面变成一条线。
+	var heading := atan2(_slide_right, _slide_forward)
+	var yaw := wrapf(PI * 0.5 - heading, -PI, PI)
+	_snake_mirror = false
+	if yaw > PI * 0.55:
+		_snake_mirror = true
+		yaw -= PI
+	elif yaw < -PI * 0.55:
+		_snake_mirror = true
+		yaw += PI
+	if _snake_mirror:
+		yaw = -yaw
+	return clampf(yaw, -1.25, 1.25)
+
+
+func _weave_offset(signed_amount: float) -> Vector3:
+	# 横移轴和行进方向垂直，所以蠕动是穿过路线，而不是顺着画面左右滑。
+	var axes := _planar_axes()
+	var side := axes[0] * _slide_forward - axes[1] * _slide_right
+	side.y = 0.0
+	if side.length_squared() < 0.0001:
+		side = axes[0]
+	else:
+		side = side.normalized()
+	return global_transform.basis.inverse() * (side * signed_amount)
+
+
 func _face_travel() -> void:
-	if assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
-		return
-	# 绕世界上方转，侧移时头和躯干一起看向行进方向。
-	var yaw := clampf(_slide_right / 4.5, -1.0, 1.0) * 0.5
-	var up_axis := (global_transform.basis.inverse() * Vector3.UP).normalized()
 	var index: int = _bones["body"]
+	if assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
+		_snake_mirror = false
+		_skeleton.set_bone_pose_scale(index, Vector3.ONE)
+		return
+	var up_axis := (global_transform.basis.inverse() * Vector3.UP).normalized()
 	var current := _skeleton.get_bone_pose_rotation(index)
-	_skeleton.set_bone_pose_rotation(index, Quaternion(up_axis, yaw) * current)
+	_skeleton.set_bone_pose_rotation(index, Quaternion(up_axis, _travel_yaw()) * current)
+	_skeleton.set_bone_pose_scale(index, Vector3(-1.0 if _snake_mirror else 1.0, 1.0, 1.0))
 
 
 func _face_camera_once() -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera:
-		look_at(camera.global_position, Vector3.UP)
+		# 朝相机的反方向看，让贴图的正面（+Z）朝向镜头，同时头顶仍朝上。
+		var away := global_position - (camera.global_position - global_position)
+		look_at(away, Vector3.UP)
 
 
 func _set_bone_rotation(bone_name: String, angle: float) -> void:

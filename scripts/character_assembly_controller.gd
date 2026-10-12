@@ -21,26 +21,27 @@ enum LocomotionMode {
 	SNAKE_SLITHER,
 }
 
-@export_range(0, 2) var arm_count := 2
-@export var lower_body := LowerBody.BIPED
-@export var wings_equipped := true
+@export_range(0, 2) var arm_count := 0
+@export var lower_body := LowerBody.NONE
+@export var wings_equipped := false
 @export var attack_movement_lock_time := 0.34
 
-var _preset_index := 3
+var _preset_index := 0
 var _movement_lock_remaining := 0.0
 var _locomotion_phase := 0.0
 
+# 这套拆分稿只有本体、一条猩猩臂、一条虫子腿和蛇身。没有双足和四足的图。
 const PRESETS := [
 	{"name": "头部滚动", "arms": 0, "lower": LowerBody.NONE},
 	{"name": "单臂跳跃", "arms": 1, "lower": LowerBody.NONE},
 	{"name": "双臂支撑", "arms": 2, "lower": LowerBody.NONE},
-	{"name": "双足行走", "arms": 2, "lower": LowerBody.BIPED},
-	{"name": "四足移动", "arms": 2, "lower": LowerBody.QUADRUPED},
-	{"name": "蛇形蠕动", "arms": 2, "lower": LowerBody.SNAKE},
+	{"name": "蛇形蠕动", "arms": 0, "lower": LowerBody.SNAKE},
+	{"name": "蛇身带臂", "arms": 2, "lower": LowerBody.SNAKE},
 ]
 
 
 func _ready() -> void:
+	_apply_preset(0)
 	call_deferred("_emit_initial_loadout")
 
 
@@ -57,16 +58,23 @@ func _unhandled_input(event: InputEvent) -> void:
 		loadout_changed.emit()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("attack"):
+		var parts := get_node_or_null("../PartLoadout")
+		if parts != null and parts.has_method("handles_attack") and parts.handles_attack():
+			return
 		request_attack()
 		get_viewport().set_input_as_handled()
 
 
 func cycle_loadout() -> void:
-	_preset_index = (_preset_index + 1) % PRESETS.size()
-	var preset: Dictionary = PRESETS[_preset_index]
+	_apply_preset((_preset_index + 1) % PRESETS.size())
+	loadout_changed.emit()
+
+
+func _apply_preset(index: int) -> void:
+	_preset_index = index
+	var preset: Dictionary = PRESETS[index]
 	arm_count = preset["arms"]
 	lower_body = preset["lower"]
-	loadout_changed.emit()
 
 
 func resolve_locomotion() -> LocomotionMode:
@@ -147,7 +155,8 @@ func get_drive_multiplier() -> float:
 		LocomotionMode.QUADRUPED_WALK:
 			return 0.92 + absf(sin(_locomotion_phase * 2.0)) * 0.16
 		LocomotionMode.SNAKE_SLITHER:
-			return 0.72 + (sin(_locomotion_phase) * 0.5 + 0.5) * 0.34
+			# 只留很轻的起伏。大幅一冲一停会让身体看起来在跟路线较劲。
+			return 0.92 + sin(_locomotion_phase) * 0.08
 	return 1.0
 
 
@@ -188,10 +197,12 @@ func get_deceleration_multiplier() -> float:
 func get_collision_height() -> float:
 	match resolve_locomotion():
 		LocomotionMode.HEAD_ROLL:
-			return 1.02
+			return 2.16
 		LocomotionMode.SINGLE_ARM_HOP, LocomotionMode.DOUBLE_ARM_WALK:
-			return 1.72
-	return 2.12
+			return 1.65
+		LocomotionMode.SNAKE_SLITHER:
+			return 2.2
+	return 1.65
 
 
 func get_locomotion_label() -> String:

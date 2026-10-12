@@ -8,7 +8,10 @@ extends CanvasLayer
 @onready var mode_label: Label = $SafeArea/TopLeft/Content/Mode
 @onready var status_label: Label = $SafeArea/TopLeft/Content/Status
 @onready var assembly_label: Label = $SafeArea/TopLeft/Content/Assembly
+@onready var parts_label: Label = $SafeArea/TopLeft/Content/Parts
 @onready var conflict_label: Label = $SafeArea/TopLeft/Content/Conflict
+
+var parts: PartLoadout
 @onready var objective_label: Label = $SafeArea/ObjectivePanel/Objective
 
 var _goal_reached := false
@@ -25,6 +28,12 @@ func _ready() -> void:
 		assembly.loadout_changed.connect(_on_loadout_changed)
 		assembly.conflict_reported.connect(_on_conflict_reported)
 		_on_loadout_changed()
+	if player:
+		parts = player.get_node_or_null("PartLoadout") as PartLoadout
+	if parts:
+		parts.changed_loadout.connect(_on_loadout_changed)
+		parts.note.connect(_on_conflict_reported)
+		_on_loadout_changed()
 
 
 func _process(delta: float) -> void:
@@ -34,6 +43,11 @@ func _process(delta: float) -> void:
 	status_label.text = "速度 %.1f   高度 %.1f   %s" % [horizontal_speed, player.global_position.y, "地面" if player.is_on_floor() else "空中"]
 	if assembly:
 		assembly_label.text = assembly.get_loadout_summary()
+	if parts and parts_label:
+		parts_label.text = parts.summary()
+		var hint := parts.space_hint()
+		if hint != "":
+			mode_label.text = hint
 	_conflict_timer = maxf(_conflict_timer - delta, 0.0)
 	if _conflict_timer <= 0.0:
 		conflict_label.text = ""
