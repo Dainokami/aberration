@@ -49,6 +49,8 @@ GODOT=/path/to/Godot.app/Contents/MacOS/Godot
 $GODOT --headless --path . --script res://tests/test_level_data.gd
 $GODOT --headless --path . --script res://tests/test_v2.gd
 $GODOT --headless --path . --script res://tests/test_terrain_p0.gd
+$GODOT --headless --path . --script res://tests/test_runtime_camera.gd -- \
+  --level=res://data/levels/acceptance_map.tres
 $GODOT --headless --path . --editor -- --test-v2-editor
 $GODOT --headless --path . res://scenes/level_playtest.tscn -- \
   --test-editor-level --level=res://data/levels/acceptance_map.tres

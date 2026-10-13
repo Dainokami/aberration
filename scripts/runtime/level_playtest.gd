@@ -4,10 +4,12 @@ const DEFAULT_LEVEL := "res://data/levels/acceptance_map.tres"
 var data: LevelData
 var builder: TerrainBuilder
 var player: CharacterBody3D
+var camera_rig: FollowCameraRig
 var camera: Camera3D
 var spawn_position: Vector3
 var testing := false
 var test_direction := Vector3.ZERO
+static var _runtime_font_cache: Font
 
 func _ready() -> void:
 	var request := ConfigFile.new()
@@ -25,8 +27,8 @@ func _ready() -> void:
 	builder.level_data = data
 	add_child(builder)
 	builder.rebuild()
-	_setup_camera()
 	_setup_player()
+	_setup_camera()
 	_setup_ui(requested)
 	if testing:
 		run_physics_checks.call_deferred()
@@ -40,10 +42,14 @@ static func resolve_level_path(request: ConfigFile, args: PackedStringArray) -> 
 	return requested
 
 func _setup_camera() -> void:
+	camera_rig = FollowCameraRig.new()
+	camera_rig.name = "CameraRig"
+	camera_rig.target = player
+	camera_rig.target_path = NodePath("../Player")
 	camera = Camera3D.new()
-	var profile := load("res://data/art_profile.tres") as ArtProfile
-	add_child(camera)
-	profile.configure(camera, Vector3.ZERO)
+	camera.name = "Camera3D"
+	camera_rig.add_child(camera)
+	add_child(camera_rig)
 	camera.current = true
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
@@ -65,6 +71,7 @@ func _setup_camera() -> void:
 
 func _setup_player() -> void:
 	player = CharacterBody3D.new()
+	player.name = "Player"
 	player.floor_snap_length = 0.4
 	player.floor_max_angle = deg_to_rad(50)
 	add_child(player)
@@ -93,9 +100,32 @@ func _setup_ui(path: String) -> void:
 	var label := Label.new()
 	label.position = Vector2(18, 18)
 	label.text = "地形编辑器试玩\nWASD / 方向键移动　R 重置\n" + path
-	# Use Godot/system font fallback; no unlicensed local font is required.
+	label.add_theme_font_override("font", runtime_font())
 	label.add_theme_font_size_override("font_size", 18)
 	layer.add_child(label)
+
+static func runtime_font() -> Font:
+	if _runtime_font_cache != null:
+		return _runtime_font_cache
+	var paths := PackedStringArray([
+		"/System/Library/Fonts/Hiragino Sans GB.ttc",
+		"/System/Library/Fonts/STHeiti Medium.ttc",
+		"/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+		"C:/Windows/Fonts/msyh.ttc",
+		"C:/Windows/Fonts/simhei.ttf",
+		"/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+		"/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+	])
+	for font_path in paths:
+		if not FileAccess.file_exists(font_path):
+			continue
+		var font := FontFile.new()
+		font.data = FileAccess.get_file_as_bytes(font_path)
+		if font.has_char("地".unicode_at(0)):
+			_runtime_font_cache = font
+			return font
+	_runtime_font_cache = ThemeDB.fallback_font
+	return _runtime_font_cache
 
 func _physics_process(delta: float) -> void:
 	if player == null:

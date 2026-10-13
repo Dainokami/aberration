@@ -19,6 +19,7 @@ var _tile_material_cache: Dictionary = {}
 var _top_groups: Dictionary = {}
 var _blend_groups: Dictionary = {}
 var _multi_blend_levels: Dictionary = {}
+var _blend_resources: Dictionary = {}
 
 func _ready() -> void:
 	rebuild()
@@ -42,10 +43,11 @@ func rebuild() -> void:
 	_prepare_materials()
 	_top_groups.clear()
 	_blend_groups.clear()
+	_blend_resources.clear()
 	_prepare_multi_blend_levels()
 	for y in level_data.map_size.y:
 		for x in level_data.map_size.x:
-			var cell := Vector2i(x, y)
+			var cell := level_data.map_origin + Vector2i(x, y)
 			if level_data.cell_exists(cell) and level_data.stair_at(cell) < 0:
 				_build_cell(cell)
 	_build_top_groups()
@@ -89,7 +91,7 @@ func _prepare_multi_blend_levels() -> void:
 	var terrain_by_level := {}
 	for y in level_data.map_size.y:
 		for x in level_data.map_size.x:
-			var cell := Vector2i(x, y)
+			var cell := level_data.map_origin + Vector2i(x, y)
 			if not level_data.cell_exists(cell) or level_data.stair_at(cell) >= 0:
 				continue
 			var elevation := level_data.elevation(cell)
@@ -98,12 +100,7 @@ func _prepare_multi_blend_levels() -> void:
 			terrain_by_level[elevation][level_data.tile_id(cell)] = true
 	for elevation: int in terrain_by_level:
 		var terrain_ids: Dictionary = terrain_by_level[elevation]
-		var supported := terrain_ids.size() > 1
-		for tile_id: String in terrain_ids:
-			if not TerrainBlendMapClass.supports_tile(tile_id):
-				supported = false
-				break
-		if supported:
+		if terrain_ids.size() > 1:
 			_multi_blend_levels[elevation] = true
 			_blend_groups[elevation] = []
 
@@ -197,16 +194,8 @@ func _build_blended_top_groups() -> void:
 	for elevation: int in _blend_groups:
 		var cells: Array = _blend_groups[elevation]
 		var blend := TerrainBlendMapClass.build(level_data, elevation, style_profile)
-		var tiles: Array[TileDefinition] = blend["tiles"]
-		var tints: Array[Color] = []
-		for tile in tiles:
-			tints.append(level_data.terrain_tint(tile.tile_id))
-		var material := TerrainMaterials.blended_top_material(
-			tiles,
-			blend["texture"],
-			blend["origin"],
-			blend["world_size"],
-			tints)
+		_blend_resources[elevation] = blend
+		var material := TerrainMaterials.blended_top_material(blend)
 		var mesh := TerrainEdgeBuilder.make_blended_top_mesh(
 			level_data, cells, style_profile.corner_segments,
 			style_profile.top_surface_offset_m)
@@ -217,9 +206,32 @@ func _build_blended_top_groups() -> void:
 		top.mesh = mesh
 		top.material_override = material
 		top.set_meta("terrain_cells", cells)
-		top.set_meta("terrain_tiles", TerrainBlendMapClass.TILE_IDS)
+		top.set_meta("terrain_tiles", blend["terrain_ids"])
 		top.set_meta("multi_blend", true)
 		generated.add_child(top)
+
+func refresh_blend_cells(changed_cells: Array[Vector2i]) -> bool:
+	if changed_cells.is_empty() or level_data == null or style_profile == null:
+		return false
+	var by_elevation := {}
+	for cell in changed_cells:
+		if not level_data.in_bounds(cell) or not level_data.cell_exists(cell):
+			return false
+		var elevation := level_data.elevation(cell)
+		if not _blend_resources.has(elevation):
+			return false
+		var blend: Dictionary = _blend_resources[elevation]
+		if not blend["page_by_id"].has(level_data.tile_id(cell)):
+			return false
+		if not by_elevation.has(elevation):
+			by_elevation[elevation] = []
+		by_elevation[elevation].append(cell)
+	for elevation: int in by_elevation:
+		var dirty: Array[Vector2i] = []
+		dirty.assign(by_elevation[elevation])
+		TerrainBlendMapClass.update(
+			_blend_resources[elevation], level_data, elevation, style_profile, dirty)
+	return true
 
 func _add_top_collision(top: Node3D) -> void:
 	var body := StaticBody3D.new()
@@ -367,12 +379,16 @@ func _build_grid() -> void:
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var total_x := level_data.map_size.x * LevelData.CELL_SIZE
 	var total_z := level_data.map_size.y * LevelData.CELL_SIZE
+	var origin := level_data.map_world_origin()
+	var center := origin + Vector2(total_x, total_z) * 0.5
 	for x in level_data.map_size.x + 1:
-		var world_x := -total_x * 0.5 + x * LevelData.CELL_SIZE
-		_box("Grid", Vector3(world_x, 0.025, 0), Vector3(0.018, 0.018, total_z), material, false)
+		var world_x := origin.x + x * LevelData.CELL_SIZE
+		_box("Grid", Vector3(world_x, 0.025, center.y),
+			Vector3(0.018, 0.018, total_z), material, false)
 	for z in level_data.map_size.y + 1:
-		var world_z := -total_z * 0.5 + z * LevelData.CELL_SIZE
-		_box("Grid", Vector3(0, 0.025, world_z), Vector3(total_x, 0.018, 0.018), material, false)
+		var world_z := origin.y + z * LevelData.CELL_SIZE
+		_box("Grid", Vector3(center.x, 0.025, world_z),
+			Vector3(total_x, 0.018, 0.018), material, false)
 
 func _build_spawn_marker() -> void:
 	if not level_data.in_bounds(level_data.spawn_cell) or not level_data.cell_exists(level_data.spawn_cell):

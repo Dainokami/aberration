@@ -37,23 +37,18 @@ static func top_material(tile: TileDefinition, lower: TileDefinition,
 	material.set_shader_parameter("art_turns", posmod(rotation_turns, 4))
 	return material
 
-static func blended_top_material(tiles: Array[TileDefinition],
-		weight_map: Texture2D, map_origin: Vector2, map_size: Vector2,
-		tints: Array[Color]) -> ShaderMaterial:
+static func blended_top_material(blend: Dictionary) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = _get_blended_top_shader()
-	material.set_shader_parameter("blend_weights", weight_map)
-	material.set_shader_parameter("blend_origin", map_origin)
-	material.set_shader_parameter("blend_size", map_size)
-	for index in 4:
-		var tile: TileDefinition = tiles[index]
-		var texture := _texture(tile.texture_path)
-		material.set_shader_parameter("terrain%d_art" % index, texture)
-		material.set_shader_parameter("terrain%d_color" % index, tile.base_color)
-		material.set_shader_parameter("terrain%d_tint" % index, tints[index])
-		material.set_shader_parameter("terrain%d_span" % index, tile.top_texture_span_m)
-		material.set_shader_parameter("terrain%d_has_art" % index, texture != null)
-		material.set_shader_parameter("terrain%d_world_space" % index, tile.world_space_top)
+	material.set_shader_parameter("blend_indices", blend["index_texture"])
+	material.set_shader_parameter("blend_weights", blend["weight_texture"])
+	material.set_shader_parameter("blend_rotations", blend["rotation_texture"])
+	material.set_shader_parameter("blend_origin", blend["origin"])
+	material.set_shader_parameter("blend_size", blend["world_size"])
+	material.set_shader_parameter("terrain_art", blend["terrain_art"])
+	material.set_shader_parameter("terrain_colors", blend["terrain_colors"])
+	material.set_shader_parameter("terrain_tints", blend["terrain_tints"])
+	material.set_shader_parameter("terrain_settings", blend["terrain_settings"])
 	return material
 
 static func cliff_material(tile: TileDefinition, tint: Color) -> ShaderMaterial:
@@ -169,37 +164,26 @@ static func _get_blended_top_shader() -> Shader:
 	_blended_top_shader.code = """
 shader_type spatial;
 render_mode unshaded, cull_disabled;
-uniform sampler2D blend_weights : filter_linear, repeat_disable;
+uniform sampler2D blend_indices : filter_nearest, repeat_disable;
+uniform sampler2D blend_weights : filter_nearest, repeat_disable;
+uniform sampler2D blend_rotations : filter_nearest, repeat_disable;
 uniform vec2 blend_origin;
 uniform vec2 blend_size = vec2(1.0);
-uniform sampler2D terrain0_art : source_color, filter_linear_mipmap, repeat_disable;
-uniform sampler2D terrain1_art : source_color, filter_linear_mipmap, repeat_disable;
-uniform sampler2D terrain2_art : source_color, filter_linear_mipmap, repeat_disable;
-uniform sampler2D terrain3_art : source_color, filter_linear_mipmap, repeat_disable;
-uniform vec4 terrain0_color : source_color;
-uniform vec4 terrain1_color : source_color;
-uniform vec4 terrain2_color : source_color;
-uniform vec4 terrain3_color : source_color;
-uniform vec4 terrain0_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
-uniform vec4 terrain1_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
-uniform vec4 terrain2_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
-uniform vec4 terrain3_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
-uniform vec2 terrain0_span = vec2(2.0);
-uniform vec2 terrain1_span = vec2(2.0);
-uniform vec2 terrain2_span = vec2(2.0);
-uniform vec2 terrain3_span = vec2(2.0);
-uniform bool terrain0_has_art = false;
-uniform bool terrain1_has_art = false;
-uniform bool terrain2_has_art = false;
-uniform bool terrain3_has_art = false;
-uniform bool terrain0_world_space = false;
-uniform bool terrain1_world_space = false;
-uniform bool terrain2_world_space = false;
-uniform bool terrain3_world_space = false;
+uniform sampler2DArray terrain_art : source_color, filter_linear_mipmap, repeat_disable;
+uniform sampler2D terrain_colors : source_color, filter_nearest, repeat_disable;
+uniform sampler2D terrain_tints : source_color, filter_nearest, repeat_disable;
+uniform sampler2D terrain_settings : filter_nearest, repeat_disable;
 varying vec3 world_pos;
 
 vec2 mirror_uv(vec2 value) {
 	return vec2(1.0) - abs(mod(value, vec2(2.0)) - vec2(1.0));
+}
+
+vec2 turn_uv(vec2 value, int turns) {
+	if (turns == 1) { return vec2(value.y, 1.0 - value.x); }
+	if (turns == 2) { return vec2(1.0) - value; }
+	if (turns == 3) { return vec2(1.0 - value.y, value.x); }
+	return value;
 }
 
 vec3 tint_preserve_value(vec3 color, vec4 tint) {
@@ -208,28 +192,51 @@ vec3 tint_preserve_value(vec3 color, vec4 tint) {
 	return mix(color, shifted, clamp(tint.a, 0.0, 1.0));
 }
 
+vec3 terrain_color(int page, vec2 local_uv) {
+	vec4 base = texelFetch(terrain_colors, ivec2(page, 0), 0);
+	vec4 tint = texelFetch(terrain_tints, ivec2(page, 0), 0);
+	vec4 settings = texelFetch(terrain_settings, ivec2(page, 0), 0);
+	vec2 span = max(settings.xy, vec2(0.001));
+	vec2 art_uv = settings.z > 0.5 ? mirror_uv(world_pos.xz / span) : local_uv;
+	vec4 pixel = texture(terrain_art, vec3(art_uv, float(page)));
+	return tint_preserve_value(mix(base.rgb, pixel.rgb, pixel.a), tint);
+}
+
+vec3 splat_texel(ivec2 coordinate, vec2 local_uv) {
+	ivec4 pages = ivec4(round(
+		texelFetch(blend_indices, coordinate, 0) * 255.0));
+	vec4 weights = max(texelFetch(blend_weights, coordinate, 0), vec4(0.0));
+	weights /= max(dot(weights, vec4(1.0)), 0.0001);
+	return terrain_color(pages.x, local_uv) * weights.r
+		+ terrain_color(pages.y, local_uv) * weights.g
+		+ terrain_color(pages.z, local_uv) * weights.b
+		+ terrain_color(pages.w, local_uv) * weights.a;
+}
+
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
 void fragment() {
-	vec2 local_uv = UV;
-	vec2 uv0 = terrain0_world_space ? mirror_uv(world_pos.xz / max(terrain0_span, vec2(0.001))) : local_uv;
-	vec2 uv1 = terrain1_world_space ? mirror_uv(world_pos.xz / max(terrain1_span, vec2(0.001))) : local_uv;
-	vec2 uv2 = terrain2_world_space ? mirror_uv(world_pos.xz / max(terrain2_span, vec2(0.001))) : local_uv;
-	vec2 uv3 = terrain3_world_space ? mirror_uv(world_pos.xz / max(terrain3_span, vec2(0.001))) : local_uv;
-	vec4 pixel0 = terrain0_has_art ? texture(terrain0_art, uv0) : terrain0_color;
-	vec4 pixel1 = terrain1_has_art ? texture(terrain1_art, uv1) : terrain1_color;
-	vec4 pixel2 = terrain2_has_art ? texture(terrain2_art, uv2) : terrain2_color;
-	vec4 pixel3 = terrain3_has_art ? texture(terrain3_art, uv3) : terrain3_color;
-	vec3 color0 = tint_preserve_value(mix(terrain0_color.rgb, pixel0.rgb, pixel0.a), terrain0_tint);
-	vec3 color1 = tint_preserve_value(mix(terrain1_color.rgb, pixel1.rgb, pixel1.a), terrain1_tint);
-	vec3 color2 = tint_preserve_value(mix(terrain2_color.rgb, pixel2.rgb, pixel2.a), terrain2_tint);
-	vec3 color3 = tint_preserve_value(mix(terrain3_color.rgb, pixel3.rgb, pixel3.a), terrain3_tint);
 	vec2 blend_uv = clamp((world_pos.xz - blend_origin) / max(blend_size, vec2(0.001)), vec2(0.0), vec2(1.0));
-	vec4 weights = max(texture(blend_weights, blend_uv), vec4(0.0));
-	weights /= max(dot(weights, vec4(1.0)), 0.0001);
-	ALBEDO = color0 * weights.r + color1 * weights.g + color2 * weights.b + color3 * weights.a;
+	int turns = int(round(texture(blend_rotations, blend_uv).r * 3.0));
+	vec2 local_uv = turn_uv(UV, turns);
+	ivec2 map_size = textureSize(blend_weights, 0);
+	vec2 pixel = clamp(
+		blend_uv * vec2(map_size) - vec2(0.5),
+		vec2(0.0), vec2(map_size - ivec2(1)));
+	ivec2 first = ivec2(floor(pixel));
+	ivec2 second = min(first + ivec2(1), map_size - ivec2(1));
+	vec2 blend = fract(pixel);
+	vec3 top = mix(
+		splat_texel(ivec2(first.x, first.y), local_uv),
+		splat_texel(ivec2(second.x, first.y), local_uv),
+		blend.x);
+	vec3 bottom = mix(
+		splat_texel(ivec2(first.x, second.y), local_uv),
+		splat_texel(ivec2(second.x, second.y), local_uv),
+		blend.x);
+	ALBEDO = mix(top, bottom, blend.y);
 	ROUGHNESS = 1.0;
 }
 """

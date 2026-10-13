@@ -5,8 +5,10 @@ extends Node3D
 @export var offset := Vector3(0.0, 13.5, 10.5)
 @export var focus_offset := Vector3(0.0, 0.75, 0.0)
 @export var position_smoothing := 7.5
+@export var use_art_profile := true
+@export_file("*.tres") var art_profile_path := "res://data/art_profile.tres"
 
-@onready var target: Node3D = get_node_or_null(target_path)
+var target: Node3D
 
 
 func get_planar_axes() -> Array[Vector3]:
@@ -20,6 +22,10 @@ func get_planar_axes() -> Array[Vector3]:
 
 
 func _ready() -> void:
+	if target == null and not target_path.is_empty():
+		target = get_node_or_null(target_path)
+	if use_art_profile:
+		_apply_art_profile()
 	if target:
 		global_position = target.global_position + offset
 		look_at(target.global_position + focus_offset, Vector3.UP)
@@ -32,3 +38,18 @@ func _process(delta: float) -> void:
 	var smoothing_weight := 1.0 - exp(-position_smoothing * delta)
 	global_position = global_position.lerp(desired_position, smoothing_weight)
 	look_at(target.global_position + focus_offset, Vector3.UP)
+
+
+func _apply_art_profile() -> void:
+	var profile := load(art_profile_path) as ArtProfile
+	if profile == null:
+		return
+	offset = profile.camera_direction() * profile.camera_distance
+	focus_offset = Vector3.UP * profile.target_height
+	for child in get_children():
+		if child is Camera3D:
+			var camera := child as Camera3D
+			camera.projection = Camera3D.PROJECTION_PERSPECTIVE \
+				if profile.perspective else Camera3D.PROJECTION_ORTHOGONAL
+			camera.fov = profile.field_of_view
+			camera.size = profile.orthographic_size

@@ -6,6 +6,16 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		"persistent toolbar launcher exists")
 	suite.check(plugin.editor_dock != null and plugin.editor_dock.title == "关卡编辑器",
 		"Godot 4.7 EditorDock is registered")
+	suite.check(plugin.dock_started_closed and
+		plugin.editor_dock.default_slot == EditorDock.DOCK_SLOT_RIGHT_BR and
+		plugin.editor_dock.transient and plugin.editor_dock.closable,
+		"level editor starts closed and opens in the right dock")
+	var placement_style := plugin.placement_panel.get_theme_stylebox("panel") \
+		as StyleBoxFlat
+	var tint_style := plugin.tint_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	suite.check(placement_style != null and tint_style != null and
+		not placement_style.border_color.is_equal_approx(tint_style.border_color),
+		"terrain placement and tint controls use distinct colored frames")
 	var discoverable := plugin._find_terrain_builder(EditorInterface.get_edited_scene_root()) != null
 	if not discoverable:
 		var packed := load(plugin.EDITOR_WORKSPACE_SCENE) as PackedScene

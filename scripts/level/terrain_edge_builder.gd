@@ -95,7 +95,7 @@ static func cliff_groups(data: LevelData) -> Array[Dictionary]:
 	var grouped := {}
 	for y in data.map_size.y:
 		for x in data.map_size.x:
-			var cell := Vector2i(x, y)
+			var cell := data.map_origin + Vector2i(x, y)
 			if not data.cell_exists(cell) or data.stair_at(cell) >= 0:
 				continue
 			var tile := TileRegistry.find(data.tile_id(cell))
@@ -127,7 +127,7 @@ static func foam_groups(data: LevelData) -> Array[Dictionary]:
 	var grouped := {}
 	for y in data.map_size.y:
 		for x in data.map_size.x:
-			var cell := Vector2i(x, y)
+			var cell := data.map_origin + Vector2i(x, y)
 			if not data.cell_exists(cell) or data.stair_at(cell) >= 0:
 				continue
 			var land := TileRegistry.find(data.tile_id(cell))
@@ -316,8 +316,7 @@ static func _trace_grid_paths(edges: Array) -> Array[PackedVector2Array]:
 	return result
 
 static func _grid_vertex_to_world(data: LevelData, point: Vector2i) -> Vector2:
-	var origin := -Vector2(data.map_size) * LevelData.CELL_SIZE * 0.5
-	return origin + Vector2(point) * LevelData.CELL_SIZE
+	return data.world_grid_point(point)
 
 static func _smooth_path(path: PackedVector2Array, radius: float,
 		segments: int) -> PackedVector2Array:

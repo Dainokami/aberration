@@ -75,16 +75,16 @@ func _check_tint_roundtrip() -> void:
 
 func _check_multi_blend(style: TerrainStyleProfile) -> void:
 	var data := LevelData.new()
-	data.setup_blank(Vector2i(4, 4))
+	data.setup_blank(Vector2i(8, 4))
+	var custom_ids := [
+		"ground_forest", "ground_stone", "decal_marsh", "decal_corruption"]
+	var builtin_ids := ["grass", "rock", "sand", "water"]
 	for y in data.map_size.y:
 		for x in data.map_size.x:
-			var tile_id := "grass"
-			if x >= 2 and y < 2:
-				tile_id = "rock"
-			elif x < 2 and y >= 2:
-				tile_id = "sand"
-			elif x >= 2 and y >= 2:
-				tile_id = "water"
+			var local_x := x % 4
+			var quadrant := (1 if local_x >= 2 else 0) + (2 if y >= 2 else 0)
+			var tile_id: String = (
+				custom_ids[quadrant] if x < 4 else builtin_ids[quadrant])
 			data.set_cell(Vector2i(x, y), {
 				"exists": true,
 				"terrain": 0,
@@ -92,24 +92,39 @@ func _check_multi_blend(style: TerrainStyleProfile) -> void:
 				"height": 0,
 			})
 	var blend := TerrainBlendMapClass.build(data, 0, style)
-	var image: Image = blend["image"]
+	var weight_image: Image = blend["weight_image"]
+	var index_image: Image = blend["index_image"]
 	var pixels_per_cell: int = blend["pixels_per_cell"]
 	var junction := Vector2i(2, 2) * pixels_per_cell
 	var max_active_channels := 0
 	var normalized := true
+	var active_custom_ids := {}
 	for y in range(junction.y - 2, junction.y + 2):
 		for x in range(junction.x - 2, junction.x + 2):
-			var weights := image.get_pixel(x, y)
+			var weights := weight_image.get_pixel(x, y)
+			var indices := index_image.get_pixel(x, y)
 			var total := weights.r + weights.g + weights.b + weights.a
 			normalized = normalized and absf(total - 1.0) < 0.025
 			var active := 0
-			for weight in [weights.r, weights.g, weights.b, weights.a]:
+			var channels := [weights.r, weights.g, weights.b, weights.a]
+			var pages := [indices.r, indices.g, indices.b, indices.a]
+			for channel in 4:
+				var weight: float = channels[channel]
 				if weight > 0.02:
 					active += 1
+					var page := roundi(float(pages[channel]) * 255.0)
+					active_custom_ids[blend["terrain_ids"][page]] = true
 			max_active_channels = maxi(max_active_channels, active)
 	check(normalized, "multi-terrain weights stay normalized")
 	check(max_active_channels >= 3,
 		"three or more terrain channels survive at a junction")
+	check(active_custom_ids.size() >= 3,
+		"top-only custom terrains survive together at a junction")
+	check(blend["terrain_ids"].size() >= 8,
+		"one texture array supports more than four terrains globally")
+	for tile_id in custom_ids + builtin_ids:
+		check(blend["terrain_ids"].has(tile_id),
+			"dynamic texture array contains " + tile_id)
 	var builder := TerrainBuilder.new()
 	builder.level_data = data
 	builder.show_grid = false
@@ -119,13 +134,18 @@ func _check_multi_blend(style: TerrainStyleProfile) -> void:
 	var top := _top_visual(builder, Vector2i(1, 1))
 	var material := top.material_override as ShaderMaterial
 	check(top.get_meta("multi_blend", false)
+		and material.get_shader_parameter("blend_indices") is Texture2D
 		and material.get_shader_parameter("blend_weights") is Texture2D,
-		"built-in terrain layer uses one multi-blend weight map")
-	check(material.get_shader_parameter("terrain0_art") is Texture2D
-		and material.get_shader_parameter("terrain1_art") is Texture2D
-		and material.get_shader_parameter("terrain2_art") is Texture2D
-		and material.get_shader_parameter("terrain3_art") is Texture2D,
-		"multi-blend shader receives all four terrain textures")
+		"dynamic terrain layer receives index and weight maps")
+	check(material.get_shader_parameter("terrain_art") is Texture2DArray,
+		"multi-blend shader receives a terrain texture array")
+	data.get_cell(Vector2i(1, 1))["rotation"] = 3
+	var dirty: Array[Vector2i] = [Vector2i(1, 1)]
+	check(builder.refresh_blend_cells(dirty),
+		"flat terrain edit refreshes the existing blend resource")
+	var rotations: Image = builder._blend_resources[0]["rotation_image"]
+	check(rotations.get_pixel(1, 1).r > 0.99,
+		"dynamic blend preserves per-cell art rotation")
 	builder.queue_free()
 
 func _check_render_structure(style: TerrainStyleProfile) -> void:
@@ -163,9 +183,21 @@ func _check_render_structure(style: TerrainStyleProfile) -> void:
 			"generated edge mesh is non-empty " + node.name)
 	var grass_top := _top_visual(builder, Vector2i(1, 1))
 	var top_material := grass_top.material_override as ShaderMaterial
+	var terrain_ids: PackedStringArray = grass_top.get_meta("terrain_tiles")
+	var grass_page := terrain_ids.find("grass")
+	var settings := (
+		top_material.get_shader_parameter("terrain_settings") as Texture2D).get_image()
+	var tint_lookup := (
+		top_material.get_shader_parameter("terrain_tints") as Texture2D).get_image()
+	var settings_pixel := settings.get_pixel(grass_page, 0)
+	var tint_pixel := tint_lookup.get_pixel(grass_page, 0)
 	check(top_material != null
-		and top_material.get_shader_parameter("terrain0_span") == Vector2(8, 8)
-		and top_material.get_shader_parameter("terrain0_tint").is_equal_approx(tint),
+		and is_equal_approx(settings_pixel.r, 8.0)
+		and is_equal_approx(settings_pixel.g, 8.0)
+		and absf(tint_pixel.r - tint.r) < 0.015
+		and absf(tint_pixel.g - tint.g) < 0.015
+		and absf(tint_pixel.b - tint.b) < 0.015
+		and absf(tint_pixel.a - tint.a) < 0.015,
 		"top material uses continuous 8m sampling and map tint")
 	var water_only := LevelData.new()
 	water_only.setup_blank(Vector2i(1, 1))
