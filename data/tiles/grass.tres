@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="TileDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/tile_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+tile_id = "grass"
+display_name = "草地"
+texture_path = "res://assets/source_art/terrain_handoff_v02/top/grass_top.png"
+base_color = Color(0.46666667, 0.53333336, 0.36862746, 1)
+default_height = 0
+is_builtin = true
+transition_priority = 40
+world_space_top = true
+top_texture_span_m = Vector2(8, 8)
+cliff_texture_path = "res://assets/source_art/terrain_handoff_v02/cliff/grass_cliff.png"
+cliff_texture_span_m = Vector2(4, 4)
+rim_texture_path = "res://assets/source_art/terrain_handoff_v02/rim/grass_rim_soft.png"
+rim_u_span_m = 8.0
+rim_alpha_range = Vector2(0.31767955, 0.71823204)
+rim_inset_m = 0.28
+rim_outset_m = 0.24
+rim_drop_m = 0.43
+corner_radius_m = 0.58
+grass_roll_profile = Array[Vector2]([Vector2(-0.28, 0), Vector2(-0.1, 0.02), Vector2(0.15, -0.025), Vector2(0.24, -0.12), Vector2(0.18, -0.27), Vector2(0, -0.43)])

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TerrainStyleProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/terrain_style_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+regular_mask_directory = "res://assets/source_art/terrain_handoff_v02/masks/regular"
+irregular_mask_directory = "res://assets/source_art/terrain_handoff_v02/masks/irregular"
+use_irregular_masks = true
+irregular_seed = 20261012
+use_soft_rims = true
+use_shore_foam = true
+blend_pixels_per_cell = 24
+corner_segments = 5
+rim_segments = 6
+top_surface_offset_m = 0.006
+rim_surface_offset_m = 0.012
+foam_surface_offset_m = 0.008

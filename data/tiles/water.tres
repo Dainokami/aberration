@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TileDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/tile_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+tile_id = "water"
+display_name = "海水"
+texture_path = "res://assets/source_art/terrain_handoff_v02/top/water_top.png"
+base_color = Color(0.24313726, 0.4509804, 0.49019608, 1)
+default_height = 0
+is_builtin = true
+transition_priority = 10
+world_space_top = true
+top_texture_span_m = Vector2(8, 8)
+surface_kind = 1
+foam_texture_path = "res://assets/source_art/terrain_handoff_v02/water/shore_foam.png"
+foam_u_span_m = 8.0
+foam_width_m = 0.35
+foam_alpha_range = Vector2(0.43508288, 0.5690608)

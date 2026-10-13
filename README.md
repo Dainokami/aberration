@@ -6,7 +6,9 @@
 
 - 2m×2m地块及0m／2m／4m高度；
 - 固定正面轻俯视透视相机；
-- 地貌边缘Mask与悬崖侧壁；
+- 47类地貌拓扑Mask、四地貌权重混合、稳定不规则变体与连续世界底纹；
+- 草地卷边、岩沙圆钝崖顶、连续侧壁与水岸泡沫；
+- 地图级动态着色，不修改美术源图；
 - PNG／WebP地块和物件导入；
 - 物件放置、移动、碰撞、遮挡淡出；
 - 营地预制保存、预览和整体投放；
@@ -46,6 +48,7 @@ GODOT=/path/to/Godot.app/Contents/MacOS/Godot
 
 $GODOT --headless --path . --script res://tests/test_level_data.gd
 $GODOT --headless --path . --script res://tests/test_v2.gd
+$GODOT --headless --path . --script res://tests/test_terrain_p0.gd
 $GODOT --headless --path . --editor -- --test-v2-editor
 $GODOT --headless --path . res://scenes/level_playtest.tscn -- \
   --test-editor-level --level=res://data/levels/acceptance_map.tres

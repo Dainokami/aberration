@@ -35,9 +35,11 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	importer.tile_color_picker.color = Color.RED
 	importer._generate()
 	suite.check(FileAccess.get_sha256(path) == hash, "duplicate tile generation changes no existing resource")
+	var builtin_path := "res://data/tiles/grass.tres"
+	var builtin_hash := FileAccess.get_sha256(builtin_path)
 	importer.fields["id"].text = "grass"
 	importer._generate()
-	suite.check(not FileAccess.file_exists("res://data/tiles/grass.tres"), "builtin tile IDs protected")
+	suite.check(FileAccess.get_sha256(builtin_path) == builtin_hash, "builtin tile IDs protected")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	TileRegistry.invalidate()
 	plugin.refresh_tile_list()

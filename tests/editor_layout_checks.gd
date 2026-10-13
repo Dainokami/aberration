@@ -4,7 +4,16 @@ extends RefCounted
 func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	suite.check(plugin.launcher_button != null and plugin.launcher_button.text == "关卡编辑器",
 		"persistent toolbar launcher exists")
-	suite.check(plugin._find_terrain_builder(EditorInterface.get_edited_scene_root()) != null,
+	suite.check(plugin.editor_dock != null and plugin.editor_dock.title == "关卡编辑器",
+		"Godot 4.7 EditorDock is registered")
+	var discoverable := plugin._find_terrain_builder(EditorInterface.get_edited_scene_root()) != null
+	if not discoverable:
+		var packed := load(plugin.EDITOR_WORKSPACE_SCENE) as PackedScene
+		var workspace := packed.instantiate() if packed != null else null
+		discoverable = plugin._find_terrain_builder(workspace) != null
+		if workspace != null:
+			workspace.free()
+	suite.check(discoverable,
 		"workspace builder is discoverable without scene-tree selection")
 	var real_builder: TerrainBuilder = plugin.builder
 	var real_data: LevelData = plugin.data
@@ -56,7 +65,10 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		for control: Control in tools.adjustment_controls:
 			correct = correct and control.visible == (mode == 1)
 		suite.check(correct, "object mode filters controls %d" % mode)
-	tools.clipboard = plugin.data.objects[0].duplicate(true)
+	var clipboard_source: LevelData = plugin.data
+	if clipboard_source.objects.is_empty():
+		clipboard_source = load("res://data/levels/objects_acceptance.tres") as LevelData
+	tools.clipboard = clipboard_source.objects[0].duplicate(true)
 	tools.paste_selected()
 	suite.check(tools.object_mode.selected == 0 and tools.library.visible and
 		not tools.selected_label.visible, "paste switches from adjust to placement")

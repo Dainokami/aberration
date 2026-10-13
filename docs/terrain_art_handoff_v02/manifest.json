@@ -1,0 +1,1620 @@
+{
+  "id": "terrain_art_handoff_v02",
+  "date": "2026-10-12",
+  "cell_m": 2,
+  "height_step_m": 2,
+  "entry_html": "preview.html",
+  "usage_document": "USAGE.md",
+  "engine_integration_status": "images_and_spec_only",
+  "camera_locked_by_package": false,
+  "recommended_png_count": 67,
+  "mask_bits": {
+    "N": 1,
+    "E": 2,
+    "S": 4,
+    "W": 8,
+    "NE": 16,
+    "SE": 32,
+    "SW": 64,
+    "NW": 128
+  },
+  "same_height_visual_priority": [
+    "water",
+    "sand",
+    "rock",
+    "grass"
+  ],
+  "biomes": {
+    "grass": {
+      "top": "grass_top",
+      "cliff": "grass_cliff",
+      "rim": "grass_rim_soft",
+      "foam": null
+    },
+    "rock": {
+      "top": "rock_top",
+      "cliff": "rock_cliff",
+      "rim": "rock_rim_soft",
+      "foam": null
+    },
+    "sand": {
+      "top": "sand_top",
+      "cliff": "sand_cliff",
+      "rim": "sand_rim_soft",
+      "foam": null
+    },
+    "water": {
+      "top": "water_top",
+      "cliff": null,
+      "rim": null,
+      "foam": "shore_foam"
+    }
+  },
+  "textures": [
+    {
+      "id": "grass_top",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "9cabb5f510907baa744ec46b78c165fc2d43558fc4977f25891e848327288a1a",
+      "role": "top",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        8,
+        8
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/top/grass_top.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "rock_top",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "18c7cb05746a1d82e0e6195b4bf963a157a3ce27fa1288896d35c6839144912d",
+      "role": "top",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        8,
+        8
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/top/rock_top.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "sand_top",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "eba160f3345203ba287970b5a441cbbbaff2cce44d477a5d3621892cfde4ac21",
+      "role": "top",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        8,
+        8
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/top/sand_top.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "water_top",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "357d8f3d94ac2fa937501f94c1c44b5027d629d3dbfb07b3aacd6e769ff18dd1",
+      "role": "top",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        8,
+        8
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/top/water_top.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "grass_cliff",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "26702ea5c467d23f212f8fe2d8277ae5171299837d21761fd3d0aff1f74e33d2",
+      "role": "cliff",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        4,
+        4
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/cliff/grass_cliff.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "rock_cliff",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "da77895fc5d45edac503b258bb7a47b0931194d0f4735798e055ccec3d65d096",
+      "role": "cliff",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        4,
+        4
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/cliff/rock_cliff.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "sand_cliff",
+      "width_px": 1254,
+      "height_px": 1254,
+      "mode": "RGB",
+      "alpha_bbox_threshold_8": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sha256": "3c2b5f4dad7a93d1a6fe18abf7565b509af101ec1977e8d6f4e0313055c05b91",
+      "role": "cliff",
+      "sample_mode": "mirror_uv",
+      "suggested_texture_span_m": [
+        4,
+        4
+      ],
+      "span_applies_to": "full_canvas",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/cliff/sand_cliff.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "opaque",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "shore_foam",
+      "width_px": 2172,
+      "height_px": 724,
+      "mode": "RGBA",
+      "alpha_bbox_threshold_8": [
+        0,
+        315,
+        2172,
+        412
+      ],
+      "sha256": "8de1a5e4a1116e6088d6b14a114dea834e9a9038a494c6ee1ad01dd761e77dc5",
+      "role": "shore_foam",
+      "sample_mode": "mirror_u_clamp_v",
+      "suggested_texture_span_m": [
+        8,
+        0.35
+      ],
+      "span_applies_to": "alpha_bbox",
+      "warning": "not certified for ordinary repeat",
+      "path": "assets/water/shore_foam.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "recommended_for_engine_test"
+    },
+    {
+      "id": "grass_rim_soft",
+      "width_px": 2172,
+      "height_px": 724,
+      "alpha_bbox_threshold_8": [
+        0,
+        230,
+        2172,
+        520
+      ],
+      "sha256": "c8c210692e9c564ce7acf32c00323993060e3ca32392d0be00fb3f08b7ea2eeb",
+      "sample_mode": "mirror_u_clamp_v",
+      "u_span_m": 8,
+      "profile": {
+        "inset_m": 0.28,
+        "outset_m": 0.24,
+        "drop_m": 0.43,
+        "corner_radius_m": 0.58
+      },
+      "path": "assets/rim/grass_rim_soft.png",
+      "role": "rim",
+      "mode": "RGBA",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "recommended_for_engine_test",
+      "v_mapping": "normalized_cross_section_t_into_alpha_bbox"
+    },
+    {
+      "id": "rock_rim_soft",
+      "width_px": 2172,
+      "height_px": 724,
+      "alpha_bbox_threshold_8": [
+        0,
+        234,
+        2172,
+        487
+      ],
+      "sha256": "ceaf3d486f0235bdfa5796288a03e9b5aa39aa95562d57e5ef38fbcf2b8a7995",
+      "sample_mode": "mirror_u_clamp_v",
+      "u_span_m": 8,
+      "profile": {
+        "inset_m": 0.55,
+        "outset_m": 0,
+        "drop_m": 0.42,
+        "corner_radius_m": 0.82
+      },
+      "path": "assets/rim/rock_rim_soft.png",
+      "role": "rim",
+      "mode": "RGBA",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "recommended_for_engine_test",
+      "v_mapping": "normalized_cross_section_t_into_alpha_bbox"
+    },
+    {
+      "id": "sand_rim_soft",
+      "width_px": 2172,
+      "height_px": 724,
+      "alpha_bbox_threshold_8": [
+        0,
+        217,
+        2172,
+        522
+      ],
+      "sha256": "c08f6a665308ae11a8831763b5254f5a2370be2b0290a40ebd4e79167b8a4975",
+      "sample_mode": "mirror_u_clamp_v",
+      "u_span_m": 8,
+      "profile": {
+        "inset_m": 0.65,
+        "outset_m": 0,
+        "drop_m": 0.46,
+        "corner_radius_m": 0.88
+      },
+      "path": "assets/rim/sand_rim_soft.png",
+      "role": "rim",
+      "mode": "RGBA",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "recommended_for_engine_test",
+      "v_mapping": "normalized_cross_section_t_into_alpha_bbox"
+    }
+  ],
+  "masks": [
+    {
+      "neighbor_bits": 0,
+      "path": "assets/masks/regular/blob_000.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_000",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "1909579ff39a150f7d5ffb35092454bf5e6ca20f1d2b29fbe9b302040813c5ac",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 1,
+      "path": "assets/masks/regular/blob_001.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_001",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "866be867e23966e6cb7bfdc54720c999848db68971439bb887361cb879f4ce4b",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 2,
+      "path": "assets/masks/regular/blob_002.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_002",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "03a87bb7d52f6f3df9c7b56a30207c065325b3e10d161156cdce4fa84b017834",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 3,
+      "path": "assets/masks/regular/blob_003.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_003",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "6023ef88fd502e804e83b1626da53b958927f6e9dd5890928124b428b7630a9f",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 4,
+      "path": "assets/masks/regular/blob_004.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_004",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "09d45a2967d0065a17270f9feb86c6da74c325c694521888064226d3916a556b",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 5,
+      "path": "assets/masks/regular/blob_005.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_005",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "7cf28443c0045977f655d002fe4890e81114964a88d9a988ed2fbf3616426183",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 6,
+      "path": "assets/masks/regular/blob_006.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_006",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "93be3073c7ef80ccd1ef3c6bd53129a67d6e30fc700da36d3b3dea25db3e207a",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 7,
+      "path": "assets/masks/regular/blob_007.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_007",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "b86b8211e5674ee207b9f4bba078d22f43bfdb94edd9d5460ac167ea816317c3",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 8,
+      "path": "assets/masks/regular/blob_008.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_008",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "bbd83c81a593a8a77f16578922b1da9b9960713a4a58c53f52273b2dad59c8e0",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 9,
+      "path": "assets/masks/regular/blob_009.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_009",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "74443e1664e1a9489cc42467f7e74aacd221c7af1677c98741e8a91bf1dc1195",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 10,
+      "path": "assets/masks/regular/blob_010.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_010",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "6bfda5f15ba3c62fbfea9a0e9f11179dd6d1833d109710ddd363e57bcb7d8b0d",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 11,
+      "path": "assets/masks/regular/blob_011.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_011",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "607feefca39c08400e4b1f2cd3c7d229fda8a99272887a134fa64fabfb094c97",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 12,
+      "path": "assets/masks/regular/blob_012.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_012",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "07f625c61da1044583964dd733cc2974f929cc9e10e95c65506737a994704d75",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 13,
+      "path": "assets/masks/regular/blob_013.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_013",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "86e1edbc27b92f7a04d66db635fe4afa9ca3137272cd50b5ab0470cf2ed96ff7",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 14,
+      "path": "assets/masks/regular/blob_014.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_014",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "7abd8ee2226f6b98eea83a1df9f475d972315264d04473b5fa243049248fdf1f",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 15,
+      "path": "assets/masks/regular/blob_015.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_015",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "fab92ad44fe9c467164173788545d7a700b443b2c4853268f6e0a70ec6a4e3e8",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 19,
+      "path": "assets/masks/regular/blob_019.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_019",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "7ee82c5f8df6694996fb8aa2fee6da8df1cc32763a4e35f7ea5fce59ef874f92",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 23,
+      "path": "assets/masks/regular/blob_023.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_023",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "91fb5143c2049d78c5f299795cfe1b6c1fc15235de3ef5e728b20db19c4c8efd",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 27,
+      "path": "assets/masks/regular/blob_027.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_027",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "445b5b1c8214bd8b104705efbcfd07cc569241d3c7efb49b42bfe561aadf35cd",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 31,
+      "path": "assets/masks/regular/blob_031.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_031",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "e9afb433e7ebd5c0de8acd58acc8c8d41b9579f096226c0703874919b46e559e",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 38,
+      "path": "assets/masks/regular/blob_038.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_038",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "7b6cc6010de21428ed06209cbc4167dd5e21c3a21e2e89e0dd7b242692192f63",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 39,
+      "path": "assets/masks/regular/blob_039.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_039",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "c705a34b0ec5ce43126abec51651df4697de98f9ef7a4027baf26720ab38e65f",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 46,
+      "path": "assets/masks/regular/blob_046.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_046",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "9c33cbfe05e02f5fc970247303362ec6f3d102d8077f42c895e978693e5548c5",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 47,
+      "path": "assets/masks/regular/blob_047.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_047",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "c5ac98c0004a1be57d5283328e9b699966e200ed9dbbee065e7d07e40126106b",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 55,
+      "path": "assets/masks/regular/blob_055.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_055",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "a7aebcbf89e656069011f7120a060ead76858450f8680c078aac02bb042a5b71",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 63,
+      "path": "assets/masks/regular/blob_063.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_063",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "11a18c964d8634427bc1ddf14075ee51dfd9c8442a91f17e77c5e0450e442180",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 76,
+      "path": "assets/masks/regular/blob_076.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_076",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "a2ac304350753cf5e80eb024910ae54b416dc737dd21f1eb6b4df816327f165f",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 77,
+      "path": "assets/masks/regular/blob_077.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_077",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "31d306b78045581392dfb65548ee926a27a9a29a2db9dfd95fc55329d82904c2",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 78,
+      "path": "assets/masks/regular/blob_078.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_078",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "ea1bdf3af4efc8864ce02120d37c7423585fa86d1398f23d09730a1d3e84b694",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 79,
+      "path": "assets/masks/regular/blob_079.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_079",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "69184bed32e765fe462fe8c78c31d211dd7f76e9e4f30760870c6ff4dba69800",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 95,
+      "path": "assets/masks/regular/blob_095.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_095",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "03f7a16e66f46193ce5443e5103bd93e3c7afe2e9bf3b4b36d938d4266a5b287",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 110,
+      "path": "assets/masks/regular/blob_110.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_110",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "78bf4f09db81e6918bdf74a7120f2eadc34506df96b5387982a0060512550a1d",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 111,
+      "path": "assets/masks/regular/blob_111.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_111",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "60f2f102f236d14cbdee7a4cdba1b473fe4e8c276b42baf62cd80241d0bdd3d3",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 127,
+      "path": "assets/masks/regular/blob_127.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_127",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "2198e793c9e2a6a722010495f071e68af666af3477a4263bd68337ecb3fa7658",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 137,
+      "path": "assets/masks/regular/blob_137.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_137",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "50bdad330186621ca0a284f72b45477eaed65d514c49c8205d06962e66fd688a",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 139,
+      "path": "assets/masks/regular/blob_139.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_139",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "c03165a7ebc1115956007bd7acf38ddb38ba7278c34e999cf8d6d234f9831ee4",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 141,
+      "path": "assets/masks/regular/blob_141.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_141",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "fc1a0296c2342aa12bf1546ea281c2f3824a6efe247e761fc509c3b7e2346f9f",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 143,
+      "path": "assets/masks/regular/blob_143.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_143",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "1fda9191a7d35dfc93d9f707db850860b1941193f5af019bfaf9a60758b063a5",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 155,
+      "path": "assets/masks/regular/blob_155.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_155",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "86af8b8a4a777dd177d548c7e87aac7fba129f3f230d0f36856871648b1c55db",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 159,
+      "path": "assets/masks/regular/blob_159.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_159",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "405d0370ff5605ef89204a5c812b3b4d7032206a3652d8cc15652189b478bc15",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 175,
+      "path": "assets/masks/regular/blob_175.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_175",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "0ec1daa0c3a622fd439bfbf5db3ed0456c0d0b5f8bc01c5d8846372935425c78",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 191,
+      "path": "assets/masks/regular/blob_191.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_191",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "751ac90e4a59a5e73b05169ffce29fb34f2a63f74e1a3ab542623c9b1afc1959",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 205,
+      "path": "assets/masks/regular/blob_205.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_205",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "190cb756bf56cc5997be500e656b87364e71da51c855c12e2015b92cb0b70205",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 207,
+      "path": "assets/masks/regular/blob_207.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_207",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "59184f3a505f058184e39be657d1130c1f6268f86957d5f0c003c20b17b69607",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 223,
+      "path": "assets/masks/regular/blob_223.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_223",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "187adef005e985a27cfd7f217cbddeb72efe6fef937d7b962a4f1a8000f35af6",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 239,
+      "path": "assets/masks/regular/blob_239.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_239",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "d18477e38462d8f0c07dc0af4ed21e08650517d950e5416eeaf00ad290038ac1",
+      "variant": null
+    },
+    {
+      "neighbor_bits": 255,
+      "path": "assets/masks/regular/blob_255.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "white": "upper biome coverage",
+      "black": "lower biome coverage",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "id": "blob_255",
+      "role": "mask",
+      "topology_set": "complete_regular_47",
+      "sha256": "f19e1d8eb9a3e5be118fd10d537b1ac5a9e6fbb7eae5b5ccd49eb51ebf768a44",
+      "variant": null
+    },
+    {
+      "kind": "straight",
+      "label": "直边",
+      "neighbor_bits": 110,
+      "variant": 1,
+      "seed": 101,
+      "path": "assets/masks/irregular/straight_blob_110_v1.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "e9d724011be287aec67af01bf2acc72c78c7d18b8695720c15b246067f76f0c7",
+      "id": "straight_blob_110_v1",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "straight",
+      "label": "直边",
+      "neighbor_bits": 110,
+      "variant": 2,
+      "seed": 202,
+      "path": "assets/masks/irregular/straight_blob_110_v2.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "6b7f08361fa2aaa348ed5fdb1db221b5916d2436a0e5f479808ddb9ad3fb38cb",
+      "id": "straight_blob_110_v2",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "straight",
+      "label": "直边",
+      "neighbor_bits": 110,
+      "variant": 3,
+      "seed": 303,
+      "path": "assets/masks/irregular/straight_blob_110_v3.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "4d243a7ecc644fa3221a2b71b3a2650d28bbb1d201a7c98fb316e6f01a0139f1",
+      "id": "straight_blob_110_v3",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "outer_corner",
+      "label": "外角",
+      "neighbor_bits": 76,
+      "variant": 1,
+      "seed": 101,
+      "path": "assets/masks/irregular/outer_corner_blob_076_v1.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "f84c8cfecdd64325c6cb248ac3120cedc6dc1649204f1911a42e9f0c5f390682",
+      "id": "outer_corner_blob_076_v1",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "outer_corner",
+      "label": "外角",
+      "neighbor_bits": 76,
+      "variant": 2,
+      "seed": 202,
+      "path": "assets/masks/irregular/outer_corner_blob_076_v2.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "933cc53cd42ffc792b616fc4484d4cd7068f611dd7fc51a01219765e06c316c3",
+      "id": "outer_corner_blob_076_v2",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "outer_corner",
+      "label": "外角",
+      "neighbor_bits": 76,
+      "variant": 3,
+      "seed": 303,
+      "path": "assets/masks/irregular/outer_corner_blob_076_v3.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "073cd77593318db771172e8c8d3416dfb4507ff49f56de116fb1fc70921d0742",
+      "id": "outer_corner_blob_076_v3",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "inner_corner",
+      "label": "内角",
+      "neighbor_bits": 239,
+      "variant": 1,
+      "seed": 101,
+      "path": "assets/masks/irregular/inner_corner_blob_239_v1.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "b56c499c0a2ec0dda5c0d4da6546a5c18ed1b89cae94b97212f1d936e6e41750",
+      "id": "inner_corner_blob_239_v1",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "inner_corner",
+      "label": "内角",
+      "neighbor_bits": 239,
+      "variant": 2,
+      "seed": 202,
+      "path": "assets/masks/irregular/inner_corner_blob_239_v2.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "6fe4ebbb5762d3a2c619269cc6aad24e6cd9fd7970f91b2ac0bd42635e103093",
+      "id": "inner_corner_blob_239_v2",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    },
+    {
+      "kind": "inner_corner",
+      "label": "内角",
+      "neighbor_bits": 239,
+      "variant": 3,
+      "seed": 303,
+      "path": "assets/masks/irregular/inner_corner_blob_239_v3.png",
+      "size_px": [
+        256,
+        256
+      ],
+      "world_size_m": [
+        2,
+        2
+      ],
+      "sha256": "61a03ba27802b176160390f204dbbc471c568996982b13ca321fbd3cc8e8c947",
+      "id": "inner_corner_blob_239_v3",
+      "role": "mask",
+      "color_space": "linear_data",
+      "sample_mode": "clamp",
+      "topology_set": "accepted_irregular_style_studies_3_of_47"
+    }
+  ],
+  "reference_textures": [
+    {
+      "id": "grass_rim",
+      "width_px": 2172,
+      "height_px": 724,
+      "mode": "RGBA",
+      "alpha_bbox_threshold_8": [
+        0,
+        323,
+        2172,
+        412
+      ],
+      "sha256": "f56eb7e18fa570b9898719dc3f72890afe1e15b083eb46e879220fb891d8ceef",
+      "role": "rim",
+      "sample_mode": "mirror_u_clamp_v",
+      "suggested_texture_span_m": [
+        8,
+        0.35
+      ],
+      "span_applies_to": "alpha_bbox",
+      "warning": "not certified for ordinary repeat",
+      "path": "reference/rims_v01/grass_rim.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "reference_only"
+    },
+    {
+      "id": "rock_rim",
+      "width_px": 2172,
+      "height_px": 724,
+      "mode": "RGBA",
+      "alpha_bbox_threshold_8": [
+        0,
+        312,
+        2172,
+        422
+      ],
+      "sha256": "7c60d4df4e1dd7829a51cbe03b9a171d3adbf0210c3a0e77dba6f8b3b8b1ffa5",
+      "role": "rim",
+      "sample_mode": "mirror_u_clamp_v",
+      "suggested_texture_span_m": [
+        8,
+        0.35
+      ],
+      "span_applies_to": "alpha_bbox",
+      "warning": "not certified for ordinary repeat",
+      "path": "reference/rims_v01/rock_rim.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "reference_only"
+    },
+    {
+      "id": "sand_rim",
+      "width_px": 2172,
+      "height_px": 724,
+      "mode": "RGBA",
+      "alpha_bbox_threshold_8": [
+        0,
+        315,
+        2172,
+        417
+      ],
+      "sha256": "7178b06665087d34a5a19e7ea144d4cdc3fabbac11b043168b79a96bef348fbc",
+      "role": "rim",
+      "sample_mode": "mirror_u_clamp_v",
+      "suggested_texture_span_m": [
+        8,
+        0.35
+      ],
+      "span_applies_to": "alpha_bbox",
+      "warning": "not certified for ordinary repeat",
+      "path": "reference/rims_v01/sand_rim.png",
+      "color_space": "sRGB_color",
+      "alpha_representation": "straight",
+      "status": "reference_only"
+    }
+  ],
+  "irregular_mask_scope": {
+    "canonical_bits": [
+      110,
+      76,
+      239
+    ],
+    "variants": [
+      1,
+      2,
+      3
+    ],
+    "fallback": "corresponding regular mask",
+    "complete_irregular_47": false
+  },
+  "height_profile_spec": "spec/height_profiles.json",
+  "limitations": [
+    "Not certified for ordinary Repeat seamless sampling",
+    "No Godot scenes, colliders or importer supplied",
+    "Preview uses simplified Canvas projection; real depth/mesh closure/transparent sorting require engine tests"
+  ]
+}
