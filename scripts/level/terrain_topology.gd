@@ -47,7 +47,7 @@ static func topology_bits(data: LevelData, cell: Vector2i, tile_id: String) -> i
 	var elevation := data.elevation(cell)
 	for i in VECTORS.size():
 		var neighbor: Vector2i = cell + VECTORS[i]
-		if data.cell_exists(neighbor) and data.stair_at(neighbor) < 0 \
+		if data.cell_exists(neighbor) \
 				and data.elevation(neighbor) == elevation and data.tile_id(neighbor) == tile_id:
 			bits |= BITS[i]
 	return normalize_bits(bits)
@@ -57,7 +57,7 @@ static func silhouette_bits(data: LevelData, cell: Vector2i) -> int:
 	var elevation := data.elevation(cell)
 	for i in VECTORS.size():
 		var neighbor: Vector2i = cell + VECTORS[i]
-		if data.cell_exists(neighbor) and data.stair_at(neighbor) < 0 \
+		if data.cell_exists(neighbor) \
 				and data.elevation(neighbor) >= elevation:
 			bits |= BITS[i]
 	return normalize_bits(bits)

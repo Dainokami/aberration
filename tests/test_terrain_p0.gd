@@ -20,6 +20,7 @@ func _run() -> void:
 	_check_tint_roundtrip()
 	_check_multi_blend(style)
 	_check_render_structure(style)
+	_check_stair_geometry()
 	print("P0 TERRAIN TEST FAILURES: ", failures)
 	quit(0 if failures.is_empty() else 1)
 
@@ -214,6 +215,67 @@ func _check_render_structure(style: TerrainStyleProfile) -> void:
 		"water never creates a vertical water wall")
 	builder.queue_free()
 	water_builder.queue_free()
+
+func _check_stair_geometry() -> void:
+	for direction in 4:
+		var data := LevelData.new()
+		data.setup_blank(Vector2i(5, 5))
+		var low := Vector2i(2, 2)
+		var high: Vector2i = low + LevelData.DIRS[direction]
+		var lateral: Vector2i = low + LevelData.DIRS[(direction + 1) % 4]
+		for cell in [low, high, lateral]:
+			data.set_cell(cell, {
+				"exists": true,
+				"terrain": 0,
+				"tile_id": "grass",
+				"height": 1 if cell == high else 0,
+				"rotation": 0,
+			})
+		data.stairs.append({"cell": low, "direction": direction})
+		var builder := TerrainBuilder.new()
+		builder.level_data = data
+		builder.show_grid = false
+		builder.build_collision = true
+		root.add_child(builder)
+		builder.rebuild()
+		var steps: Array[MeshInstance3D] = []
+		for node in builder.generated.get_children():
+			if node is MeshInstance3D and node.has_meta("stair_step"):
+				steps.append(node)
+		steps.sort_custom(func(a: MeshInstance3D, b: MeshInstance3D):
+			return int(a.get_meta("stair_step")) < int(b.get_meta("stair_step")))
+		var run := Vector3(
+			LevelData.DIRS[direction].x, 0.0, LevelData.DIRS[direction].y)
+		var low_center := data.world_center(low)
+		var minimum := INF
+		var maximum := -INF
+		var rising := steps.size() == 10
+		var previous_top := -INF
+		for step in steps:
+			var box := step.mesh as BoxMesh
+			var half_length := (
+				box.size.z if direction % 2 == 0 else box.size.x) * 0.5
+			var along := (step.position - low_center).dot(run)
+			minimum = minf(minimum, along - half_length)
+			maximum = maxf(maximum, along + half_length)
+			var top := step.position.y + box.size.y * 0.5
+			rising = rising and top > previous_top
+			previous_top = top
+		check(steps.size() == 10 and absf(minimum + 1.0) < 0.01
+			and absf(maximum - 3.0) < 0.01 and rising
+			and absf(previous_top - LevelData.ELEVATION_STEP) < 0.01,
+			"stair spans two full cells and rises in direction %d" % direction)
+		var ramps := builder.generated.find_children(
+			"StairRamp", "StaticBody3D", false, false)
+		var ramp := ramps[0] as StaticBody3D if not ramps.is_empty() else null
+		check(ramp != null and ramp.get_meta("terrain_cell") == low,
+			"stair ramp is pickable from low cell direction %d" % direction)
+		var lateral_bits := TerrainTopology.silhouette_bits(data, lateral)
+		var toward_stair := TerrainTopology.VECTORS.find(low - lateral)
+		check(toward_stair >= 0
+			and (lateral_bits & TerrainTopology.BITS[toward_stair]) != 0,
+			"stair footprint supports neighboring silhouette direction %d" % direction)
+		builder.queue_free()
 
 func _top_visual(builder: TerrainBuilder, cell: Vector2i) -> MeshInstance3D:
 	for child in builder.generated.get_children():

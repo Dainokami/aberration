@@ -97,9 +97,18 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		"2.5D mode uses front perspective camera orientation and FOV")
 	suite.check(plugin.fixed_view_active and plugin.fixed_view_button.button_pressed,
 		"2.5D mode stays active after entry")
-	plugin._disable_2_5d_view()
-	suite.check(camera.transform.is_equal_approx(initial),
-		"leaving 2.5D mode restores previous editor camera")
+	plugin._top_view_pressed()
+	var expected_top_basis := Basis.looking_at(
+		Vector3.DOWN, Vector3(0.0, 0.0, -1.0))
+	suite.check(camera.projection == Camera3D.PROJECTION_ORTHOGONAL
+		and camera.global_basis.is_equal_approx(expected_top_basis)
+		and plugin.top_view_button.button_pressed,
+		"top mode uses a north-up orthographic camera")
+	plugin._free_view_pressed()
+	suite.check(camera.transform.is_equal_approx(initial)
+		and plugin.free_view_button.button_pressed
+		and not plugin.fixed_view_active,
+		"free mode restores previous editor camera")
 	camera.queue_free()
 	plugin.editing_camera = null
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
@@ -141,6 +150,8 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.preview_pitch = -1
 	plugin.preview_distance = -1
 	plugin.preview_target_height = INF
+	await _check_terrain_pick_and_stair_preview(
+		plugin, suite, real_builder, real_data, profile)
 
 	# Test the native ItemList's actual content layout, not just property values.
 	for source: ItemList in [plugin.tile_list, plugin.world_tools.library, plugin.world_tools.prefab_library]:
@@ -177,3 +188,77 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		await plugin.get_tree().process_frame
 	suite.check(list.get_combined_minimum_size().y <= small, "palette shrinks after filtering")
 	list.queue_free()
+
+func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
+		suite: RefCounted, real_builder: TerrainBuilder, real_data: LevelData,
+		profile: ArtProfile) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	plugin.get_tree().root.add_child(viewport)
+	var world := Node3D.new()
+	viewport.add_child(world)
+	var pick_data := LevelData.new()
+	pick_data.setup_blank(Vector2i(4, 4))
+	for y in pick_data.map_size.y:
+		for x in pick_data.map_size.x:
+			pick_data.set_cell(Vector2i(x, y), {
+				"exists": true,
+				"terrain": 0,
+				"tile_id": "grass",
+				"height": 1 if y < 2 else 0,
+				"rotation": 0,
+			})
+	var pick_builder := TerrainBuilder.new()
+	pick_builder.level_data = pick_data
+	pick_builder.show_grid = false
+	pick_builder.build_collision = true
+	world.add_child(pick_builder)
+	var camera := Camera3D.new()
+	world.add_child(camera)
+	profile.configure(camera, Vector3.ZERO)
+	camera.current = true
+	plugin.builder = pick_builder
+	plugin.data = pick_data
+	await plugin.get_tree().physics_frame
+	await plugin.get_tree().physics_frame
+	var high := Vector2i(1, 1)
+	var low := Vector2i(1, 2)
+	var high_center := pick_data.world_center(high)
+	var low_center := pick_data.world_center(low)
+	var boundary_z := (high_center.z + low_center.z) * 0.5
+	var picked_cliff := true
+	for height in [1.7, 1.0, 0.25]:
+		var screen := camera.unproject_position(
+			Vector3(high_center.x, height, boundary_z))
+		picked_cliff = picked_cliff and plugin._pick(camera, screen) == high
+	suite.check(picked_cliff
+		and plugin._pick(camera, camera.unproject_position(high_center)) == high
+		and plugin._pick(camera, camera.unproject_position(low_center)) == low,
+		"terrain picking follows visible tops and cliff faces")
+	plugin.mode_select.selected = 3
+	plugin.stair_direction = 0
+	plugin._make_preview()
+	plugin._update_preview(low)
+	var display: TerrainBuilder = null
+	if plugin.preview.get_child_count() > 0:
+		display = plugin.preview.get_child(0) as TerrainBuilder
+	var preview_steps := []
+	if display != null:
+		for node in display.find_children("*", "MeshInstance3D", true, false):
+			if node.has_meta("stair_step"):
+				preview_steps.append(node)
+	preview_steps.sort_custom(func(a: MeshInstance3D, b: MeshInstance3D):
+		return int(a.get_meta("stair_step")) < int(b.get_meta("stair_step")))
+	var preview_rises := preview_steps.size() == 10
+	var previous_y := -INF
+	for step: MeshInstance3D in preview_steps:
+		preview_rises = preview_rises and step.position.y > previous_y
+		previous_y = step.position.y
+	suite.check(display != null and not display.build_collision
+		and preview_steps.size() == 10 and preview_rises,
+		"stair brush previews the final rising 3D staircase")
+	plugin.mode_select.selected = 0
+	plugin.builder = real_builder
+	plugin.data = real_data
+	plugin._make_preview()
+	viewport.queue_free()

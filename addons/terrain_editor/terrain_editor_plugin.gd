@@ -6,6 +6,7 @@ extends EditorPlugin
 ## ============================================================
 
 enum ToolMode { GROUND = 0, ERASE = 2, STAIR = 3, SPAWN = 4 }
+enum ViewMode { FREE, PERSPECTIVE_2_5D, TOP }
 
 # --- State --------------------------------------------------
 var builder: TerrainBuilder
@@ -24,11 +25,15 @@ var play_after_save := false
 var tile_rotation_label: Label
 var hover_cell := Vector2i(-999, -999)
 var fixed_view_button: Button
+var top_view_button: Button
+var free_view_button: Button
 var editing_camera: Camera3D
 var fixed_view_active := false
+var view_mode: ViewMode = ViewMode.FREE
 var fixed_view_cameras: Array[Camera3D] = []
 var fixed_view_states: Dictionary = {}
 var view_pan_offset := Vector3.ZERO
+var top_view_size := 25.0
 var view_move_keys := {KEY_W: false, KEY_A: false, KEY_S: false, KEY_D: false}
 var preview: MeshInstance3D
 var pending_action := ""
@@ -200,15 +205,41 @@ func _build_dock() -> void:
 	# File operations row
 	var files := HBoxContainer.new()
 	dock_root.add_child(files)
-	for spec in [["新建", "_new_map"], ["打开", "_open_map"], ["保存", "_save_map"], ["另存为", "_save_as"], ["2.5D视角", "_fixed_view_pressed"]]:
+	for spec in [["新建", "_new_map"], ["打开", "_open_map"], ["保存", "_save_map"], ["另存为", "_save_as"]]:
 		var button := Button.new()
 		button.text = spec[0]
 		button.pressed.connect(Callable(self, spec[1]))
 		files.add_child(button)
-		if spec[1] == "_fixed_view_pressed":
-			fixed_view_button = button
-			button.toggle_mode = true
-			button.tooltip_text = "固定游戏视角；WASD平移，滚轮缩放。再次点击恢复普通Godot视口。"
+	var view_modes := HBoxContainer.new()
+	dock_root.add_child(view_modes)
+	var view_label := Label.new()
+	view_label.text = "编辑视角"
+	view_modes.add_child(view_label)
+	var view_group := ButtonGroup.new()
+	for spec in [
+			["2.5D", "_fixed_view_pressed",
+				"固定游戏透视；WASD平移，滚轮缩放"],
+			["俯视", "_top_view_pressed",
+				"正交垂直俯视；适合精确选择和摆放格子"],
+			["自由", "_free_view_pressed",
+				"恢复Godot默认自由视角"],
+		]:
+		var button := Button.new()
+		button.text = spec[0]
+		button.tooltip_text = spec[2]
+		button.toggle_mode = true
+		button.button_group = view_group
+		button.pressed.connect(Callable(self, spec[1]))
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		view_modes.add_child(button)
+		match spec[1]:
+			"_fixed_view_pressed":
+				fixed_view_button = button
+			"_top_view_pressed":
+				top_view_button = button
+			"_free_view_pressed":
+				free_view_button = button
+	_sync_view_buttons()
 	process_priority = 100
 
 	# Tabs
@@ -820,46 +851,63 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
 
 func _fixed_view_pressed() -> void:
-	if fixed_view_active:
+	if fixed_view_active and view_mode == ViewMode.PERSPECTIVE_2_5D:
 		_disable_2_5d_view()
 	else:
 		_enable_2_5d_view()
 
+func _top_view_pressed() -> void:
+	if fixed_view_active and view_mode == ViewMode.TOP:
+		_disable_2_5d_view()
+	else:
+		_enable_fixed_view(ViewMode.TOP)
+
+func _free_view_pressed() -> void:
+	_disable_2_5d_view()
+
 func _enable_2_5d_view() -> void:
+	_enable_fixed_view(ViewMode.PERSPECTIVE_2_5D)
+
+func _enable_fixed_view(mode: ViewMode) -> void:
 	if not is_instance_valid(builder):
 		return
-	var previous_camera := editing_camera
-	fixed_view_cameras.clear()
-	fixed_view_states.clear()
-	for index in 4:
-		var viewport := EditorInterface.get_editor_viewport_3d(index)
-		if viewport != null and is_instance_valid(viewport.get_camera_3d()):
-			var camera := viewport.get_camera_3d()
-			if camera not in fixed_view_cameras:
-				fixed_view_cameras.append(camera)
-	if is_instance_valid(previous_camera) and previous_camera not in fixed_view_cameras:
-		fixed_view_cameras.append(previous_camera)
-	if fixed_view_cameras.is_empty():
-		_set_status("没有可用的3D编辑视口")
-		fixed_view_button.set_pressed_no_signal(false)
-		return
-	editing_camera = fixed_view_cameras[0]
-	for camera in fixed_view_cameras:
-		fixed_view_states[camera.get_instance_id()] = {
-			"camera": camera,
-			"transform": camera.global_transform,
-			"projection": camera.projection,
-			"fov": camera.fov,
-			"size": camera.size,
-		}
+	if not fixed_view_active:
+		var previous_camera := editing_camera
+		fixed_view_cameras.clear()
+		fixed_view_states.clear()
+		for index in 4:
+			var viewport := EditorInterface.get_editor_viewport_3d(index)
+			if viewport != null and is_instance_valid(viewport.get_camera_3d()):
+				var camera := viewport.get_camera_3d()
+				if camera not in fixed_view_cameras:
+					fixed_view_cameras.append(camera)
+		if is_instance_valid(previous_camera) and previous_camera not in fixed_view_cameras:
+			fixed_view_cameras.append(previous_camera)
+		if fixed_view_cameras.is_empty():
+			_set_status("没有可用的3D编辑视口")
+			_sync_view_buttons()
+			return
+		editing_camera = fixed_view_cameras[0]
+		for camera in fixed_view_cameras:
+			fixed_view_states[camera.get_instance_id()] = {
+				"camera": camera,
+				"transform": camera.global_transform,
+				"projection": camera.projection,
+				"fov": camera.fov,
+				"size": camera.size,
+			}
+		view_pan_offset = Vector3.ZERO
 	EditorInterface.set_main_screen_editor("3D")
-	view_pan_offset = Vector3.ZERO
 	fixed_view_active = true
-	fixed_view_button.set_pressed_no_signal(true)
+	view_mode = mode
+	_sync_view_buttons()
 	for key in view_move_keys:
 		view_move_keys[key] = false
 	_apply_fixed_view()
-	_set_status("2.5D视角已固定；WASD平移，滚轮缩放")
+	_set_status(
+		"俯视视角已固定；WASD平移，滚轮缩放"
+		if mode == ViewMode.TOP
+		else "2.5D视角已固定；WASD平移，滚轮缩放")
 
 func _disable_2_5d_view() -> void:
 	if fixed_view_active:
@@ -872,12 +920,21 @@ func _disable_2_5d_view() -> void:
 			camera.fov = state["fov"]
 			camera.size = state["size"]
 	fixed_view_active = false
+	view_mode = ViewMode.FREE
 	fixed_view_cameras.clear()
 	fixed_view_states.clear()
 	for key in view_move_keys:
 		view_move_keys[key] = false
+	_sync_view_buttons()
+
+func _sync_view_buttons() -> void:
 	if is_instance_valid(fixed_view_button):
-		fixed_view_button.set_pressed_no_signal(false)
+		fixed_view_button.set_pressed_no_signal(
+			view_mode == ViewMode.PERSPECTIVE_2_5D)
+	if is_instance_valid(top_view_button):
+		top_view_button.set_pressed_no_signal(view_mode == ViewMode.TOP)
+	if is_instance_valid(free_view_button):
+		free_view_button.set_pressed_no_signal(view_mode == ViewMode.FREE)
 
 func _process(delta: float) -> void:
 	if not fixed_view_active or not is_instance_valid(builder):
@@ -906,9 +963,16 @@ func _apply_fixed_view() -> void:
 	var profile := load("res://data/art_profile.tres") as ArtProfile
 	for camera in fixed_view_cameras:
 		if is_instance_valid(camera):
-			_configure_view_camera(camera, profile)
+			if view_mode == ViewMode.TOP:
+				_configure_top_camera(camera, profile)
+			else:
+				_configure_view_camera(camera, profile)
 
 func _zoom_fixed_view(factor: float) -> void:
+	if view_mode == ViewMode.TOP:
+		top_view_size = clampf(top_view_size * factor, 6.0, 120.0)
+		_apply_fixed_view()
+		return
 	var profile := load("res://data/art_profile.tres") as ArtProfile
 	if preview_distance < 0:
 		preview_distance = profile.camera_distance
@@ -918,6 +982,8 @@ func _zoom_fixed_view(factor: float) -> void:
 	_apply_fixed_view()
 
 func _effective_distance() -> float:
+	if view_mode == ViewMode.TOP:
+		return top_view_size
 	return preview_distance if preview_distance >= 0 else (
 		load("res://data/art_profile.tres") as ArtProfile).camera_distance
 
@@ -926,7 +992,7 @@ func apply_view_parameters(fov: float, pitch: float, distance: float, target_hei
 	preview_pitch = pitch
 	preview_distance = distance
 	preview_target_height = target_height
-	if not fixed_view_active:
+	if not fixed_view_active or view_mode != ViewMode.PERSPECTIVE_2_5D:
 		_enable_2_5d_view()
 	else:
 		_apply_fixed_view()
@@ -942,6 +1008,17 @@ func _configure_view_camera(camera: Camera3D, source: ArtProfile) -> void:
 	if not is_inf(preview_target_height):
 		profile.target_height = preview_target_height
 	profile.configure(camera, builder.global_position + view_pan_offset)
+
+func _configure_top_camera(camera: Camera3D, profile: ArtProfile) -> void:
+	var target_height := profile.target_height if is_inf(preview_target_height) \
+		else preview_target_height
+	var center := builder.global_position + view_pan_offset \
+		+ Vector3.UP * target_height
+	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	camera.size = top_view_size
+	camera.global_transform = Transform3D(
+		Basis.looking_at(Vector3.DOWN, Vector3(0.0, 0.0, -1.0)),
+		center + Vector3.UP * maxf(top_view_size, 20.0))
 
 func _commit_external(before: Dictionary, after: Dictionary, label: String,
 		apply_after := true) -> void:
@@ -1293,6 +1370,9 @@ func _try_stair(cell: Vector2i) -> void:
 	builder.rebuild()
 
 func _pick(camera: Camera3D, mouse: Vector2) -> Vector2i:
+	var collision_cell := _pick_terrain_collision(camera, mouse)
+	if data.in_bounds(collision_cell):
+		return collision_cell
 	var origin := camera.project_ray_origin(mouse)
 	var ray := camera.project_ray_normal(mouse)
 	var best := INF
@@ -1314,6 +1394,34 @@ func _pick(camera: Camera3D, mouse: Vector2) -> Vector2i:
 		var p := origin + ray * maxf(distance, 0)
 		result = data.world_to_cell(p)
 	return result
+
+func _pick_terrain_collision(camera: Camera3D, mouse: Vector2) -> Vector2i:
+	if not is_instance_valid(builder) or builder.get_world_3d() == null:
+		return Vector2i(-999, -999)
+	var origin := camera.project_ray_origin(mouse)
+	var direction := camera.project_ray_normal(mouse)
+	var excluded: Array[RID] = []
+	var space := builder.get_world_3d().direct_space_state
+	for attempt in 32:
+		var query := PhysicsRayQueryParameters3D.create(
+			origin, origin + direction * 1000.0)
+		query.exclude = excluded
+		query.collide_with_areas = false
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			break
+		var collider: Object = hit.get("collider")
+		if collider != null and collider.has_meta("terrain_cell"):
+			var value: Variant = collider.get_meta("terrain_cell")
+			if value is Vector2i:
+				return value
+			if value is Vector2:
+				return Vector2i(value)
+		var rid: RID = hit.get("rid", RID())
+		if not rid.is_valid():
+			break
+		excluded.append(rid)
+	return Vector2i(-999, -999)
 
 func _update_preview(cell: Vector2i) -> void:
 	hover_cell = cell
@@ -1377,19 +1485,52 @@ func _update_preview(cell: Vector2i) -> void:
 		var low := cell
 		var high: Vector2i = cell + LevelData.DIRS[stair_direction]
 		var valid := data.can_place_stair(low, stair_direction).is_empty()
-		var center := data.world_center(low)
-		if data.in_bounds(high):
-			center = (center + data.world_center(high)) * 0.5
-		center.y += 0.1
 		preview.visible = true
-		var mesh := BoxMesh.new()
-		mesh.size = Vector3(LevelData.CELL_SIZE, 0.18, LevelData.CELL_SIZE * 2)
-		if stair_direction % 2 == 1:
-			mesh.size = Vector3(LevelData.CELL_SIZE * 2, 0.18, LevelData.CELL_SIZE)
-		preview.mesh = mesh
-		preview.position = center
-		var mat := preview.material_override as StandardMaterial3D
-		mat.albedo_color = Color(0.3, 1, 0.5, 0.5) if valid else Color(1, 0.2, 0.2, 0.5)
+		preview.mesh = null
+		preview.position = Vector3.ZERO
+		var fragment := LevelData.new()
+		fragment.setup_blank(Vector2i(3, 3))
+		var local_low := Vector2i(1, 1)
+		var local_high: Vector2i = local_low + LevelData.DIRS[stair_direction]
+		var low_height: int = data.elevation(low) if data.cell_exists(low) \
+			else height_select.selected
+		var low_tile: String = data.tile_id(low) if data.cell_exists(low) else "grass"
+		var high_tile: String = data.tile_id(high) if data.cell_exists(high) else low_tile
+		fragment.set_cell(local_low, {
+			"exists": true,
+			"terrain": TileRegistry.id_to_legacy_terrain(low_tile),
+			"height": low_height,
+			"tile_id": low_tile,
+			"rotation": 0,
+		})
+		fragment.set_cell(local_high, {
+			"exists": true,
+			"terrain": TileRegistry.id_to_legacy_terrain(high_tile),
+			"height": low_height + 1,
+			"tile_id": high_tile,
+			"rotation": 0,
+		})
+		fragment.stairs.append({
+			"cell": local_low,
+			"direction": stair_direction,
+		})
+		var display := TerrainBuilder.new()
+		display.level_data = fragment
+		display.show_grid = false
+		display.build_collision = false
+		display.position = data.world_center(low, 0) \
+			- fragment.world_center(local_low, 0) + Vector3(0, 0.035, 0)
+		preview.add_child(display)
+		for node in display.find_children("*", "MeshInstance3D", true, false):
+			var overlay := StandardMaterial3D.new()
+			overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			overlay.albedo_color = Color(0.25, 1.0, 0.55, 0.18) \
+				if valid else Color(1.0, 0.12, 0.12, 0.5)
+			(node as MeshInstance3D).material_overlay = overlay
+		_set_status("楼梯预览：从当前格升向 %d°" % (stair_direction * 90)
+			if valid else "红色楼梯不可放置：" + data.can_place_stair(
+				low, stair_direction))
 		return
 	var brush_size := 3 if brush_select.selected == 1 and mode <= ToolMode.ERASE else 1
 	var height := data.elevation(cell) if data.cell_exists(cell) else height_select.selected

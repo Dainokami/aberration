@@ -260,7 +260,7 @@ func _build_side_collisions(cell: Vector2i) -> void:
 		var size := Vector3(LevelData.CELL_SIZE, high_y - low_y, 0.08)
 		if direction % 2 == 1:
 			size = Vector3(0.08, high_y - low_y, LevelData.CELL_SIZE)
-		_add_collision_box(center, size, "CliffCollision")
+		_add_collision_box(center, size, "CliffCollision", cell)
 
 func _build_cliffs_and_rims() -> void:
 	for group in TerrainEdgeBuilder.cliff_groups(level_data):
@@ -324,10 +324,13 @@ func _load_mask(path: String) -> Texture2D:
 		return load(path) as Texture2D
 	return TerrainTransition.ensure_default_mask()
 
-func _add_collision_box(position_value: Vector3, size: Vector3, label: String) -> void:
+func _add_collision_box(position_value: Vector3, size: Vector3, label: String,
+		terrain_cell := Vector2i(-999, -999)) -> void:
 	var body := StaticBody3D.new()
 	body.name = label
 	body.position = position_value
+	if terrain_cell != Vector2i(-999, -999):
+		body.set_meta("terrain_cell", terrain_cell)
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
@@ -343,15 +346,20 @@ func _build_stair(stair: Dictionary) -> void:
 	var low_center := level_data.world_center(low)
 	var high_center := level_data.world_center(low + vector)
 	var center := (low_center + high_center) * 0.5
+	var run_vector := Vector3(vector.x, 0.0, vector.y)
+	var run_start := low_center - run_vector * LevelData.CELL_SIZE * 0.5
+	var run_end := high_center + run_vector * LevelData.CELL_SIZE * 0.5
 	for i in 10:
 		var progress := (float(i) + 0.5) / 10.0
-		var pos := low_center.lerp(high_center, progress)
+		var pos := run_start.lerp(run_end, progress)
 		var step_height := low_height + LevelData.ELEVATION_STEP * (float(i) + 1.0) / 10.0
 		pos.y = step_height - 0.1
 		var size := Vector3(LevelData.CELL_SIZE, 0.2, LevelData.CELL_SIZE * 2.0 / 10.0)
 		if direction % 2 == 1:
 			size = Vector3(LevelData.CELL_SIZE * 2.0 / 10.0, 0.2, LevelData.CELL_SIZE)
-		_box("StairVisual", pos, size, stair_material, false)
+		var step := _box("StairVisual_%02d" % i, pos, size, stair_material, false)
+		step.set_meta("stair_step", i)
+		step.set_meta("stair_low_cell", low)
 	if not build_collision:
 		return
 	var body := StaticBody3D.new()
@@ -370,6 +378,8 @@ func _build_stair(stair: Dictionary) -> void:
 	body.position = center
 	body.position.y = low_height
 	body.rotation.y = -float(direction) * PI * 0.5
+	body.set_meta("terrain_cell", low)
+	body.set_meta("stair_low_cell", low)
 	generated.add_child(body)
 
 func _build_grid() -> void:
