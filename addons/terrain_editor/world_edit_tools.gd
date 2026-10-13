@@ -349,26 +349,20 @@ func _selected_index() -> int:
 
 func _point(camera: Camera3D, mouse: Vector2, free_move: bool) -> Vector3:
 	var data: LevelData = host.data
-	var origin := camera.project_ray_origin(mouse)
-	var ray := camera.project_ray_normal(mouse)
-	var best := INF
-	var result := Vector3(INF, INF, INF)
-	if absf(ray.y) < 0.00001:
+	var cell: Vector2i = host._pick(camera, mouse)
+	var layer: int = data.top_layer(cell) if data.cell_exists(cell) else host.height_select.selected
+	var result := data.world_center(cell, layer)
+	if not free_move:
 		return result
-	for elevation: int in [2, 1, 0]:
-		var distance := (elevation * LevelData.ELEVATION_STEP - origin.y) / ray.y
-		if distance < 0 or distance >= best:
-			continue
-		var p := origin + ray * distance
-		var cell := data.world_to_cell(p)
-		if data.cell_exists(cell) and data.elevation(cell) == elevation:
-			result = p if free_move else data.world_center(cell)
-			best = distance
-	if is_inf(best):
-		var distance: float = (host.height_select.selected * LevelData.ELEVATION_STEP - origin.y) / ray.y
-		result = origin + ray * maxf(distance, 0)
-		if not free_move:
-			result = data.world_center(data.world_to_cell(result), host.height_select.selected)
+	var inverse: Transform3D = host.builder.global_transform.affine_inverse()
+	var origin := inverse * camera.project_ray_origin(mouse)
+	var ray := inverse.basis * camera.project_ray_normal(mouse)
+	if absf(ray.y) < 0.00001:
+		return Vector3(INF, INF, INF)
+	var distance := (result.y - origin.y) / ray.y
+	var projected := origin + ray * maxf(distance, 0.0)
+	if data.world_to_cell(projected) == cell:
+		result = projected
 	return result
 
 func _pick_object(camera: Camera3D, mouse: Vector2) -> String:
@@ -379,7 +373,7 @@ func _pick_object(camera: Camera3D, mouse: Vector2) -> String:
 	if not is_instance_valid(host.builder.generated):
 		return id
 	for object in host.builder.generated.get_children():
-		if not object.has_meta("object_id"):
+		if not object.has_meta("object_id") or not object.is_visible_in_tree():
 			continue
 		for child in object.find_children("*", "MeshInstance3D", true, false):
 			var mesh := child as MeshInstance3D
@@ -397,8 +391,9 @@ func _candidate(position: Vector3) -> Dictionary:
 	var chosen := library.get_selected_items()
 	if chosen.is_empty() or chosen[0] >= paths.size():
 		return {}
-	return {"id": ObjectRules.new_id(), "definition": paths[chosen[0]], "position": position,
-		"yaw": deg_to_rad(yaw_input.value), "scale": scale_input.value}
+	return ObjectRules.anchor_record(host.data, {
+		"id": ObjectRules.new_id(), "definition": paths[chosen[0]], "position": position,
+		"yaw": deg_to_rad(yaw_input.value), "scale": scale_input.value})
 
 # ============================================================
 # Input handler
@@ -521,7 +516,7 @@ func place_object(record: Dictionary) -> void:
 		host._set_status(error)
 		return
 	var before: Dictionary = host.data.clone_data()
-	host.data.objects.append(record)
+	host.data.objects.append(ObjectRules.anchor_record(host.data, record))
 	host._commit_external(before, host.data.clone_data(), "放置物件")
 
 func _move_selected(point: Vector3) -> void:
@@ -530,6 +525,7 @@ func _move_selected(point: Vector3) -> void:
 		return
 	var record: Dictionary = host.data.objects[index].duplicate(true)
 	record["position"] = point
+	record = ObjectRules.anchor_record(host.data, record)
 	var error := ObjectRules.validate_record(host.data, record, selected_id)
 	_preview_object(record, selected_id)
 	if not error.is_empty():

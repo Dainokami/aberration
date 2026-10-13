@@ -58,6 +58,8 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 			correct = correct and control.visible == (mode == 0)
 		for control: Control in plugin.brush_controls:
 			correct = correct and control.visible == (mode in [0, 2])
+		for control: Control in plugin.layer_controls:
+			correct = correct and control.visible == (mode in [0, 2])
 		for control: Control in plugin.direction_controls:
 			correct = correct and control.visible == (mode in [0, 3])
 		var pressed := 0
@@ -215,7 +217,7 @@ func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
 	world.add_child(pick_builder)
 	var camera := Camera3D.new()
 	world.add_child(camera)
-	profile.configure(camera, Vector3.ZERO)
+	profile.configure(camera, Vector3.UP * LevelData.ELEVATION_STEP)
 	camera.current = true
 	plugin.builder = pick_builder
 	plugin.data = pick_data
@@ -229,8 +231,9 @@ func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
 	var picked_cliff := true
 	for height in [1.7, 1.0, 0.25]:
 		var screen := camera.unproject_position(
-			Vector3(high_center.x, height, boundary_z))
-		picked_cliff = picked_cliff and plugin._pick(camera, screen) == high
+			Vector3(high_center.x, low_center.y + height, boundary_z))
+		picked_cliff = picked_cliff and plugin._pick(camera, screen) == high \
+			and plugin.picked_layer == 1
 	suite.check(picked_cliff
 		and plugin._pick(camera, camera.unproject_position(high_center)) == high
 		and plugin._pick(camera, camera.unproject_position(low_center)) == low,

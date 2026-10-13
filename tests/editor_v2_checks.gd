@@ -137,6 +137,8 @@ func run(plugin: EditorPlugin) -> void:
 	art_checks.run(plugin, self)
 	var layout_checks = load("res://tests/editor_layout_checks.gd").new()
 	await layout_checks.run(plugin, self)
+	var stacked_checks = load("res://tests/editor_stacked_checks.gd").new()
+	await stacked_checks.run(plugin, self)
 	var import_checks = load("res://tests/editor_import_checks.gd").new()
 	import_checks.run(plugin, self)
 	if "--capture-import-panel" in OS.get_cmdline_user_args():

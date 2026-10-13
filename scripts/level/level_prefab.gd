@@ -4,7 +4,7 @@ extends Resource
 
 @export var display_name := "营地"
 @export var fragment: LevelData
-@export var version := 1
+@export var version := 2
 
 static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	if region.size.x <= 0 or region.size.y <= 0 or not source.in_bounds(region.position) or not source.in_bounds(region.end - Vector2i.ONE):
@@ -13,17 +13,21 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	prefab.fragment = LevelData.new()
 	prefab.fragment.setup_blank(region.size)
 	var target := prefab.fragment
+	target.terrain_tints = source.terrain_tints.duplicate(true)
 	for y in region.size.y:
 		for x in region.size.x:
 			var local := Vector2i(x, y)
-			target.set_cell(local, source.get_cell(region.position + local))
+			target.set_column(local, source.get_column(region.position + local))
 	for stair in source.stairs:
 		var low: Vector2i = stair["cell"]
 		var high: Vector2i = low + LevelData.DIRS[int(stair["direction"])]
 		if region.has_point(low) != region.has_point(high):
 			return {"error": "选区切断阶梯，请完整包含或避开"}
 		if region.has_point(low):
-			target.stairs.append({"cell": low - region.position, "direction": stair["direction"]})
+			var copy := stair.duplicate(true)
+			copy["cell"] = low - region.position
+			copy["layer"] = source.top_layer(low)
+			target.stairs.append(copy)
 	for record in source.objects:
 		var inside := false
 		var outside := false
@@ -37,6 +41,8 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 		var copy := record.duplicate(true)
 		var anchor := source.world_to_cell(record["position"])
 		copy["position"] = target.world_center(anchor - region.position) + (record["position"] - source.world_center(anchor))
+		copy["anchor_cell"] = anchor - region.position
+		copy["anchor_layer"] = target.top_layer(copy["anchor_cell"])
 		target.objects.append(copy)
 	# Player spawn is deliberately not captured: each level has exactly one.
 	return {"error": "", "prefab": prefab}
@@ -55,6 +61,7 @@ func rotate_cell(cell: Vector2i, turns: int) -> Vector2i:
 func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only := false) -> Dictionary:
 	if fragment == null:
 		return {"error": "预制数据缺失"}
+	fragment.ensure_layout()
 	var area := Rect2i(anchor, rotated_size(turns))
 	if not destination.in_bounds(anchor) or not destination.in_bounds(area.end - Vector2i.ONE):
 		return {"error": "预制超出地图"}
@@ -73,20 +80,30 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 					return {"error": "预制覆盖已有物件，请先移动或删除"}
 		for y in fragment.map_size.y:
 			for x in fragment.map_size.x:
-				var cell := Vector2i(x, y)
-				var rotated := fragment.get_cell(cell).duplicate(true)
-				rotated["rotation"] = posmod(int(rotated.get("rotation", 0)) + turns, 4)
-				candidate.set_cell(anchor + rotate_cell(cell, turns), rotated)
+				var cell := fragment.map_origin + Vector2i(x, y)
+				var rotated := fragment.column_snapshot(cell)
+				for layer: Dictionary in rotated["layers"]:
+					layer["rotation"] = posmod(int(layer.get("rotation", 0)) + turns, 4)
+				for role in ["liquid", "overlay"]:
+					var surface: Dictionary = rotated[role]
+					if not surface.is_empty():
+						surface["rotation"] = posmod(int(surface.get("rotation", 0)) + turns, 4)
+				candidate.set_column(anchor + rotate_cell(cell - fragment.map_origin, turns), rotated)
 		for stair in fragment.stairs:
-			candidate.stairs.append({"cell": anchor + rotate_cell(stair["cell"], turns),
-				"direction": posmod(int(stair["direction"]) + turns, 4)})
+			var copy := stair.duplicate(true)
+			copy["cell"] = anchor + rotate_cell(stair["cell"] - fragment.map_origin, turns)
+			copy["direction"] = posmod(int(stair["direction"]) + turns, 4)
+			copy["layer"] = candidate.top_layer(copy["cell"])
+			candidate.stairs.append(copy)
 	var rotation_basis := Basis(Vector3.UP, -posmod(turns, 4) * PI * 0.5)
 	for record in fragment.objects:
 		var copy := record.duplicate(true)
 		var old_cell := fragment.world_to_cell(record["position"])
-		var new_cell := anchor + rotate_cell(old_cell, turns)
+		var new_cell := anchor + rotate_cell(old_cell - fragment.map_origin, turns)
 		var offset: Vector3 = record["position"] - fragment.world_center(old_cell)
 		copy["position"] = candidate.world_center(new_cell) + rotation_basis * offset
+		copy["anchor_cell"] = new_cell
+		copy["anchor_layer"] = candidate.top_layer(new_cell)
 		copy["yaw"] = float(copy.get("yaw", 0.0)) - posmod(turns, 4) * PI * 0.5
 		copy["id"] = ObjectRules.new_id()
 		var error := ObjectRules.validate_record(candidate, copy)

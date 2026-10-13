@@ -5,6 +5,13 @@ extends RefCounted
 static func new_id() -> String:
 	return Crypto.new().generate_random_bytes(16).hex_encode()
 
+static func anchor_record(data: LevelData, record: Dictionary) -> Dictionary:
+	var result := record.duplicate(true)
+	var cell := data.world_to_cell(result.get("position", Vector3.ZERO))
+	result["anchor_cell"] = cell
+	result["anchor_layer"] = data.top_layer(cell)
+	return result
+
 static func definition(record: Dictionary) -> PlaceableDefinition:
 	var path: String = record.get("definition", "")
 	return load(path) as PlaceableDefinition if ResourceLoader.exists(path) else null
@@ -41,11 +48,16 @@ static func validate_record(data: LevelData, record: Dictionary, ignore_id := ""
 	if not is_finite(scale_value) or scale_value < 0.25 or scale_value > 4:
 		return "缩放须在 0.25～4 之间"
 	var position: Vector3 = record.get("position", Vector3.ZERO)
+	if not position.is_finite():
+		return "物件位置无效"
 	var cell := data.world_to_cell(position)
 	if not data.cell_exists(cell) or data.stair_at(cell) >= 0:
 		return "物件落地点必须是普通地块"
 	if absf(position.y - data.world_center(cell).y) > 0.02:
 		return "物件悬空或埋入地面，请移动到有效地块"
+	if record.get("anchor_cell", cell) != cell \
+			or int(record.get("anchor_layer", data.top_layer(cell))) != data.top_layer(cell):
+		return "物件层锚点与落地点不一致"
 	for covered in covered_cells(data, record):
 		if not data.cell_exists(covered) or data.stair_at(covered) >= 0 or data.elevation(covered) != data.elevation(cell):
 			return "碰撞占地越界、跨高差、跨阶梯或缺少地面支撑"

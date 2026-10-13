@@ -7,12 +7,13 @@ const MAX_LAYER_SIZE := 2048
 
 static var _mask_cache: Dictionary = {}
 static var _library_cache: Dictionary = {}
+static var _pattern_cache: Dictionary = {}
 
 static func supports_tile(tile_id: String) -> bool:
 	return TileRegistry.find(tile_id) != null
 
 static func build(data: LevelData, elevation: int,
-		style: TerrainStyleProfile) -> Dictionary:
+		style: TerrainStyleProfile, raster_cache: Dictionary = {}) -> Dictionary:
 	var library := _texture_library()
 	var pixels_per_cell := maxi(style.blend_pixels_per_cell, 8)
 	var image_size := data.map_size * pixels_per_cell
@@ -34,8 +35,8 @@ static func build(data: LevelData, elevation: int,
 					local.x, local.y,
 					Color(float(posmod(int(data.get_cell(cell).get("rotation", 0)), 4)) / 3.0,
 						0.0, 0.0))
-				_paint_cell(index_image, weight_image, data, cell, style,
-					pixels_per_cell, library["page_by_id"])
+				_paint_cached_cell(index_image, weight_image, data, cell, style,
+					pixels_per_cell, library["page_by_id"], raster_cache)
 	var index_texture := ImageTexture.create_from_image(index_image)
 	var weight_texture := ImageTexture.create_from_image(weight_image)
 	var rotation_texture := ImageTexture.create_from_image(rotation_image)
@@ -60,7 +61,8 @@ static func build(data: LevelData, elevation: int,
 	}
 
 static func update(blend: Dictionary, data: LevelData, elevation: int,
-		style: TerrainStyleProfile, dirty_cells: Array[Vector2i]) -> void:
+		style: TerrainStyleProfile, dirty_cells: Array[Vector2i],
+		raster_cache: Dictionary = {}) -> void:
 	var index_image: Image = blend["index_image"]
 	var weight_image: Image = blend["weight_image"]
 	var rotation_image: Image = blend["rotation_image"]
@@ -82,8 +84,8 @@ static func update(blend: Dictionary, data: LevelData, elevation: int,
 				local.x, local.y,
 				Color(float(posmod(int(data.get_cell(cell).get("rotation", 0)), 4)) / 3.0,
 					0.0, 0.0))
-			_paint_cell(index_image, weight_image, data, cell, style,
-				pixels_per_cell, blend["page_by_id"])
+			_paint_cached_cell(index_image, weight_image, data, cell, style,
+				pixels_per_cell, blend["page_by_id"], raster_cache)
 	(blend["index_texture"] as ImageTexture).update(index_image)
 	(blend["weight_texture"] as ImageTexture).update(weight_image)
 	(blend["rotation_texture"] as ImageTexture).update(rotation_image)
@@ -103,6 +105,25 @@ static func cell_terrain_ids(data: LevelData, cell: Vector2i) -> PackedStringArr
 static func clear_cache() -> void:
 	_library_cache.clear()
 	_mask_cache.clear()
+	_pattern_cache.clear()
+
+## Shared only for one build/update: overlapping chunk halos rasterize a cell once.
+static func _paint_cached_cell(index_image: Image, weight_image: Image,
+		data: LevelData, cell: Vector2i, style: TerrainStyleProfile,
+		pixels_per_cell: int, page_by_id: Dictionary, cache: Dictionary) -> void:
+	var rect := Rect2i((cell - data.map_origin) * pixels_per_cell,
+		Vector2i.ONE * pixels_per_cell)
+	# Outer halo cells have an incomplete neighbor view. Do not cache those.
+	var cacheable := data.map_bounds().encloses(Rect2i(cell - Vector2i.ONE, Vector2i(3, 3)))
+	if cacheable and cache.has(cell):
+		var images: Array = cache[cell]
+		var source := Rect2i(Vector2i.ZERO, rect.size)
+		index_image.blit_rect(images[0], source, rect.position)
+		weight_image.blit_rect(images[1], source, rect.position)
+		return
+	_paint_cell(index_image, weight_image, data, cell, style, pixels_per_cell, page_by_id)
+	if cacheable:
+		cache[cell] = [index_image.get_region(rect), weight_image.get_region(rect)]
 
 static func _paint_cell(index_image: Image, weight_image: Image,
 		data: LevelData, cell: Vector2i, style: TerrainStyleProfile,
@@ -120,12 +141,34 @@ static func _paint_cell(index_image: Image, weight_image: Image,
 	var mask_info := TerrainTopology.mask_info(bits, cell, style, true)
 	var mask := _mask_image(mask_info["path"])
 	var turns := int(mask_info["uv_turns"])
+	var pattern := "%d|%s|%s|%d|%d" % [
+		upper_page, str(lower_neighbors), mask_info["path"], turns, pixels_per_cell]
+	var rect := Rect2i((cell - data.map_origin) * pixels_per_cell,
+		Vector2i.ONE * pixels_per_cell)
+	if _pattern_cache.has(pattern):
+		var images: Array = _pattern_cache[pattern]
+		index_image.blit_rect(images[0], Rect2i(Vector2i.ZERO, rect.size), rect.position)
+		weight_image.blit_rect(images[1], Rect2i(Vector2i.ZERO, rect.size), rect.position)
+		return
+	var single_lower := int(lower_neighbors[0]["page"])
+	for neighbor in lower_neighbors:
+		if int(neighbor["page"]) != single_lower:
+			single_lower = -1
+			break
+	if single_lower >= 0:
+		index_image.fill_rect(rect, Color(float(upper_page) / 255.0,
+			float(single_lower) / 255.0, 0.0, 0.0))
 	for pixel_y in pixels_per_cell:
 		for pixel_x in pixels_per_cell:
 			var uv := Vector2(
 				(float(pixel_x) + 0.5) / float(pixels_per_cell),
 				(float(pixel_y) + 0.5) / float(pixels_per_cell))
 			var upper_weight := _sample_mask(mask, _turn_uv(uv, turns))
+			if single_lower >= 0:
+				# With one neighboring material the distance scores cancel.
+				weight_image.set_pixel(rect.position.x + pixel_x, rect.position.y + pixel_y,
+					Color(upper_weight, 1.0 - upper_weight, 0.0, 0.0))
+				continue
 			var weights := {upper_page: upper_weight}
 			var scores := {}
 			var score_total := 0.0
@@ -147,6 +190,9 @@ static func _paint_cell(index_image: Image, weight_image: Image,
 				(cell.x - data.map_origin.x) * pixels_per_cell + pixel_x,
 				(cell.y - data.map_origin.y) * pixels_per_cell + pixel_y,
 				weights)
+	if _pattern_cache.size() >= 512:
+		_pattern_cache.clear()
+	_pattern_cache[pattern] = [index_image.get_region(rect), weight_image.get_region(rect)]
 
 static func _write_pixel(index_image: Image, weight_image: Image,
 		x: int, y: int, weights: Dictionary) -> void:
@@ -223,21 +269,14 @@ static func _fill_cell(index_image: Image, weight_image: Image,
 		cell: Vector2i, pixels_per_cell: int, page: int) -> void:
 	var index_color := Color(float(page) / 255.0, 0.0, 0.0, 0.0)
 	var weight_color := Color(1.0, 0.0, 0.0, 0.0)
-	for pixel_y in pixels_per_cell:
-		for pixel_x in pixels_per_cell:
-			var x := cell.x * pixels_per_cell + pixel_x
-			var y := cell.y * pixels_per_cell + pixel_y
-			index_image.set_pixel(x, y, index_color)
-			weight_image.set_pixel(x, y, weight_color)
+	var rect := Rect2i(cell * pixels_per_cell, Vector2i.ONE * pixels_per_cell)
+	index_image.fill_rect(rect, index_color)
+	weight_image.fill_rect(rect, weight_color)
 
 static func _clear_cell(image: Image, cell: Vector2i,
 		pixels_per_cell: int) -> void:
-	for pixel_y in pixels_per_cell:
-		for pixel_x in pixels_per_cell:
-			image.set_pixel(
-				cell.x * pixels_per_cell + pixel_x,
-				cell.y * pixels_per_cell + pixel_y,
-				Color.TRANSPARENT)
+	image.fill_rect(Rect2i(cell * pixels_per_cell, Vector2i.ONE * pixels_per_cell),
+		Color.TRANSPARENT)
 
 static func _texture_library() -> Dictionary:
 	var tiles: Array[TileDefinition] = []

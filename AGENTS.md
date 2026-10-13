@@ -1,5 +1,15 @@
 # 畸变项目开发指南
 
+## 当前分层地形规则（v6，优先于下方历史高度表说明）
+
+- 地形源数据为 `LevelData.columns`，每列包含连续实体 `layers` 及柱顶 `liquid` / `overlay`。每层固定厚 2m，第 L 层顶面为 `(L + 1) × 2m`。
+- 新增高层自动补支撑；中间层替换仅改该层；只能擦除最上层。新工具用分层 API，不用兼容 `set_cell()` 表达普通绘制。
+- 顶面、侧壁和拾取必须保留层级信息。切片只是显示/碰撞过滤，不得改写源数据。外缘圆角在整列一致，相邻柱接边必须齐平。
+- 物件保存 `anchor_cell` / `anchor_layer`，出生点保存 `spawn_layer`，阶梯连接最高顶面。预制必须保存并旋转所有层及附件。
+- 旧地图在内存中迁移，顶面和物件统一上移 2m；不得仅因打开资源而回写磁盘。
+- 地形按 8×8 区块更新；物件刷新仍有全量处理。性能限制与操作见 `STACKED_TERRAIN.md`。
+- 分层回归为 `tests/test_stacked_terrain.gd` 和编辑器套件内的 `tests/editor_stacked_checks.gd`；图形检查为 `tests/render_stacked_terrain.gd`。
+
 ## 当前维护规则（优先于历史版本说明）
 
 - 地形视觉的当前规范见 `TERRAIN_VISUAL_RULES.md`：固定斜俯视透视、同高度 Mask 过渡、不同高度保留崖壁、固有色与后期调色分离。

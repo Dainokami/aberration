@@ -9,3 +9,4 @@ display_name = "沼泽地面"
 texture_path = "res://assets/source_art/ground_tree_pack_01/decal_marsh_tile.png"
 base_color = Color(0.12156863, 0.19215687, 0.16862746, 1)
 transition_priority = 30
+terrain_role = 2

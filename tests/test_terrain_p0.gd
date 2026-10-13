@@ -20,6 +20,7 @@ func _run() -> void:
 	_check_tint_roundtrip()
 	_check_multi_blend(style)
 	_check_render_structure(style)
+	_check_stacked_columns()
 	_check_stair_geometry()
 	print("P0 TERRAIN TEST FAILURES: ", failures)
 	quit(0 if failures.is_empty() else 1)
@@ -78,7 +79,7 @@ func _check_multi_blend(style: TerrainStyleProfile) -> void:
 	var data := LevelData.new()
 	data.setup_blank(Vector2i(8, 4))
 	var custom_ids := [
-		"ground_forest", "ground_stone", "decal_marsh", "decal_corruption"]
+		"ground_forest", "ground_stone", "sand", "rock"]
 	var builtin_ids := ["grass", "rock", "sand", "water"]
 	for y in data.map_size.y:
 		for x in data.map_size.x:
@@ -140,11 +141,14 @@ func _check_multi_blend(style: TerrainStyleProfile) -> void:
 		"dynamic terrain layer receives index and weight maps")
 	check(material.get_shader_parameter("terrain_art") is Texture2DArray,
 		"multi-blend shader receives a terrain texture array")
-	data.get_cell(Vector2i(1, 1))["rotation"] = 3
+	data.set_layer(Vector2i(1, 1), 0, {
+		"tile_id": data.solid_tile_id(Vector2i(1, 1)),
+		"rotation": 3,
+	})
 	var dirty: Array[Vector2i] = [Vector2i(1, 1)]
 	check(builder.refresh_blend_cells(dirty),
 		"flat terrain edit refreshes the existing blend resource")
-	var rotations: Image = builder._blend_resources[0]["rotation_image"]
+	var rotations: Image = builder._blend_resources[Vector3i.ZERO]["rotation_image"]
 	check(rotations.get_pixel(1, 1).r > 0.99,
 		"dynamic blend preserves per-cell art rotation")
 	builder.queue_free()
@@ -210,11 +214,69 @@ func _check_render_structure(style: TerrainStyleProfile) -> void:
 	water_builder.build_collision = false
 	root.add_child(water_builder)
 	water_builder.rebuild()
-	check(water_builder.generated.find_children(
-		"Side", "MeshInstance3D", false, false).is_empty(),
-		"water never creates a vertical water wall")
+	var water_sides := water_builder.generated.find_children(
+		"Side", "MeshInstance3D", false, false)
+	var no_vertical_water := true
+	for side in water_sides:
+		no_vertical_water = no_vertical_water \
+			and side.get_meta("terrain_tile", "") != "water"
+	check(no_vertical_water,
+		"liquid never creates a vertical water wall")
 	builder.queue_free()
 	water_builder.queue_free()
+
+func _check_stacked_columns() -> void:
+	var data := LevelData.new()
+	data.setup_blank(Vector2i.ONE)
+	var cell := Vector2i.ZERO
+	data.set_layer(cell, 0, {"tile_id": "grass"})
+	data.set_layer(cell, 1, {"tile_id": "rock"})
+	data.set_layer(cell, 2, {"tile_id": "sand"})
+	var builder := TerrainBuilder.new()
+	builder.level_data = data
+	builder.show_grid = false
+	builder.build_collision = true
+	root.add_child(builder)
+	builder.rebuild()
+	var sides: Array[MeshInstance3D] = []
+	for child in builder.generated.get_children():
+		if child is MeshInstance3D and child.get_meta("terrain_side", false):
+			sides.append(child)
+	var layer_tiles := {}
+	var ranges_valid := true
+	for side in sides:
+		var layer := int(side.get_meta("terrain_layer", -1))
+		layer_tiles[layer] = side.get_meta("terrain_tile", "")
+		var bounds := (side as MeshInstance3D).mesh.get_aabb()
+		ranges_valid = ranges_valid \
+			and bounds.position.y >= layer * LevelData.ELEVATION_STEP - 0.01 \
+			and bounds.end.y <= data.surface_y(layer) + 0.01
+	check(layer_tiles == {0: "grass", 1: "rock", 2: "sand"}
+		and ranges_valid,
+		"each exposed solid layer builds only its own 2m side segment")
+	var top := _top_visual(builder, cell)
+	check(top != null and top.mesh.get_aabb().position.y > 5.9
+		and builder.generated.find_children(
+			"TerrainTop_*", "MeshInstance3D", false, false).size() == 1,
+		"stack builds only the highest top surface")
+	var collision_layers := {}
+	for collision in builder.generated.get_children():
+		if collision is StaticBody3D and collision.has_meta("terrain_layer"):
+			collision_layers[int(
+				collision.get_meta("terrain_layer", -1))] = true
+	check(collision_layers.has(0) and collision_layers.has(1)
+		and collision_layers.has(2),
+		"stacked side collisions preserve layer metadata")
+	data.set_layer(cell, 1, {"tile_id": "ground_stone"})
+	builder.rebuild()
+	var replaced := {}
+	for side in builder.generated.get_children():
+		if side is MeshInstance3D and side.get_meta("terrain_side", false):
+			replaced[int(side.get_meta("terrain_layer", -1))] = \
+				side.get_meta("terrain_tile", "")
+	check(replaced == {0: "grass", 1: "ground_stone", 2: "sand"},
+		"middle replacement changes only the exposed middle side material")
+	builder.queue_free()
 
 func _check_stair_geometry() -> void:
 	for direction in 4:
@@ -263,7 +325,8 @@ func _check_stair_geometry() -> void:
 			previous_top = top
 		check(steps.size() == 10 and absf(minimum + 1.0) < 0.01
 			and absf(maximum - 3.0) < 0.01 and rising
-			and absf(previous_top - LevelData.ELEVATION_STEP) < 0.01,
+			and absf(previous_top
+				- (low_center.y + LevelData.ELEVATION_STEP)) < 0.01,
 			"stair spans two full cells and rises in direction %d" % direction)
 		var ramps := builder.generated.find_children(
 			"StairRamp", "StaticBody3D", false, false)

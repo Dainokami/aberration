@@ -13,6 +13,7 @@ var generate_as: OptionButton
 var tile_section: VBoxContainer
 var tile_color_picker: ColorPickerButton
 var tile_height_option: OptionButton
+var tile_role_option: OptionButton
 var collision: OptionButton
 var foreground_fade: CheckBox
 var advanced: VBoxContainer
@@ -76,12 +77,16 @@ func _ready() -> void:
 	tile_color_picker.custom_minimum_size.y = 30
 	tile_section.add_child(tile_color_picker)
 	var th_label := Label.new()
-	th_label.text = "默认高度"
+	th_label.text = "默认实体层"
 	tile_section.add_child(th_label)
 	tile_height_option = OptionButton.new()
-	for item in ["0m", "2m", "4m"]:
-		tile_height_option.add_item(item)
+	for layer in LevelData.MAX_LAYERS:
+		tile_height_option.add_item("第 %d 层（顶面 %dm）" % [layer, (layer + 1) * 2])
 	tile_section.add_child(tile_height_option)
+	tile_role_option = OptionButton.new()
+	for role in ["实体地块（固定厚度 2m）", "液体（附着在柱顶）", "贴花（覆盖柱顶）"]:
+		tile_role_option.add_item(role)
+	tile_section.add_child(tile_role_option)
 	var object_start := get_child_count()
 	carrier = _option("载体", ["固定相机卡片", "贴地平面", "投影盒体", "投影坡体"])
 	carrier.tooltip_text = "卡片适合单视角原画。投影载体需人工调整体积，不会从单图自动还原 3D。"
@@ -655,6 +660,9 @@ func _generate_tile() -> void:
 	tile.texture_path = source
 	tile.base_color = tile_color_picker.color
 	tile.default_height = tile_height_option.selected
+	tile.terrain_role = tile_role_option.selected as TileDefinition.TerrainRole
+	if tile.terrain_role == TileDefinition.TerrainRole.LIQUID:
+		tile.surface_kind = TileDefinition.SurfaceKind.WATER
 	tile.is_builtin = false
 	tile.transition_priority = TileRegistry.next_transition_priority()
 	var thumb_dir := "res://data/tiles"
@@ -686,12 +694,12 @@ func _refresh_tile_preview() -> void:
 	var tile := TileDefinition.new()
 	tile.texture_path = fields["source"].text
 	tile.base_color = tile_color_picker.color
-	var height := tile_height_option.selected * 2.0
+	var height := (tile_height_option.selected + 1) * 2.0
 	var block := MeshInstance3D.new()
 	var block_mesh := BoxMesh.new()
-	block_mesh.size = Vector3(2, height + 2, 2)
+	block_mesh.size = Vector3(2, 2, 2)
 	block.mesh = block_mesh
-	block.position.y = (height - 2) * 0.5
+	block.position.y = height - 1
 	block.material_override = tile.wall_material()
 	preview_root.add_child(block)
 	var top := MeshInstance3D.new()
@@ -704,7 +712,7 @@ func _refresh_tile_preview() -> void:
 	var camera := Camera3D.new()
 	var profile := load("res://data/art_profile.tres") as ArtProfile
 	preview_root.add_child(camera)
-	profile.configure(camera, Vector3(0, (height - 2) * 0.5, 0), maxf(4, height + 4))
+	profile.configure(camera, Vector3(0, height - 1, 0), 4)
 	camera.current = true
 	preview_camera = camera
 	var light := DirectionalLight3D.new()

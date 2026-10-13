@@ -7,6 +7,7 @@ static var _blended_top_shader: Shader
 static var _cliff_shader: Shader
 static var _rim_shader: Shader
 static var _foam_shader: Shader
+static var _overlay_shader: Shader
 
 static func top_material(tile: TileDefinition, lower: TileDefinition,
 		transition_mask: Texture2D, transition_turns: int,
@@ -86,6 +87,23 @@ static func foam_material(water: TileDefinition) -> ShaderMaterial:
 	var foam := _texture(water.foam_texture_path)
 	material.set_shader_parameter("foam_art", foam)
 	material.set_shader_parameter("has_art", foam != null)
+	return material
+
+static func overlay_material(tile: TileDefinition, tint: Color,
+		rotation_turns: int, mask: Texture2D = null, mask_turns := 0) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = _get_overlay_shader()
+	var texture := _texture(tile.texture_path)
+	material.set_shader_parameter("overlay_art", texture)
+	material.set_shader_parameter("overlay_mask", mask)
+	material.set_shader_parameter("has_mask", mask != null)
+	material.set_shader_parameter("mask_turns", mask_turns)
+	material.set_shader_parameter("base_color", tile.base_color)
+	material.set_shader_parameter("terrain_tint", tint)
+	material.set_shader_parameter("texture_span", tile.top_texture_span_m)
+	material.set_shader_parameter("has_art", texture != null)
+	material.set_shader_parameter("world_space", tile.world_space_top)
+	material.set_shader_parameter("art_turns", posmod(rotation_turns, 4))
 	return material
 
 static func _texture(path: String) -> Texture2D:
@@ -330,3 +348,53 @@ void fragment() {
 }
 """
 	return _foam_shader
+
+static func _get_overlay_shader() -> Shader:
+	if _overlay_shader != null:
+		return _overlay_shader
+	_overlay_shader = Shader.new()
+	_overlay_shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled, blend_mix, depth_draw_never;
+uniform sampler2D overlay_art : source_color, filter_linear_mipmap, repeat_disable;
+uniform sampler2D overlay_mask : filter_linear, repeat_disable;
+uniform bool has_mask = false;
+uniform int mask_turns = 0;
+uniform vec4 base_color : source_color;
+uniform vec4 terrain_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
+uniform vec2 texture_span = vec2(2.0);
+uniform bool has_art = false;
+uniform bool world_space = false;
+uniform int art_turns = 0;
+varying vec3 world_pos;
+
+vec2 mirror_uv(vec2 value) {
+	return vec2(1.0) - abs(mod(value, vec2(2.0)) - vec2(1.0));
+}
+
+vec2 turn_uv(vec2 value, int turns) {
+	if (turns == 1) { return vec2(value.y, 1.0 - value.x); }
+	if (turns == 2) { return vec2(1.0) - value; }
+	if (turns == 3) { return vec2(1.0 - value.y, value.x); }
+	return value;
+}
+
+vec3 tint_preserve_value(vec3 color, vec4 tint) {
+	float tint_luma = max(dot(tint.rgb, vec3(0.299, 0.587, 0.114)), 0.05);
+	return mix(color, clamp(color * tint.rgb / tint_luma, vec3(0.0), vec3(1.0)), tint.a);
+}
+
+void vertex() {
+	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+	vec2 local_uv = turn_uv(UV, art_turns);
+	vec2 art_uv = world_space ? mirror_uv(world_pos.xz / max(texture_span, vec2(0.001))) : local_uv;
+	vec4 pixel = has_art ? texture(overlay_art, art_uv) : base_color;
+	ALBEDO = tint_preserve_value(mix(base_color.rgb, pixel.rgb, pixel.a), terrain_tint);
+	ALPHA = pixel.a * 0.58 * (has_mask ? texture(overlay_mask, turn_uv(UV, mask_turns)).r : 1.0);
+	ROUGHNESS = 1.0;
+}
+"""
+	return _overlay_shader

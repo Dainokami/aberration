@@ -8,7 +8,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = map
 	plugin.builder.level_data = map
 	plugin.builder.rebuild()
-	var ids := ["ground_forest", "ground_stone", "decal_corruption", "decal_marsh"]
+	var ids := ["ground_forest", "ground_stone", "sand", "rock"]
 	var tiles := TileRegistry.all_tiles()
 	for i in ids.size():
 		for j in tiles.size():
@@ -77,7 +77,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin._commit_external(before_replace, map.clone_data(), "Replace height and rotation")
 	suite.check(map.elevation(Vector2i(4, 4)) == 2 and map.get_cell(Vector2i(4, 4))["rotation"] == 1,
 		"replace existing ground changes height and rotation")
-	suite.check(is_equal_approx(map.objects[0]["position"].y, 4.0),
+	suite.check(is_equal_approx(map.objects[0]["position"].y, 6.0),
 		"supported tree follows replacement height")
 	var rotated_top := _top_visual(plugin.builder, Vector2i(4, 4))
 	suite.check((rotated_top.material_override as ShaderMaterial).get_shader_parameter("art_turns") == 1,
@@ -85,7 +85,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin._update_preview(Vector2i(4, 4))
 	var display := plugin.preview.get_child(0) as TerrainBuilder
 	var preview_top := _top_visual(display, Vector2i.ZERO)
-	suite.check(not display.build_collision and preview_top.mesh.get_aabb().position.y > 3.9 and
+	suite.check(not display.build_collision and preview_top.mesh.get_aabb().position.y > 5.9 and
 		(preview_top.material_override as ShaderMaterial).get_shader_parameter("art_turns") == 1 and
 		(preview_top.material_override as ShaderMaterial).get_shader_parameter("upper_art") != null,
 		"brush previews textured mesh at requested height and rotation without collision")
@@ -98,7 +98,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	transition_map.set_cell(Vector2i(1, 1), {"exists": true, "height": 0,
 		"terrain": 0, "tile_id": "ground_forest"})
 	transition_map.set_cell(Vector2i(2, 1), {"exists": true, "height": 0,
-		"terrain": 0, "tile_id": "decal_corruption"})
+		"terrain": 0, "tile_id": "ground_stone"})
 	plugin.builder.level_data = transition_map
 	plugin.builder.rebuild()
 	var transition_anchor: Node = plugin.builder.generated.get_node("Top_2_1")
@@ -106,14 +106,14 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	suite.check(transition_anchor.get_meta(
 		"blend_terrains", PackedStringArray()).has("ground_forest") and
 		transition_anchor.get_meta(
-			"blend_terrains", PackedStringArray()).has("decal_corruption") and
+			"blend_terrains", PackedStringArray()).has("ground_stone") and
 		transition_top.get_meta("multi_blend", false),
 		"same-height custom terrains enter the dynamic blend layer")
 	var transition_material := transition_top.material_override as ShaderMaterial
 	suite.check(transition_material.get_shader_parameter("blend_indices") is Texture2D and
 		transition_material.get_shader_parameter("blend_weights") is Texture2D,
 		"custom transition uses topology-driven index and weight maps")
-	transition_map.get_cell(Vector2i(2, 1))["height"] = 1
+	transition_map.set_layer(Vector2i(2, 1), 1, {"tile_id": "ground_stone"})
 	plugin.builder.rebuild()
 	transition_anchor = plugin.builder.generated.get_node("Top_2_1")
 	suite.check(not transition_anchor.has_meta("transition_lower") and
@@ -127,6 +127,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	var saved_path := "res://data/levels/test_play_%s.tres" % unique
 	var request_path := "user://test_play_%s.cfg" % unique
 	map.spawn_cell = Vector2i(5, 4)
+	map.spawn_layer = map.top_layer(map.spawn_cell)
 	plugin.current_path = saved_path
 	suite.check(plugin._save_map(), "save current map succeeds")
 	suite.check(plugin._write_playtest_request(request_path), "current map request writes")
@@ -152,6 +153,8 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(request_path))
 	map.set_cell(Vector2i(10, 10), {"exists": true, "height": 0,
 		"terrain": 0, "tile_id": "grass"})
+	map.set_cell(Vector2i(11, 10), {"exists": true, "height": 0,
+		"terrain": 1, "tile_id": "rock"})
 	plugin.builder.rebuild()
 	plugin.tile_list.select(0)
 	plugin._on_tile_selected(0)
@@ -285,7 +288,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		and expansion_map.tile_id(Vector2i(-2, 0)) == "ground_forest"
 		and expansion_map.world_center(Vector2i(1, 1)).is_equal_approx(stable_world)
 		and expansion_map.spawn_cell == Vector2i(1, 1)
-		and expansion_map.stairs == [{"cell": Vector2i(2, 2), "direction": 1}]
+		and expansion_map.stairs == [{"cell": Vector2i(2, 2), "direction": 1, "layer": 0}]
 		and _top_visual(plugin.builder, Vector2i(-2, 0)) != null,
 		"expanded brush keeps existing cells stairs spawn and world positions")
 	var expansion_history: UndoRedo = plugin.get_undo_redo().get_history_undo_redo(

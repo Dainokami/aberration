@@ -21,6 +21,11 @@ func _ready() -> void:
 		push_error("无法加载关卡：" + requested)
 		get_tree().quit(2)
 		return
+	data.ensure_layout()
+	if not data.cell_exists(data.spawn_cell):
+		push_error("关卡缺少有效的玩家出生点")
+		get_tree().quit(2)
+		return
 	builder = TerrainBuilder.new()
 	builder.show_grid = false
 	builder.build_collision = true
@@ -91,7 +96,7 @@ func _setup_player() -> void:
 	material.albedo_color = Color("#ffc875")
 	visual.material_override = material
 	player.add_child(visual)
-	spawn_position = data.world_center(data.spawn_cell) + Vector3(0, 0.82, 0)
+	spawn_position = data.world_center(data.spawn_cell, data.spawn_layer) + Vector3(0, 0.82, 0)
 	player.position = spawn_position
 
 func _setup_ui(path: String) -> void:
@@ -158,9 +163,9 @@ func run_physics_checks() -> void:
 	# Acceptance map stairs point north (negative Z).
 	var tests := [
 		["stair_0_2", data.world_center(Vector2i(7, 11)) + Vector3(0, 0.82, 0),
-			Vector3(0, 0, -1), 170, 2.0],
-		["stair_2_4", data.world_center(Vector2i(7, 7)) + Vector3(0, 2.82, 0),
-			Vector3(0, 0, -1), 170, 4.0],
+			Vector3(0, 0, -1), 170, data.surface_y(1)],
+		["stair_2_4", data.world_center(Vector2i(7, 7)) + Vector3(0, 0.82, 0),
+			Vector3(0, 0, -1), 170, data.surface_y(2)],
 	]
 	for spec in tests:
 		player.position = spec[1]
@@ -179,7 +184,7 @@ func run_physics_checks() -> void:
 	test_direction = Vector3(0, 0, -1)
 	for frame in 65:
 		await get_tree().physics_frame
-	var blocked := player.position.y < 1.2
+	var blocked := player.position.y < data.world_center(Vector2i(3, 10)).y + 1.2
 	print("EDITOR CHECK cliff_block ", blocked)
 	if not blocked:
 		failures.append("cliff_block")

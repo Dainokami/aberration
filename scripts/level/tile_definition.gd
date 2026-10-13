@@ -3,6 +3,7 @@ class_name TileDefinition
 extends Resource
 
 enum SurfaceKind { LAND, WATER }
+enum TerrainRole { SOLID, LIQUID, OVERLAY }
 
 ## Unique identifier. Built-in tiles use short names like "grass", "rock".
 ## Custom tiles use generated IDs from import.
@@ -15,7 +16,7 @@ enum SurfaceKind { LAND, WATER }
 @export var thumbnail_path := ""
 ## Base color used for side walls and as fallback when no texture.
 @export var base_color := Color(0.45, 0.53, 0.34)
-## Default elevation index (0, 1, or 2) when painting with this tile.
+## Default bottom-layer index; each solid occupies exactly 2m.
 @export var default_height := 0
 ## Whether this is a built-in tile (not saved to disk).
 @export var is_builtin := false
@@ -38,13 +39,22 @@ enum SurfaceKind { LAND, WATER }
 @export var corner_radius_m := 0.0
 @export var grass_roll_profile: Array[Vector2] = []
 @export var surface_kind: SurfaceKind = SurfaceKind.LAND
+## Storage/rendering role in stacked terrain columns.
+@export var terrain_role: TerrainRole = TerrainRole.SOLID
 @export var foam_texture_path := ""
 @export var foam_u_span_m := 8.0
 @export var foam_width_m := 0.35
 @export var foam_alpha_range := Vector2(0.0, 1.0)
 
 func is_water() -> bool:
-	return surface_kind == SurfaceKind.WATER
+	return terrain_role == TerrainRole.LIQUID \
+		or surface_kind == SurfaceKind.WATER
+
+func is_solid() -> bool:
+	return terrain_role == TerrainRole.SOLID and not is_water()
+
+func is_overlay() -> bool:
+	return terrain_role == TerrainRole.OVERLAY
 
 func has_soft_rim() -> bool:
 	return not rim_texture_path.is_empty() and rim_drop_m > 0.0

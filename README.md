@@ -4,7 +4,7 @@
 
 当前关卡编辑器包括：
 
-- 2m×2m地块及0m／2m／4m高度；
+- 固定2m厚度的分层地块、自动补支撑、中间层替换与切片查看；
 - 固定正面轻俯视透视相机；
 - 47类地貌拓扑Mask、四地貌权重混合、稳定不规则变体与连续世界底纹；
 - 草地卷边、岩沙圆钝崖顶、连续侧壁与水岸泡沫；
@@ -31,6 +31,8 @@ Godot引擎不包含在仓库中，请从[Godot官网](https://godotengine.org/d
 
 详细使用说明：[`USAGE_GUIDE.md`](USAGE_GUIDE.md)
 
+分层编辑与旧地图迁移：[`STACKED_TERRAIN.md`](STACKED_TERRAIN.md)
+
 视觉与相机规则：[`TERRAIN_VISUAL_RULES.md`](TERRAIN_VISUAL_RULES.md)
 
 ## 其他文档
@@ -49,14 +51,18 @@ GODOT=/path/to/Godot.app/Contents/MacOS/Godot
 $GODOT --headless --path . --script res://tests/test_level_data.gd
 $GODOT --headless --path . --script res://tests/test_v2.gd
 $GODOT --headless --path . --script res://tests/test_terrain_p0.gd
+$GODOT --headless --path . --script res://tests/test_stacked_terrain.gd
 $GODOT --headless --path . --script res://tests/test_runtime_camera.gd -- \
   --level=res://data/levels/acceptance_map.tres
 $GODOT --headless --path . --editor -- --test-v2-editor
 $GODOT --headless --path . res://scenes/level_playtest.tscn -- \
   --test-editor-level --level=res://data/levels/acceptance_map.tres
+
+# 使用真实图形后端导出分层地形验收图（不可添加 --headless）
+$GODOT --path . --rendering-method mobile --script res://tests/render_stacked_terrain.gd
 ```
 
-编辑器测试会故意尝试一次无效保存，用于验证保存失败不会丢失数据，因此会出现一条预期的 `Cannot save file`。
+编辑器测试包括分层画笔、切片拾取、撤销重做和预览检查；两处无效保存测试会输出预期的 `Cannot save file`。其余脚本/着色器错误应视为失败，即使进程退出码为0。
 
 ## 资料与授权
 

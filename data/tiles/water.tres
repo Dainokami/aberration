@@ -14,6 +14,7 @@ transition_priority = 10
 world_space_top = true
 top_texture_span_m = Vector2(8, 8)
 surface_kind = 1
+terrain_role = 1
 foam_texture_path = "res://assets/source_art/terrain_handoff_v02/water/shore_foam.png"
 foam_u_span_m = 8.0
 foam_width_m = 0.35
