@@ -2,6 +2,8 @@
 class_name TileDefinition
 extends Resource
 
+enum SurfaceKind { LAND, WATER }
+
 ## Unique identifier. Built-in tiles use short names like "grass", "rock".
 ## Custom tiles use generated IDs from import.
 @export var tile_id := ""
@@ -22,6 +24,33 @@ extends Resource
 ## Optional grayscale image. White is the terrain side of an irregular edge.
 ## Empty uses the project's generated default transition mask.
 @export var transition_mask_path := ""
+## Continuous terrain art settings. Legacy/imported tiles keep 2m local UVs.
+@export var world_space_top := false
+@export var top_texture_span_m := Vector2(2.0, 2.0)
+@export var cliff_texture_path := ""
+@export var cliff_texture_span_m := Vector2(4.0, 4.0)
+@export var rim_texture_path := ""
+@export var rim_u_span_m := 8.0
+@export var rim_alpha_range := Vector2(0.0, 1.0)
+@export var rim_inset_m := 0.0
+@export var rim_outset_m := 0.0
+@export var rim_drop_m := 0.0
+@export var corner_radius_m := 0.0
+@export var grass_roll_profile: Array[Vector2] = []
+@export var surface_kind: SurfaceKind = SurfaceKind.LAND
+@export var foam_texture_path := ""
+@export var foam_u_span_m := 8.0
+@export var foam_width_m := 0.35
+@export var foam_alpha_range := Vector2(0.0, 1.0)
+
+func is_water() -> bool:
+	return surface_kind == SurfaceKind.WATER
+
+func has_soft_rim() -> bool:
+	return not rim_texture_path.is_empty() and rim_drop_m > 0.0
+
+func tint_default() -> Color:
+	return Color(1.0, 1.0, 1.0, 0.0)
 
 func top_material() -> Material:
 	var texture := load(texture_path) as Texture2D if ResourceLoader.exists(texture_path) else null

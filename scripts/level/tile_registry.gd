@@ -4,7 +4,15 @@ extends RefCounted
 
 const BUILTIN_GRASS := "grass"
 const BUILTIN_ROCK := "rock"
+const BUILTIN_SAND := "sand"
+const BUILTIN_WATER := "water"
 const CUSTOM_DIR := "res://data/tiles"
+const BUILTIN_PATHS := [
+	"res://data/tiles/grass.tres",
+	"res://data/tiles/rock.tres",
+	"res://data/tiles/sand.tres",
+	"res://data/tiles/water.tres",
+]
 
 static var _cache: Array[TileDefinition] = []
 static var _dirty := true
@@ -39,22 +47,12 @@ static func next_transition_priority() -> int:
 
 static func _rebuild() -> void:
 	_cache.clear()
-	# Built-in tiles always come first.
-	var grass := TileDefinition.new()
-	grass.tile_id = BUILTIN_GRASS
-	grass.display_name = "草地"
-	grass.base_color = Color("#738858")
-	grass.default_height = 0
-	grass.is_builtin = true
-	_cache.append(grass)
-
-	var rock := TileDefinition.new()
-	rock.tile_id = BUILTIN_ROCK
-	rock.display_name = "岩地"
-	rock.base_color = Color("#756d70")
-	rock.default_height = 0
-	rock.is_builtin = true
-	_cache.append(rock)
+	var ids := {}
+	for path in BUILTIN_PATHS:
+		var builtin := load(path) as TileDefinition
+		if builtin != null:
+			_cache.append(builtin)
+			ids[builtin.tile_id] = true
 
 	# Scan custom tiles from disk.
 	if DirAccess.dir_exists_absolute(CUSTOM_DIR):
@@ -62,6 +60,7 @@ static func _rebuild() -> void:
 			if file.ends_with(".tres"):
 				var path := CUSTOM_DIR.path_join(file)
 				var res := load(path) as TileDefinition
-				if res != null and not res.tile_id.is_empty():
+				if res != null and not res.tile_id.is_empty() and not ids.has(res.tile_id):
 					_cache.append(res)
+					ids[res.tile_id] = true
 	_dirty = false

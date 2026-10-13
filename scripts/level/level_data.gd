@@ -13,34 +13,49 @@ const DIRS := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
 @export var cells: Array[Dictionary] = []
 @export var stairs: Array[Dictionary] = []
 @export var spawn_cell := Vector2i(-1, -1)
-@export var format_version := 3
+@export var format_version := 4
 @export var objects: Array[Dictionary] = []
+## Per-map color overrides. Alpha is tint strength; RGB is the target hue.
+@export var terrain_tints: Dictionary = {}
 
 func setup_blank(size := Vector2i(16, 16)) -> void:
 	map_size = size
 	cells.clear()
 	cells.resize(size.x * size.y)
 	for i in cells.size():
-		cells[i] = {"exists": false, "terrain": TERRAIN_GRASS, "height": 0, "tile_id": "grass"}
+		cells[i] = {
+			"exists": false,
+			"terrain": TERRAIN_GRASS,
+			"height": 0,
+			"tile_id": "grass",
+			"rotation": 0,
+		}
 	stairs.clear()
 	objects.clear()
+	terrain_tints.clear()
 	spawn_cell = Vector2i(-1, -1)
 
 func ensure_layout() -> void:
 	var wanted := map_size.x * map_size.y
-	if cells.size() == wanted:
-		return
 	var old := cells.duplicate(true)
 	cells.resize(wanted)
 	for i in wanted:
 		if i < old.size() and old[i] is Dictionary:
 			var c: Dictionary = old[i]
-			# Migrate v2 cells that lack tile_id.
 			if not c.has("tile_id"):
 				c["tile_id"] = "rock" if int(c.get("terrain", 0)) == TERRAIN_ROCK else "grass"
+			if not c.has("rotation"):
+				c["rotation"] = 0
 			cells[i] = c
 		else:
-			cells[i] = {"exists": false, "terrain": TERRAIN_GRASS, "height": 0, "tile_id": "grass"}
+			cells[i] = {
+				"exists": false,
+				"terrain": TERRAIN_GRASS,
+				"height": 0,
+				"tile_id": "grass",
+				"rotation": 0,
+			}
+	format_version = maxi(format_version, 4)
 
 func tile_id(cell: Vector2i) -> String:
 	return str(get_cell(cell).get("tile_id", ("rock" if int(get_cell(cell).get("terrain", 0)) == TERRAIN_ROCK else "grass")))
@@ -69,6 +84,17 @@ func cell_exists(cell: Vector2i) -> bool:
 
 func elevation(cell: Vector2i) -> int:
 	return int(get_cell(cell).get("height", 0))
+
+func terrain_tint(tile: String) -> Color:
+	var value: Variant = terrain_tints.get(tile, Color(1.0, 1.0, 1.0, 0.0))
+	return value if value is Color else Color(1.0, 1.0, 1.0, 0.0)
+
+func set_terrain_tint(tile: String, value: Color) -> void:
+	if value.a <= 0.001:
+		terrain_tints.erase(tile)
+	else:
+		terrain_tints[tile] = value
+	emit_changed()
 
 func world_center(cell: Vector2i, level := -1) -> Vector3:
 	var h := elevation(cell) if level < 0 else level
@@ -134,6 +160,7 @@ func clone_data() -> Dictionary:
 		"stairs": stairs.duplicate(true),
 		"spawn_cell": spawn_cell,
 		"objects": objects.duplicate(true),
+		"terrain_tints": terrain_tints.duplicate(true),
 		"format_version": format_version,
 	}
 
@@ -143,5 +170,6 @@ func restore_data(snapshot: Dictionary) -> void:
 	stairs = snapshot["stairs"].duplicate(true)
 	spawn_cell = snapshot["spawn_cell"]
 	objects.assign(snapshot.get("objects", []).duplicate(true))
+	terrain_tints = snapshot.get("terrain_tints", {}).duplicate(true)
 	format_version = int(snapshot.get("format_version", 2))
 	emit_changed()

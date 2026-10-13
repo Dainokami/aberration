@@ -10,6 +10,8 @@ func check(condition: bool, label: String) -> void:
 
 func run(plugin: EditorPlugin) -> void:
 	var tree := plugin.get_tree()
+	if plugin._find_terrain_builder(EditorInterface.get_edited_scene_root()) == null:
+		await plugin._open_editor_workspace()
 	var host := TerrainBuilder.new()
 	host.level_data = LevelData.new()
 	host.level_data.restore_data((load("res://data/levels/objects_acceptance.tres") as LevelData).clone_data())
@@ -96,11 +98,10 @@ func run(plugin: EditorPlugin) -> void:
 		var old_path := "res://data/prefabs/%s%s.tres" % [test_prefab_base, suffix]
 		if FileAccess.file_exists(old_path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(old_path))
-	# A corrupt same-name file reproduces the old error-15 path. Saving must
-	# keep it untouched and choose the next filename.
+	# An existing non-prefab resource must stay untouched and force a new name.
 	var corrupt_path := "res://data/prefabs/%s.tres" % test_prefab_base
 	var corrupt_file := FileAccess.open(corrupt_path, FileAccess.WRITE)
-	corrupt_file.store_string("not a Godot resource")
+	corrupt_file.store_string("[gd_resource type=\"Resource\" format=3]\n\n[resource]\n")
 	corrupt_file.close()
 	plugin.world_tools.prefab_sub_tabs.current_tab = 0
 	plugin.world_tools.region = Rect2i(0, 0, 1, 1)
@@ -111,8 +112,6 @@ func run(plugin: EditorPlugin) -> void:
 	var saved_prefab := ResourceLoader.load(
 		saved_prefab_path, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelPrefab
 	check(saved_prefab != null and saved_prefab.fragment != null, "saved prefab reloads")
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_path))
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(saved_prefab_path))
 
 	# Tile registry tests
 	var tiles := TileRegistry.all_tiles()
@@ -142,6 +141,8 @@ func run(plugin: EditorPlugin) -> void:
 	import_checks.run(plugin, self)
 	if "--capture-import-panel" in OS.get_cmdline_user_args():
 		await import_checks.capture_panel(plugin)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(saved_prefab_path))
 	plugin.world_tools.reset()
 	plugin.builder = null
 	plugin.data = null

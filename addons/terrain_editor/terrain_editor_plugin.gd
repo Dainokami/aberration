@@ -2,7 +2,7 @@
 extends EditorPlugin
 
 ## ============================================================
-## 畸变 关卡编辑器 v0.3  —  地形 / 物件 / 导入 / 预制
+## 畸变 关卡编辑器 v0.5  —  地形视觉 P0 / 物件 / 导入 / 预制
 ## ============================================================
 
 enum ToolMode { GROUND = 0, ERASE = 2, STAIR = 3, SPAWN = 4 }
@@ -32,6 +32,7 @@ var pending_action := ""
 var last_stroke_cell := Vector2i(-999, -999)
 var launcher_button: Button
 var opening_workspace := false
+var editor_dock: EditorDock
 
 const EDITOR_WORKSPACE_SCENE := "res://scenes/terrain_editor_v2.tscn"
 
@@ -53,6 +54,9 @@ var height_select: OptionButton
 var brush_select: OptionButton
 var tile_name_label: Label
 var tile_height_label: Label
+var tint_picker: ColorPickerButton
+var tint_strength: HSlider
+var tint_strength_label: Label
 
 # Object & import & prefab managed by world_edit_tools
 var world_tools
@@ -74,7 +78,11 @@ func _enter_tree() -> void:
 	view_settings = load("res://addons/terrain_editor/view_settings.gd").new()
 	_add_page("视角", view_settings)
 	view_settings.setup(self)
-	add_control_to_dock(DOCK_SLOT_LEFT_BR, dock_root)
+	editor_dock = EditorDock.new()
+	editor_dock.title = "关卡编辑器"
+	editor_dock.default_slot = EditorDock.DOCK_SLOT_LEFT_BR
+	editor_dock.add_child(dock_root)
+	add_dock(editor_dock)
 	set_input_event_forwarding_always_enabled()
 	RenderingServer.frame_pre_draw.connect(_apply_fixed_view)
 	if "--test-v2-editor" in OS.get_cmdline_user_args():
@@ -96,8 +104,9 @@ func _exit_tree() -> void:
 	if is_instance_valid(launcher_button):
 		remove_control_from_container(EditorPlugin.CONTAINER_TOOLBAR, launcher_button)
 		launcher_button.queue_free()
-	remove_control_from_docks(dock_root)
-	dock_root.queue_free()
+	if is_instance_valid(editor_dock):
+		remove_dock(editor_dock)
+		editor_dock.queue_free()
 	world_tools = null
 
 func _handles(object: Object) -> bool:
@@ -114,6 +123,7 @@ func _edit(object: Object) -> void:
 			current_path = data.resource_path
 			_set_status("已载入：" + current_path)
 			_make_preview()
+			_sync_tint_controls()
 			_enable_2_5d_view.call_deferred()
 	else:
 		builder = null
@@ -126,6 +136,8 @@ func _open_editor_workspace() -> void:
 		return
 	opening_workspace = true
 	launcher_button.disabled = true
+	if is_instance_valid(editor_dock):
+		editor_dock.make_visible()
 	var target := _find_terrain_builder(EditorInterface.get_edited_scene_root())
 	if target == null:
 		EditorInterface.open_scene_from_path(EDITOR_WORKSPACE_SCENE)
@@ -168,7 +180,7 @@ func _build_dock() -> void:
 	dock_root.custom_minimum_size.x = 310
 
 	var title := Label.new()
-	title.text = "畸变 关卡编辑器 v0.3"
+	title.text = "畸变 关卡编辑器 v0.5"
 	title.add_theme_font_size_override("font_size", 19)
 	dock_root.add_child(title)
 
@@ -294,6 +306,48 @@ func _build_terrain_tab() -> void:
 	vbox.add_child(tile_height_label)
 	ground_controls.append(tile_height_label)
 
+	var tint_separator := HSeparator.new()
+	vbox.add_child(tint_separator)
+	ground_controls.append(tint_separator)
+	ground_controls.append(_add_label(vbox, "地貌动态着色（地图级）"))
+	tint_picker = ColorPickerButton.new()
+	tint_picker.edit_alpha = false
+	tint_picker.color = Color.WHITE
+	tint_picker.tooltip_text = "只调整当前地图中的地貌色调，不修改源图片"
+	vbox.add_child(tint_picker)
+	ground_controls.append(tint_picker)
+	tint_strength_label = _add_label(vbox, "着色强度：0%")
+	ground_controls.append(tint_strength_label)
+	tint_strength = HSlider.new()
+	tint_strength.min_value = 0.0
+	tint_strength.max_value = 1.0
+	tint_strength.step = 0.05
+	tint_strength.value_changed.connect(func(value: float):
+		tint_strength_label.text = "着色强度：%d%%" % roundi(value * 100.0))
+	vbox.add_child(tint_strength)
+	ground_controls.append(tint_strength)
+	var tint_actions := HBoxContainer.new()
+	vbox.add_child(tint_actions)
+	ground_controls.append(tint_actions)
+	for spec in [["应用颜色", "_apply_current_tint"], ["恢复原色", "_clear_current_tint"]]:
+		var tint_button := Button.new()
+		tint_button.text = spec[0]
+		tint_button.pressed.connect(Callable(self, spec[1]))
+		tint_actions.add_child(tint_button)
+	var tint_presets := HBoxContainer.new()
+	vbox.add_child(tint_presets)
+	ground_controls.append(tint_presets)
+	for preset in [
+			["冷翠", Color("#6ea68b"), 0.45],
+			["秋野", Color("#c58b56"), 0.48],
+			["腐化", Color("#9a6ba8"), 0.52],
+		]:
+		var preset_button := Button.new()
+		preset_button.text = preset[0]
+		preset_button.tooltip_text = "一键应用%s色调" % preset[0]
+		preset_button.pressed.connect(_apply_tint_preset.bind(preset[1], preset[2]))
+		tint_presets.add_child(preset_button)
+
 	var refresh_btn := Button.new()
 	refresh_btn.text = "刷新地块列表"
 	refresh_btn.pressed.connect(refresh_tile_list)
@@ -362,8 +416,9 @@ func _tile_model_icon(tile: TileDefinition) -> ImageTexture:
 		Vector2(7, 22), Vector2(40, 40), Vector2(40, 65), Vector2(7, 47)])
 	var right := PackedVector2Array([
 		Vector2(40, 40), Vector2(73, 22), Vector2(73, 47), Vector2(40, 65)])
-	var left_color := tile.base_color.darkened(0.35)
-	var right_color := tile.base_color.darkened(0.22)
+	var tint := data.terrain_tint(tile.tile_id) if data != null else tile.tint_default()
+	var left_color := _preview_tint(tile.base_color.darkened(0.35), tint)
+	var right_color := _preview_tint(tile.base_color.darkened(0.22), tint)
 	for y in 72:
 		for x in 80:
 			var point := Vector2(x + 0.5, y + 0.5)
@@ -384,6 +439,7 @@ func _tile_model_icon(tile: TileDefinition) -> ImageTexture:
 					color = top_source.get_pixel(sx, sy)
 					if color.a < 0.15:
 						color = tile.base_color
+				color = _preview_tint(color, tint)
 				image.set_pixel(x, y, color.lightened(0.08))
 	_draw_icon_edge(image, Vector2i(40, 5), Vector2i(73, 22))
 	_draw_icon_edge(image, Vector2i(73, 22), Vector2i(73, 47))
@@ -395,6 +451,17 @@ func _tile_model_icon(tile: TileDefinition) -> ImageTexture:
 	_draw_icon_edge(image, Vector2i(40, 40), Vector2i(73, 22))
 	_draw_icon_edge(image, Vector2i(40, 40), Vector2i(40, 65))
 	return ImageTexture.create_from_image(image)
+
+func _preview_tint(color: Color, tint: Color) -> Color:
+	if tint.a <= 0.001:
+		return color
+	var luminance := maxf(tint.r * 0.299 + tint.g * 0.587 + tint.b * 0.114, 0.05)
+	var shifted := Color(
+		clampf(color.r * tint.r / luminance, 0.0, 1.0),
+		clampf(color.g * tint.g / luminance, 0.0, 1.0),
+		clampf(color.b * tint.b / luminance, 0.0, 1.0),
+		color.a)
+	return color.lerp(shifted, tint.a)
 
 func _draw_icon_edge(image: Image, start: Vector2i, end: Vector2i) -> void:
 	var delta := (end - start).abs()
@@ -423,7 +490,47 @@ func _on_tile_selected(index: int) -> void:
 	var t := tiles[index]
 	tile_name_label.text = "名称：%s（ID: %s）" % [t.display_name, t.tile_id]
 	tile_height_label.text = "默认高度：%dm" % (t.default_height * 2)
+	_sync_tint_controls()
 	_refresh_brush_preview()
+
+func _sync_tint_controls() -> void:
+	if tint_picker == null or tint_strength == null:
+		return
+	var tile := selected_tile()
+	var tint := data.terrain_tint(tile.tile_id) if data != null and tile != null \
+		else Color(1.0, 1.0, 1.0, 0.0)
+	tint_picker.color = Color(tint.r, tint.g, tint.b, 1.0)
+	tint_strength.set_value_no_signal(tint.a)
+	tint_strength_label.text = "着色强度：%d%%" % roundi(tint.a * 100.0)
+
+func _apply_current_tint() -> void:
+	var tile := selected_tile()
+	if data == null or tile == null:
+		_set_status("请先打开地图并选择地貌")
+		return
+	var tile_id := tile.tile_id
+	var before := data.clone_data()
+	var color := tint_picker.color
+	color.a = tint_strength.value
+	data.set_terrain_tint(tile_id, color)
+	_commit_external(before, data.clone_data(), "调整地貌颜色")
+	refresh_tile_list()
+	var tiles := TileRegistry.all_tiles()
+	for index in tiles.size():
+		if tiles[index].tile_id == tile_id:
+			tile_list.select(index)
+			_on_tile_selected(index)
+			break
+	_set_status("已更新%s着色；源图片保持不变" % tile.display_name)
+
+func _clear_current_tint() -> void:
+	tint_strength.value = 0.0
+	_apply_current_tint()
+
+func _apply_tint_preset(color: Color, strength: float) -> void:
+	tint_picker.color = color
+	tint_strength.value = strength
+	_apply_current_tint()
 
 func selected_tile() -> TileDefinition:
 	var selected := tile_list.get_selected_items()
@@ -506,6 +613,7 @@ func _new_map() -> void:
 	_set_dirty(false)
 	_set_status("新建空白地图")
 	_make_preview()
+	_sync_tint_controls()
 
 func _open_map() -> void:
 	if not _require_builder():
@@ -570,6 +678,7 @@ func _file_selected(path: String) -> void:
 		_set_dirty(false)
 		_set_status("已打开：" + path)
 		_make_preview()
+		_sync_tint_controls()
 
 func _confirm_discard() -> void:
 	if not _require_builder("操作已取消：请重新选择 TerrainBuilder"):
@@ -806,6 +915,7 @@ func _apply_map_snapshot(target: LevelData, snapshot: Dictionary) -> void:
 	if target == data:
 		if is_instance_valid(builder):
 			builder.rebuild()
+		_sync_tint_controls()
 		_set_dirty(true)
 
 func _mode_name() -> String:
@@ -951,6 +1061,7 @@ func _update_preview(cell: Vector2i) -> void:
 		var fragment := LevelData.new()
 		var brush_size := 3 if brush_select.selected == 1 else 1
 		fragment.setup_blank(Vector2i(brush_size, brush_size))
+		fragment.terrain_tints = data.terrain_tints.duplicate(true)
 		var tile := selected_tile()
 		var id := tile.tile_id if tile else "grass"
 		for y in brush_size:

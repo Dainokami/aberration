@@ -1,0 +1,73 @@
+{
+  "units": "metres",
+  "logical_cell_m": 2,
+  "elevation_step_m": 2,
+  "profiles": {
+    "grass": {
+      "inset_m": 0.28,
+      "outset_m": 0.24,
+      "drop_m": 0.43,
+      "corner_radius_m": 0.58
+    },
+    "rock": {
+      "inset_m": 0.55,
+      "outset_m": 0,
+      "drop_m": 0.42,
+      "corner_radius_m": 0.82
+    },
+    "sand": {
+      "inset_m": 0.65,
+      "outset_m": 0,
+      "drop_m": 0.46,
+      "corner_radius_m": 0.88
+    }
+  },
+  "rock_sand_cross_section": {
+    "d": "-w + w*sin(pi*t/2)",
+    "dy": "-h + h*cos(pi*t/2)"
+  },
+  "grass_nodes_d_dy_m": [
+    [
+      -0.28,
+      0
+    ],
+    [
+      -0.1,
+      0.02
+    ],
+    [
+      0.15,
+      -0.025
+    ],
+    [
+      0.24,
+      -0.12
+    ],
+    [
+      0.18,
+      -0.27
+    ],
+    [
+      0,
+      -0.43
+    ]
+  ],
+  "grass_visual_wave_max_additional_outset_m": 0.081,
+  "rim_u_original_period_m": 8,
+  "rim_v": "t normalized 0..1 into alpha bbox",
+  "foam_width_m": 0.35,
+  "web_preview_water_offset_m": 0.008,
+  "scope": "visual initial values; logical grid/collision stay explicit; narrow cells require width/radius limits",
+  "preview_camera": {
+    "projection": "orthographic",
+    "pitch_deg": 40,
+    "yaw_deg": 32,
+    "camera_direction_from_target": [
+      "sin(yaw)*cos(pitch)",
+      "sin(pitch)",
+      "cos(yaw)*cos(pitch)"
+    ],
+    "angles_in_formula": "radians",
+    "warning": "reference only; do not overwrite project camera"
+  }
+}

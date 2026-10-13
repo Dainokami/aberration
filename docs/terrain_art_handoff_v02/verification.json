@@ -1,0 +1,15 @@
+{
+  "recommended_pngs": 67,
+  "original_png_bytes_preserved": true,
+  "all_manifest_sha256_match": true,
+  "html_static_resource_paths_exist": true,
+  "offline_network_dependencies": 0,
+  "merged_html_script_check": "passed: one DOM, all local scripts, 6 ecology pairs x 5 irregular options, 3 high biomes x 4 layouts, grid/angles/old-new switches, all shipped hashes",
+  "browser_gui_acceptance": false,
+  "godot_integration_acceptance": false,
+  "height_geometry_checks": 96,
+  "rounded_profile_and_contour_checks": true,
+  "real_canvas_review_images": 4,
+  "archive_integrity": "CRC and per-file SHA-256 verified",
+  "absolute_machine_paths_in_runtime_resources": false
+}

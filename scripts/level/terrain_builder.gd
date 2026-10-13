@@ -2,16 +2,23 @@
 class_name TerrainBuilder
 extends Node3D
 
+const DEFAULT_STYLE := "res://data/terrain_style_profile.tres"
+const TerrainBlendMapClass := preload("res://scripts/level/terrain_blend_map.gd")
+
 @export var level_data: LevelData
 @export var show_grid := true
 @export var build_collision := true
+@export var style_profile: TerrainStyleProfile
 
 var generated: Node3D
-var grass_material: ShaderMaterial
-var rock_material: ShaderMaterial
-var side_material: ShaderMaterial
+var grass_material: Material
+var rock_material: Material
+var side_material: Material
 var stair_material: StandardMaterial3D
 var _tile_material_cache: Dictionary = {}
+var _top_groups: Dictionary = {}
+var _blend_groups: Dictionary = {}
+var _multi_blend_levels: Dictionary = {}
 
 func _ready() -> void:
 	rebuild()
@@ -29,14 +36,21 @@ func rebuild() -> void:
 	add_child(generated)
 	if level_data == null:
 		return
+	if style_profile == null:
+		style_profile = load(DEFAULT_STYLE) as TerrainStyleProfile
 	level_data.ensure_layout()
 	_prepare_materials()
+	_top_groups.clear()
+	_blend_groups.clear()
+	_prepare_multi_blend_levels()
 	for y in level_data.map_size.y:
 		for x in level_data.map_size.x:
 			var cell := Vector2i(x, y)
 			if level_data.cell_exists(cell) and level_data.stair_at(cell) < 0:
 				_build_cell(cell)
-	_build_same_height_transitions()
+	_build_top_groups()
+	_build_cliffs_and_rims()
+	_build_shore_foam()
 	for stair in level_data.stairs:
 		_build_stair(stair)
 	if show_grid:
@@ -49,8 +63,6 @@ func _build_objects() -> void:
 		var definition := ObjectRules.definition(record)
 		if definition == null or not definition.validate_asset().is_empty():
 			continue
-		# Rebuild visual carriers from the current camera profile. Packed scenes
-		# may contain card geometry baked for an older camera angle.
 		var object := AssetFactory.make_asset(definition)
 		if definition.fade_when_occluding and object.get_script() == null:
 			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
@@ -60,130 +72,256 @@ func _build_objects() -> void:
 		object.set_meta("object_id", record.get("id", ""))
 		generated.add_child(object)
 
-func _terrain_shader() -> Shader:
-	var shader := Shader.new()
-	shader.code = """
-shader_type spatial;
-render_mode unshaded;
-uniform vec4 base : source_color;
-varying vec3 world_pos;
-void vertex(){ world_pos=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz; }
-void fragment(){
-	float stroke=sin(world_pos.x*5.7+sin(world_pos.z*3.1))*sin(world_pos.z*7.3);
-	float macro=sin(world_pos.x*0.55)*cos(world_pos.z*0.42);
-	ALBEDO=base.rgb*(0.94+stroke*0.035+macro*0.07);
-	ROUGHNESS=1.0;
-}
-"""
-	return shader
-
 func _prepare_materials() -> void:
-	var shader := _terrain_shader()
-	_tile_material_cache = {}
-	grass_material = ShaderMaterial.new()
-	grass_material.shader = shader
-	grass_material.set_shader_parameter("base", Color("#738858"))
-	rock_material = ShaderMaterial.new()
-	rock_material.shader = shader
-	rock_material.set_shader_parameter("base", Color("#756d70"))
-	side_material = ShaderMaterial.new()
-	side_material.shader = shader
-	side_material.set_shader_parameter("base", Color("#403944"))
+	_tile_material_cache.clear()
+	grass_material = _material_for_cell({"tile_id": "grass"})
+	rock_material = _material_for_cell({"tile_id": "rock"})
+	var side := StandardMaterial3D.new()
+	side.albedo_color = Color("#403944")
+	side.roughness = 1.0
+	side_material = side
 	stair_material = StandardMaterial3D.new()
 	stair_material.albedo_color = Color("#776b71")
 	stair_material.roughness = 1.0
 
-func _build_cell(cell: Vector2i) -> void:
-	var data := level_data.get_cell(cell)
-	var center := level_data.world_center(cell)
-	var mat: Material = _material_for_cell(data)
-	var tile := TileRegistry.find(level_data.tile_id(cell))
-	var wall: Material = tile.wall_material() if tile != null and not tile.is_builtin else side_material
-	var top := _box("Top_%d_%d" % [cell.x, cell.y], center - Vector3(0, 0.05, 0),
-		Vector3(LevelData.CELL_SIZE, 0.1, LevelData.CELL_SIZE), mat, true)
-	top.rotation.y = -posmod(int(data.get("rotation", 0)), 4) * PI * 0.5
-	top.set_meta("terrain_cell", cell)
-	if top.get_child_count() > 0:
-		top.get_child(0).set_meta("terrain_cell", cell)
-	for direction in 4:
-		var neighbor: Vector2i = cell + LevelData.DIRS[direction]
-		var neighbor_level := LevelData.BASE_Y
-		if level_data.cell_exists(neighbor) and level_data.stair_at(neighbor) < 0:
-			neighbor_level = level_data.elevation(neighbor) * LevelData.ELEVATION_STEP
-		var top_y := center.y
-		if top_y <= neighbor_level:
-			continue
-		var height := top_y - neighbor_level
-		var offset: Vector2i = LevelData.DIRS[direction]
-		var side_center := center + Vector3(offset.x, 0, offset.y) * LevelData.CELL_SIZE * 0.5
-		side_center.y = neighbor_level + height * 0.5
-		var size := Vector3(LevelData.CELL_SIZE, height, 0.08)
-		if direction % 2 == 1:
-			size = Vector3(0.08, height, LevelData.CELL_SIZE)
-		_box("Side", side_center, size, wall, true)
-
-func _build_same_height_transitions() -> void:
-	# Process east/south once per pair. Height differences remain cliffs and do
-	# not receive this top-surface blend.
+func _prepare_multi_blend_levels() -> void:
+	_multi_blend_levels.clear()
+	var terrain_by_level := {}
 	for y in level_data.map_size.y:
 		for x in level_data.map_size.x:
-			var a := Vector2i(x, y)
-			if not level_data.cell_exists(a) or level_data.stair_at(a) >= 0:
+			var cell := Vector2i(x, y)
+			if not level_data.cell_exists(cell) or level_data.stair_at(cell) >= 0:
 				continue
-			for direction: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN]:
-				var b: Vector2i = a + direction
-				if not level_data.cell_exists(b) or level_data.stair_at(b) >= 0:
-					continue
-				if level_data.elevation(a) != level_data.elevation(b):
-					continue
-				var a_id := level_data.tile_id(a)
-				var b_id := level_data.tile_id(b)
-				if a_id == b_id:
-					continue
-				var a_tile := TileRegistry.find(a_id)
-				var b_tile := TileRegistry.find(b_id)
-				if a_tile == null or b_tile == null:
-					continue
-				var upper: TileDefinition = a_tile if TerrainTransition.dominant(a_tile, b_tile) else b_tile
-				var lower: TileDefinition = b_tile if upper == a_tile else a_tile
-				var lower_cell: Vector2i = b if upper == a_tile else a
-				var upper_cell: Vector2i = a if upper == a_tile else b
-				var toward_upper: Vector2i = upper_cell - lower_cell
-				var node := MeshInstance3D.new()
-				node.name = "Transition_%d_%d_%d_%d" % [a.x, a.y, b.x, b.y]
-				var plane := PlaneMesh.new()
-				plane.size = Vector2(0.9, LevelData.CELL_SIZE)
-				node.mesh = plane
-				node.material_override = TerrainTransition.edge_material(upper, lower)
-				node.position = (level_data.world_center(a) + level_data.world_center(b)) * 0.5
-				# Establish deterministic visual layering at three-way corners.
-				node.position.y += 0.012 + clampf(upper.transition_priority, -100, 100) * 0.00002
-				node.rotation.y = atan2(-toward_upper.y, toward_upper.x)
-				node.set_meta("transition_upper", upper.tile_id)
-				node.set_meta("transition_lower", lower.tile_id)
-				generated.add_child(node)
+			var elevation := level_data.elevation(cell)
+			if not terrain_by_level.has(elevation):
+				terrain_by_level[elevation] = {}
+			terrain_by_level[elevation][level_data.tile_id(cell)] = true
+	for elevation: int in terrain_by_level:
+		var terrain_ids: Dictionary = terrain_by_level[elevation]
+		var supported := terrain_ids.size() > 1
+		for tile_id: String in terrain_ids:
+			if not TerrainBlendMapClass.supports_tile(tile_id):
+				supported = false
+				break
+		if supported:
+			_multi_blend_levels[elevation] = true
+			_blend_groups[elevation] = []
 
-func _box(label: String, position_value: Vector3, size: Vector3,
-		material: Material, collision: bool) -> MeshInstance3D:
-	var node := MeshInstance3D.new()
-	node.name = label
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	node.mesh = mesh
-	node.material_override = material
-	node.position = position_value
-	generated.add_child(node)
-	if collision and build_collision:
-		var body := StaticBody3D.new()
-		if node.has_meta("terrain_cell"):
-			body.set_meta("terrain_cell", node.get_meta("terrain_cell"))
-		var shape := CollisionShape3D.new()
-		var box_shape := BoxShape3D.new()
-		box_shape.size = size
-		shape.shape = box_shape
-		body.add_child(shape)
-		node.add_child(body)
-	return node
+func _build_cell(cell: Vector2i) -> void:
+	var cell_data := level_data.get_cell(cell)
+	var tile := TileRegistry.find(level_data.tile_id(cell))
+	if tile == null:
+		tile = TileRegistry.find("grass")
+	var top := Node3D.new()
+	top.name = "Top_%d_%d" % [cell.x, cell.y]
+	top.position = level_data.world_center(cell)
+	top.set_meta("terrain_cell", cell)
+	var elevation := level_data.elevation(cell)
+	if _multi_blend_levels.has(elevation):
+		_blend_groups[elevation].append(cell)
+		top.set_meta("blend_terrains", TerrainBlendMapClass.cell_terrain_ids(level_data, cell))
+	else:
+		var transition := TerrainTopology.transition_info(level_data, cell)
+		var lower: TileDefinition = transition.get("lower") as TileDefinition
+		var transition_turns := 0
+		var transition_mask_info := {}
+		if lower != null:
+			transition_mask_info = TerrainTopology.mask_info(
+				int(transition["bits"]), cell, style_profile, true)
+			transition_turns = int(transition_mask_info["uv_turns"])
+		var rotation_turns := int(cell_data.get("rotation", 0))
+		var mask_path: String = transition_mask_info.get("path", "")
+		var lower_id := lower.tile_id if lower != null else ""
+		var key := "%s|%d|%d|%s|%s|%d" % [
+			tile.tile_id, elevation, rotation_turns,
+			lower_id, mask_path, transition_turns]
+		if not _top_groups.has(key):
+			_top_groups[key] = {
+				"tile": tile,
+				"lower": lower,
+				"mask_info": transition_mask_info,
+				"transition_turns": transition_turns,
+				"rotation_turns": rotation_turns,
+				"cells": [],
+			}
+		_top_groups[key]["cells"].append(cell)
+		if lower != null:
+			top.set_meta("transition_upper", tile.tile_id)
+			top.set_meta("transition_lower", lower.tile_id)
+			top.set_meta("transition_bits", int(transition["bits"]))
+			top.set_meta("transition_kind", transition_mask_info["kind"])
+			top.set_meta("transition_variant", transition_mask_info["variant"])
+	generated.add_child(top)
+	if build_collision:
+		_add_top_collision(top)
+		_build_side_collisions(cell)
+
+func _build_top_groups() -> void:
+	_build_blended_top_groups()
+	var full_mask := _load_mask(style_profile.regular_mask_path(255))
+	for group: Dictionary in _top_groups.values():
+		var tile: TileDefinition = group["tile"]
+		var lower: TileDefinition = group["lower"]
+		var mask_info: Dictionary = group["mask_info"]
+		var transition_texture: Texture2D = null
+		if lower != null:
+			transition_texture = _load_mask(mask_info["path"])
+		var material := TerrainMaterials.top_material(
+			tile,
+			lower,
+			transition_texture,
+			int(group["transition_turns"]),
+			full_mask,
+			level_data.terrain_tint(tile.tile_id),
+			level_data.terrain_tint(lower.tile_id) if lower != null else tile.tint_default(),
+			int(group["rotation_turns"]))
+		var mesh := TerrainEdgeBuilder.make_top_group_mesh(
+			level_data, group["cells"], tile, style_profile.corner_segments,
+			style_profile.top_surface_offset_m)
+		if mesh == null:
+			continue
+		var top := MeshInstance3D.new()
+		top.name = "TerrainTop_%s_%d" % [tile.tile_id, int(group["rotation_turns"])]
+		top.mesh = mesh
+		top.material_override = material
+		top.set_meta("terrain_cells", group["cells"])
+		top.set_meta("terrain_tile", tile.tile_id)
+		if lower != null:
+			top.set_meta("transition_upper", tile.tile_id)
+			top.set_meta("transition_lower", lower.tile_id)
+			top.set_meta("transition_kind", mask_info["kind"])
+			top.set_meta("transition_variant", mask_info["variant"])
+		generated.add_child(top)
+
+func _build_blended_top_groups() -> void:
+	for elevation: int in _blend_groups:
+		var cells: Array = _blend_groups[elevation]
+		var blend := TerrainBlendMapClass.build(level_data, elevation, style_profile)
+		var tiles: Array[TileDefinition] = blend["tiles"]
+		var tints: Array[Color] = []
+		for tile in tiles:
+			tints.append(level_data.terrain_tint(tile.tile_id))
+		var material := TerrainMaterials.blended_top_material(
+			tiles,
+			blend["texture"],
+			blend["origin"],
+			blend["world_size"],
+			tints)
+		var mesh := TerrainEdgeBuilder.make_blended_top_mesh(
+			level_data, cells, style_profile.corner_segments,
+			style_profile.top_surface_offset_m)
+		if mesh == null:
+			continue
+		var top := MeshInstance3D.new()
+		top.name = "TerrainTopBlend_%d" % elevation
+		top.mesh = mesh
+		top.material_override = material
+		top.set_meta("terrain_cells", cells)
+		top.set_meta("terrain_tiles", TerrainBlendMapClass.TILE_IDS)
+		top.set_meta("multi_blend", true)
+		generated.add_child(top)
+
+func _add_top_collision(top: Node3D) -> void:
+	var body := StaticBody3D.new()
+	body.set_meta("terrain_cell", top.get_meta("terrain_cell"))
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(LevelData.CELL_SIZE, 0.1, LevelData.CELL_SIZE)
+	shape.shape = box
+	shape.position.y = -0.05
+	body.add_child(shape)
+	top.add_child(body)
+
+func _build_side_collisions(cell: Vector2i) -> void:
+	var high_y := level_data.elevation(cell) * LevelData.ELEVATION_STEP
+	for direction in 4:
+		var neighbor: Vector2i = cell + LevelData.DIRS[direction]
+		var low_y := LevelData.BASE_Y
+		if level_data.cell_exists(neighbor):
+			low_y = level_data.elevation(neighbor) * LevelData.ELEVATION_STEP
+		if high_y <= low_y:
+			continue
+		var offset: Vector2i = LevelData.DIRS[direction]
+		var center := level_data.world_center(cell)
+		center += Vector3(offset.x, 0, offset.y) * LevelData.CELL_SIZE * 0.5
+		center.y = low_y + (high_y - low_y) * 0.5
+		var size := Vector3(LevelData.CELL_SIZE, high_y - low_y, 0.08)
+		if direction % 2 == 1:
+			size = Vector3(0.08, high_y - low_y, LevelData.CELL_SIZE)
+		_add_collision_box(center, size, "CliffCollision")
+
+func _build_cliffs_and_rims() -> void:
+	for group in TerrainEdgeBuilder.cliff_groups(level_data):
+		var tile: TileDefinition = group["tile"]
+		var high_y := int(group["high_level"]) * LevelData.ELEVATION_STEP
+		var low_level := int(group["low_level"])
+		var low_y := low_level * LevelData.ELEVATION_STEP if low_level >= 0 else LevelData.BASE_Y
+		var radius := tile.corner_radius_m if style_profile.use_soft_rims and tile.has_soft_rim() else 0.0
+		var paths := TerrainEdgeBuilder.traced_world_paths(
+			level_data, group["edges"], radius, style_profile.corner_segments)
+		for path in paths:
+			var cliff_top := high_y
+			if style_profile.use_soft_rims and tile.has_soft_rim():
+				cliff_top -= tile.rim_drop_m
+			var cliff_mesh := TerrainEdgeBuilder.make_cliff_mesh(
+				path, cliff_top, low_y, tile.cliff_texture_span_m)
+			if cliff_mesh != null:
+				var cliff := MeshInstance3D.new()
+				cliff.name = "Side"
+				cliff.mesh = cliff_mesh
+				cliff.material_override = TerrainMaterials.cliff_material(
+					tile, level_data.terrain_tint(tile.tile_id))
+				cliff.set_meta("terrain_tile", tile.tile_id)
+				cliff.set_meta("high_level", int(group["high_level"]))
+				cliff.set_meta("low_level", low_level)
+				generated.add_child(cliff)
+			if not style_profile.use_soft_rims or not tile.has_soft_rim():
+				continue
+			var rim_mesh := TerrainEdgeBuilder.make_rim_mesh(path, high_y, tile, style_profile)
+			if rim_mesh != null:
+				var rim := MeshInstance3D.new()
+				rim.name = "Rim"
+				rim.mesh = rim_mesh
+				rim.material_override = TerrainMaterials.rim_material(
+					tile, level_data.terrain_tint(tile.tile_id))
+				rim.set_meta("terrain_tile", tile.tile_id)
+				generated.add_child(rim)
+
+func _build_shore_foam() -> void:
+	if not style_profile.use_shore_foam:
+		return
+	for group in TerrainEdgeBuilder.foam_groups(level_data):
+		var land: TileDefinition = group["land"]
+		var water: TileDefinition = group["water"]
+		var paths := TerrainEdgeBuilder.traced_world_paths(
+			level_data, group["edges"], land.corner_radius_m, style_profile.corner_segments)
+		var water_y := int(group["water_level"]) * LevelData.ELEVATION_STEP
+		for path in paths:
+			var mesh := TerrainEdgeBuilder.make_foam_mesh(path, water_y, water, style_profile)
+			if mesh == null:
+				continue
+			var foam := MeshInstance3D.new()
+			foam.name = "ShoreFoam"
+			foam.mesh = mesh
+			foam.material_override = TerrainMaterials.foam_material(water)
+			foam.set_meta("water_level", int(group["water_level"]))
+			generated.add_child(foam)
+
+func _load_mask(path: String) -> Texture2D:
+	if not path.is_empty() and ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return TerrainTransition.ensure_default_mask()
+
+func _add_collision_box(position_value: Vector3, size: Vector3, label: String) -> void:
+	var body := StaticBody3D.new()
+	body.name = label
+	body.position = position_value
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	body.add_child(shape)
+	generated.add_child(body)
 
 func _build_stair(stair: Dictionary) -> void:
 	var low: Vector2i = stair["cell"]
@@ -193,7 +331,6 @@ func _build_stair(stair: Dictionary) -> void:
 	var low_center := level_data.world_center(low)
 	var high_center := level_data.world_center(low + vector)
 	var center := (low_center + high_center) * 0.5
-	var horizontal := Vector3(vector.x, 0, vector.y)
 	for i in 10:
 		var progress := (float(i) + 0.5) / 10.0
 		var pos := low_center.lerp(high_center, progress)
@@ -211,7 +348,6 @@ func _build_stair(stair: Dictionary) -> void:
 	var wedge := ConvexPolygonShape3D.new()
 	var half_width := LevelData.CELL_SIZE * 0.5
 	var half_length := LevelData.CELL_SIZE
-	# Direction 0 is north (-Z): local +Z is low, local -Z is high.
 	wedge.points = PackedVector3Array([
 		Vector3(-half_width, 0, half_length), Vector3(half_width, 0, half_length),
 		Vector3(-half_width, 0, -half_length), Vector3(half_width, 0, -half_length),
@@ -256,19 +392,35 @@ func _build_spawn_marker() -> void:
 	marker.position = level_data.world_center(level_data.spawn_cell) + Vector3(0, 0.12, 0)
 	generated.add_child(marker)
 
+func _box(label: String, position_value: Vector3, size: Vector3,
+		material: Material, collision: bool) -> MeshInstance3D:
+	var node := MeshInstance3D.new()
+	node.name = label
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	node.mesh = mesh
+	node.material_override = material
+	node.position = position_value
+	generated.add_child(node)
+	if collision and build_collision:
+		var body := StaticBody3D.new()
+		var shape := CollisionShape3D.new()
+		var box_shape := BoxShape3D.new()
+		box_shape.size = size
+		shape.shape = box_shape
+		body.add_child(shape)
+		node.add_child(body)
+	return node
+
 func _material_for_cell(data: Dictionary) -> Material:
-	var tid: String = data.get("tile_id", "")
-	if tid.is_empty():
-		tid = TileRegistry.legacy_terrain_to_id(int(data.get("terrain", 0)))
-	if tid == "grass":
-		return grass_material
-	if tid == "rock":
-		return rock_material
-	if _tile_material_cache.has(tid):
-		return _tile_material_cache[tid]
-	var tile := TileRegistry.find(tid)
+	var tile_id: String = data.get("tile_id", "")
+	if tile_id.is_empty():
+		tile_id = TileRegistry.legacy_terrain_to_id(int(data.get("terrain", 0)))
+	if _tile_material_cache.has(tile_id):
+		return _tile_material_cache[tile_id]
+	var tile := TileRegistry.find(tile_id)
 	if tile == null:
-		return grass_material
-	var mat := tile.top_material()
-	_tile_material_cache[tid] = mat
-	return mat
+		tile = TileRegistry.find("grass")
+	var material := tile.top_material()
+	_tile_material_cache[tile_id] = material
+	return material

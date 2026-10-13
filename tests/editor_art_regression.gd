@@ -19,11 +19,11 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.builder.rebuild()
 	for i in ids.size():
 		var cell := Vector2i(i + 4, 4)
-		var top := plugin.builder.generated.get_node("Top_%d_%d" % [cell.x, cell.y]) as MeshInstance3D
-		var mat := top.material_override as StandardMaterial3D
+		var top := _top_visual(plugin.builder, cell)
+		var mat := top.material_override as ShaderMaterial
 		var definition := TileRegistry.find(ids[i])
 		suite.check(map.tile_id(cell) == ids[i] and mat != null and
-			mat.albedo_texture.resource_path == definition.texture_path,
+			(mat.get_shader_parameter("upper_art") as Texture2D).resource_path == definition.texture_path,
 			"painted mesh uses imported texture " + ids[i])
 
 	var tools = plugin.world_tools
@@ -79,15 +79,15 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		"replace existing ground changes height and rotation")
 	suite.check(is_equal_approx(map.objects[0]["position"].y, 4.0),
 		"supported tree follows replacement height")
-	var rotated_top := plugin.builder.generated.get_node("Top_4_4") as MeshInstance3D
-	suite.check(is_equal_approx(rotated_top.rotation.y, -PI / 2),
-		"rotated ground mesh uses stored rotation")
+	var rotated_top := _top_visual(plugin.builder, Vector2i(4, 4))
+	suite.check((rotated_top.material_override as ShaderMaterial).get_shader_parameter("art_turns") == 1,
+		"rotated ground material uses stored rotation")
 	plugin._update_preview(Vector2i(4, 4))
 	var display := plugin.preview.get_child(0) as TerrainBuilder
-	var preview_top := display.generated.get_node("Top_0_0") as MeshInstance3D
-	suite.check(not display.build_collision and preview_top.position.y > 3.9 and
-		is_equal_approx(preview_top.rotation.y, -PI / 2) and
-		(preview_top.material_override as StandardMaterial3D).albedo_texture != null,
+	var preview_top := _top_visual(display, Vector2i.ZERO)
+	suite.check(not display.build_collision and preview_top.mesh.get_aabb().position.y > 3.9 and
+		(preview_top.material_override as ShaderMaterial).get_shader_parameter("art_turns") == 1 and
+		(preview_top.material_override as ShaderMaterial).get_shader_parameter("upper_art") != null,
 		"brush previews textured mesh at requested height and rotation without collision")
 	history.undo()
 	suite.check(map.clone_data() == before_replace, "undo restores replaced height rotation and tree")
@@ -101,18 +101,18 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		"terrain": 0, "tile_id": "decal_corruption"})
 	plugin.builder.level_data = transition_map
 	plugin.builder.rebuild()
-	var transitions: Array[Node] = plugin.builder.generated.find_children(
-		"Transition_*", "MeshInstance3D", false, false)
-	suite.check(transitions.size() == 1 and
-		transitions[0].get_meta("transition_upper") == "decal_corruption" and
-		transitions[0].get_meta("transition_lower") == "ground_forest",
-		"same-height edge mask follows terrain priority")
-	var transition_material := transitions[0].material_override as ShaderMaterial
+	var transition_anchor: Node = plugin.builder.generated.get_node("Top_2_1")
+	var transition_top := _top_visual(plugin.builder, Vector2i(2, 1))
+	suite.check(transition_anchor.get_meta("transition_upper") == "decal_corruption" and
+		transition_anchor.get_meta("transition_lower") == "ground_forest",
+		"same-height topology mask follows terrain priority")
+	var transition_material := transition_top.material_override as ShaderMaterial
 	suite.check(transition_material.get_shader_parameter("edge_mask") is Texture2D,
-		"transition uses configured/generated mask")
+		"transition uses a 47-topology mask")
 	transition_map.get_cell(Vector2i(2, 1))["height"] = 1
 	plugin.builder.rebuild()
-	suite.check(plugin.builder.generated.find_children("Transition_*", "MeshInstance3D", false, false).is_empty() and
+	transition_anchor = plugin.builder.generated.get_node("Top_2_1")
+	suite.check(not transition_anchor.has_meta("transition_lower") and
 		not plugin.builder.generated.find_children("Side", "MeshInstance3D", false, false).is_empty(),
 		"height difference remains cliff without planar mask")
 	plugin.builder.level_data = map
@@ -146,6 +146,22 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	suite.check(not plugin._save_map() and plugin.dirty, "save failure prevents play and retains dirty")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(saved_path))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(request_path))
+	map.set_cell(Vector2i(10, 10), {"exists": true, "height": 0,
+		"terrain": 0, "tile_id": "grass"})
+	plugin.builder.rebuild()
+	plugin.tile_list.select(0)
+	plugin._on_tile_selected(0)
+	plugin.tint_picker.color = Color("#78a8c0")
+	plugin.tint_strength.value = 0.6
+	plugin._apply_current_tint()
+	var tinted_top := _top_visual(plugin.builder, Vector2i(10, 10))
+	var tint_parameter: Color = (tinted_top.material_override as ShaderMaterial).get_shader_parameter("upper_tint")
+	suite.check(plugin.data.terrain_tint("grass").a > 0.59
+		and tint_parameter.is_equal_approx(plugin.data.terrain_tint("grass")),
+		"one-click terrain tint updates data and rendered material")
+	plugin._clear_current_tint()
+	suite.check(plugin.data.terrain_tint("grass").a == 0.0,
+		"restore original color removes map override")
 	plugin.current_path = previous_path
 	plugin.height_select.selected = 0
 	plugin.tile_turns = 0
@@ -153,3 +169,9 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.builder.level_data = original
 	plugin.builder.rebuild()
 	tools.reset()
+
+func _top_visual(builder: TerrainBuilder, cell: Vector2i) -> MeshInstance3D:
+	for child in builder.generated.get_children():
+		if child is MeshInstance3D and cell in child.get_meta("terrain_cells", []):
+			return child
+	return null
