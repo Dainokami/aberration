@@ -66,8 +66,11 @@ var _screen_direction := 1.0
 var _wing_phase := 0.0
 var _attack_time := 0.0
 var _attack_channel: StringName = &""
+var _attack_aim := 0.0
 var _air_blend := 0.0
 var _snake_mirror := false
+var _held_snake_yaw := 0.0
+var _yaw_delta := 0.016
 
 
 func _ready() -> void:
@@ -80,6 +83,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_yaw_delta = delta
 	_wing_phase += delta
 	_attack_time = maxf(_attack_time - delta, 0.0)
 	# 起飞后很快收起地面步态，落地再接回，避免腿在半空停在迈步中间。
@@ -263,16 +267,145 @@ func _apply_loadout() -> void:
 		"LeftWingSocket", "RightWingSocket",
 	]:
 		_attachments[socket_name].visible = false
+	_reset_limb_style()
+	for socket_name in ["AnimHead", "AnimEar", "AnimHood", "AnimBandage"]:
+		_attachments[socket_name].visible = true
+	if assembly.limbs_equipped:
+		_show_carried_limbs()
+		return
 	var snake := assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER
 	var show_arm := assembly.arm_count >= 1
 	var show_bug_leg := assembly.arm_count >= 2
-	for socket_name in ["AnimHead", "AnimEar", "AnimHood", "AnimBandage"]:
-		_attachments[socket_name].visible = true
 	_attachments["AnimTail"].visible = snake
 	_attachments["AnimArmUpper"].visible = show_arm
 	_attachments["AnimArmFore"].visible = show_arm
 	for socket_name in ["AnimScytheGrip", "AnimScytheShaft", "AnimScytheBlade"]:
 		_attachments[socket_name].visible = show_bug_leg
+
+
+func _reset_limb_style() -> void:
+	for socket_name in ["AnimTail", "AnimScytheGrip", "AnimScytheShaft", "AnimScytheBlade", "AnimArmUpper", "AnimArmFore"]:
+		var sprite: Sprite3D = _sprites[socket_name]
+		sprite.modulate = Color.WHITE
+		sprite.scale = Vector3.ONE
+		_attachments[socket_name].visible = false
+
+
+func apply_part_appearance() -> void:
+	if _attachments.is_empty() or player.parts == null:
+		return
+	for socket_name in [
+		"HeadSocket", "BodySocket", "LeftLegSocket", "RightLegSocket",
+		"LeftHandSocket", "RightHandSocket",
+		"QuadFrontLeftSocket", "QuadFrontRightSocket", "QuadBackLeftSocket", "QuadBackRightSocket",
+		"HopArmSocket", "CrawlLeftSocket", "CrawlRightSocket",
+		"SnakeBodySocket", "SnakeArmLeftSocket", "SnakeArmRightSocket",
+		"LeftWingSocket", "RightWingSocket",
+	]:
+		_attachments[socket_name].visible = false
+	_reset_limb_style()
+	for socket_name in ["AnimHead", "AnimEar", "AnimHood", "AnimBandage"]:
+		_attachments[socket_name].visible = true
+	var bag := player.get_node_or_null("LimbBag") as LimbBag
+	var upper_id := bag.equipped_upper if bag != null and not bag.equipped_upper.is_empty() else player.parts.current_upper().id
+	var lower_id := bag.equipped_lower if bag != null and not bag.equipped_lower.is_empty() else player.parts.current_lower().id
+	_show_named_limb(upper_id, true)
+	_show_named_limb(lower_id, false)
+
+
+func _show_named_limb(limb_id: String, upper: bool) -> void:
+	var tint := Color.WHITE
+	match limb_id:
+		"gorilla_arm":
+			_show_plain("AnimArmUpper")
+			_show_plain("AnimArmFore")
+		"gibbon_arm":
+			_show_plain("HopArmSocket")
+		"gerbil_paw":
+			_show_scaled("HopArmSocket", 0.55, Color(0.72, 0.55, 0.36))
+		"octopus_arm":
+			_show_scaled("CrawlLeftSocket", 1.0, Color(0.45, 0.55, 0.85))
+			_show_scaled("CrawlRightSocket", 1.0, Color(0.45, 0.55, 0.85))
+		"goose_wing":
+			_show_wings(Color(0.92, 0.92, 0.9))
+		"bat_wing":
+			_show_wings(Color(0.35, 0.32, 0.4))
+		"albatross_wing":
+			_show_wings(Color(0.75, 0.86, 0.95))
+		"eagle_wing":
+			_show_wings(Color(0.62, 0.42, 0.22))
+		"mantis_arm", "mantis_blade", "mantis_king":
+			tint = LimbCatalog.find(limb_id).tint if LimbCatalog.find(limb_id) else Color.WHITE
+			var scale := LimbCatalog.find(limb_id).visual_scale if LimbCatalog.find(limb_id) else 1.0
+			for socket_name in ["AnimScytheGrip", "AnimScytheShaft", "AnimScytheBlade"]:
+				_style_limb(socket_name, tint, scale)
+		"water_snake", "snake_body":
+			_style_limb("AnimTail", Color.WHITE, 1.0)
+		"python_body":
+			_style_limb("AnimTail", Color(0.78, 0.95, 0.62), 1.18)
+		"crowned_snake":
+			_style_limb("AnimTail", Color(1.0, 0.82, 0.28), 1.24)
+		"fish_tail":
+			_style_limb("AnimTail", Color(0.35, 0.75, 0.95), 1.0)
+		"goose_foot":
+			_show_scaled("LeftLegSocket", 1.35, Color(0.95, 0.72, 0.28))
+			_show_scaled("RightLegSocket", 1.35, Color(0.95, 0.72, 0.28))
+		"wolf_leg":
+			_show_legs(Color(0.55, 0.55, 0.58), 1.0)
+		"ostrich_leg":
+			_show_legs(Color(0.86, 0.72, 0.48), 1.25)
+		"gerbil_leg":
+			_show_legs(Color(0.72, 0.58, 0.4), 0.62)
+		"kangaroo_leg":
+			_show_legs(Color(0.62, 0.45, 0.32), 1.15)
+		"demon_dog_leg":
+			_show_legs(Color(0.45, 0.18, 0.18), 1.0)
+		"octopus_leg":
+			_show_legs(Color(0.4, 0.48, 0.78), 0.85)
+		_:
+			if upper:
+				_show_plain("AnimArmUpper")
+				_show_plain("AnimArmFore")
+			else:
+				_show_legs(Color.WHITE, 1.0)
+
+
+func _show_plain(socket_name: String) -> void:
+	_show_scaled(socket_name, 1.0, Color.WHITE)
+
+
+func _show_wings(tint: Color) -> void:
+	_show_scaled("LeftWingSocket", 1.0, tint)
+	_show_scaled("RightWingSocket", 1.0, tint)
+
+
+func _show_legs(tint: Color, sprite_scale: float) -> void:
+	_show_scaled("LeftLegSocket", sprite_scale, tint)
+	_show_scaled("RightLegSocket", sprite_scale, tint)
+
+
+func _show_scaled(socket_name: String, sprite_scale: float, tint: Color) -> void:
+	var sprite: Sprite3D = _sprites[socket_name]
+	sprite.modulate = tint
+	sprite.scale = Vector3(sprite_scale, sprite_scale, 1.0)
+	_attachments[socket_name].visible = true
+
+
+func _show_carried_limbs() -> void:
+	var lower := LimbCatalog.find(assembly.limb_lower_id)
+	var upper := LimbCatalog.find(assembly.limb_upper_id)
+	if lower != null and lower.visual == "tail":
+		_style_limb("AnimTail", lower.tint, lower.visual_scale)
+	if upper != null and upper.visual == "scythe":
+		for socket_name in ["AnimScytheGrip", "AnimScytheShaft", "AnimScytheBlade"]:
+			_style_limb(socket_name, upper.tint, upper.visual_scale)
+
+
+func _style_limb(socket_name: String, tint: Color, sprite_scale: float) -> void:
+	var sprite: Sprite3D = _sprites[socket_name]
+	sprite.modulate = tint
+	sprite.scale = Vector3(sprite_scale, sprite_scale, 1.0)
+	_attachments[socket_name].visible = true
 
 
 func _reset_pose() -> void:
@@ -292,34 +425,38 @@ func _animate_locomotion() -> void:
 
 	match assembly.resolve_locomotion():
 		CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
-			# 本体绕头心滚。耳朵离头心最远，半径按耳朵顶端留出。
 			var center := _anim_delta(Vector2(1054.0, 617.0), ANIM_NECK, 0.0)
 			_set_bone_position("root", Vector3(0.0, 0.02 + 1.08 - _base_positions["body"].y - center.y, 0.0))
-			var turned := Basis(Vector3.FORWARD, _head_roll_angle)
-			var body_index: int = _bones["body"]
-			_skeleton.set_bone_pose_position(body_index, _base_positions["body"] + center - turned * center)
-			_skeleton.set_bone_pose_rotation(body_index, Quaternion(Vector3.FORWARD, _head_roll_angle))
 
 		CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP:
-			# 猩猩臂是唯一的支撑。起跳抬根，落地时手臂多弯一点。
+			# 起跳抬根，落地时当前这条手臂多弯一点。身体保持朝向镜头。
 			var hop := maxf(sin(phase), 0.0) if moving else 0.0
 			var compression := maxf(-sin(phase), 0.0) if moving else 0.0
 			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0) + hop * 0.42 - compression * 0.045, 0.0))
-			_set_bone_rotation("anim_arm_upper", (-compression * 0.45 + hop * 0.25) * amount)
-			_set_bone_rotation("anim_arm_fore", (-compression * 0.35 + hop * 0.15) * amount)
+			var bend := (-compression * 0.45 + hop * 0.25) * amount
+			if _shown_upper() in ["gibbon_arm", "gerbil_paw"]:
+				_set_bone_rotation("hop_arm", bend)
+			else:
+				_set_bone_rotation("anim_arm_upper", bend)
+				_set_bone_rotation("anim_arm_fore", bend * 0.78)
 
 		CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK:
-			# 猩猩臂和虫子腿交替撑地，身体横着穿过行进方向。
 			var support := sin(phase) if moving else 0.0
 			var brace := _weave_offset(support * 0.05 * amount)
 			_set_bone_position("root", Vector3(brace.x, _anim_ground(848.0) + absf(support) * 0.03 * amount + brace.y, brace.z))
-			_set_bone_rotation("anim_arm_upper", support * 0.28 * amount)
-			_set_bone_rotation("anim_arm_fore", support * 0.16 * amount)
-			_set_bone_rotation("anim_scythe_grip", -support * 0.22 * amount)
-			_set_bone_rotation("anim_scythe_shaft", -support * 0.1 * amount)
+			if _shown_upper() == "octopus_arm":
+				_set_bone_rotation("crawl_left", support * 0.35 * amount)
+				_set_bone_rotation("crawl_right", -support * 0.35 * amount)
+			else:
+				_set_bone_rotation("anim_arm_upper", support * 0.28 * amount)
+				_set_bone_rotation("anim_arm_fore", support * 0.16 * amount)
+				_set_bone_rotation("anim_scythe_grip", -support * 0.22 * amount)
+				_set_bone_rotation("anim_scythe_shaft", -support * 0.1 * amount)
 
 		CharacterAssemblyController.LocomotionMode.BIPED_WALK, CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK:
 			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0), 0.0))
+			if _carrying_scythe():
+				_set_bone_rotation("anim_scythe_grip", sin(phase) * 0.12)
 
 		CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
 			# 身子横着穿过路线，尾巴比身体晚一拍，波从头部往后传。
@@ -327,18 +464,26 @@ func _animate_locomotion() -> void:
 			var tail_wave := sin(phase - 1.15) if moving else 0.0
 			var weave := _weave_offset(wave * 0.22 * amount * gait)
 			_set_bone_position("root", Vector3(weave.x, _anim_ground(ANIM_LOWEST_Y) + weave.y, weave.z))
-			_set_bone_rotation("body", -wave * 0.16 * amount * gait)
 			_set_bone_rotation("anim_tail", tail_wave * 0.55 * amount * gait)
 			if assembly.arm_count >= 1:
 				_set_bone_rotation("anim_arm_upper", -wave * 0.12 * amount * gait)
 				_set_bone_rotation("anim_arm_fore", -wave * 0.08 * amount * gait)
-			if assembly.arm_count >= 2:
+			if assembly.arm_count >= 2 or _carrying_scythe():
 				_set_bone_rotation("anim_scythe_grip", wave * 0.1 * amount * gait)
 	_face_travel()
 
 
+func _shown_upper() -> String:
+	var bag := player.get_node_or_null("LimbBag") as LimbBag
+	if bag != null and not bag.equipped_upper.is_empty():
+		return bag.equipped_upper
+	if player.parts:
+		return player.parts.current_upper().id
+	return ""
+
+
 func _animate_wings() -> void:
-	if not assembly.wings_equipped:
+	if not assembly.wings_equipped and not assembly.part_wings:
 		return
 	var flying := player.is_flying()
 	var rate := 12.0 if flying else 2.6
@@ -351,31 +496,49 @@ func _animate_wings() -> void:
 		_offset_bone_rotation("root", clampf(-_vertical_speed * 0.018, -0.10, 0.10))
 
 
+func aim_attack(world_offset: Vector3) -> void:
+	var flat := Vector3(world_offset.x, 0.0, world_offset.z)
+	if flat.length_squared() < 0.0001:
+		_attack_aim = 0.0
+		return
+	flat = flat.normalized()
+	var axes := _planar_axes()
+	_attack_aim = atan2(axes[1].dot(flat), axes[0].dot(flat))
+
+
 func _animate_attack() -> void:
 	if _attack_time <= 0.0:
 		return
 	var progress := 1.0 - (_attack_time / 0.32)
 	var strike := sin(clampf(progress, 0.0, 1.0) * PI)
-	if _attack_channel == &"head":
-		_offset_bone_position("head", Vector3(0.0, 0.0, 0.22 * strike))
-		return
-	var mode := assembly.resolve_locomotion()
-	if mode == CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP:
-		_set_bone_rotation("hop_arm", deg_to_rad(-75.0) * strike)
-	elif mode == CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK:
-		if _attack_channel == &"left_arm":
-			_set_bone_rotation("crawl_left", deg_to_rad(-60.0) * strike)
-		else:
-			_set_bone_rotation("crawl_right", deg_to_rad(60.0) * strike)
-	elif mode == CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
-		if _attack_channel == &"left_arm":
-			_set_bone_rotation("snake_arm_left", deg_to_rad(-50.0) * strike)
-		else:
-			_set_bone_rotation("snake_arm_right", deg_to_rad(50.0) * strike)
-	elif _attack_channel == &"left_arm":
-		_set_bone_rotation("left_arm", deg_to_rad(-85.0) * strike)
-	else:
-		_set_bone_rotation("right_arm", deg_to_rad(85.0) * strike)
+	var swing := deg_to_rad(-78.0) * strike + _attack_aim * 0.45 * strike
+	match _attack_channel:
+		&"head":
+			_offset_bone_position("head", Vector3(0.0, 0.0, 0.22 * strike))
+		&"anim_arm":
+			_set_bone_rotation("anim_arm_upper", swing)
+			_offset_bone_rotation("anim_arm_fore", swing * 0.55)
+		&"hop_arm":
+			_set_bone_rotation("hop_arm", swing)
+		&"crawl":
+			_set_bone_rotation("crawl_left", swing)
+			_set_bone_rotation("crawl_right", -swing)
+		&"wings":
+			_set_bone_rotation("left_wing", -swing)
+			_set_bone_rotation("right_wing", swing)
+		&"scythe":
+			_set_bone_rotation("anim_scythe_grip", swing)
+		&"left_arm":
+			_set_bone_rotation("left_arm", deg_to_rad(-85.0) * strike)
+		_:
+			_set_bone_rotation("right_arm", deg_to_rad(85.0) * strike)
+
+
+func _carrying_scythe() -> bool:
+	if not assembly.limbs_equipped:
+		return false
+	var upper := LimbCatalog.find(assembly.limb_upper_id)
+	return upper != null and upper.visual == "scythe"
 
 
 func _psd_to_body(pixel: Vector2, depth: float) -> Vector3:
@@ -451,25 +614,28 @@ func _planar_axes() -> Array[Vector3]:
 func _travel_yaw() -> float:
 	var speed := Vector2(_slide_right, _slide_forward).length()
 	if speed < 0.25:
-		return 0.0
+		return _held_snake_yaw if assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER else 0.0
 	# 其他形态只轻轻侧过脸，避免立绘转到侧面。
 	if assembly.resolve_locomotion() != CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
 		_snake_mirror = false
+		_held_snake_yaw = 0.0
 		return clampf(_slide_right / 4.5, -1.0, 1.0) * 0.5
-	# 静止时尾巴伸向画面左侧。正偏航把脑袋转向画面上方，所以尾巴落后于行进方向。
-	# 偏航超过约 100° 时改镜像，避免立绘转到侧面变成一条线。
-	var heading := atan2(_slide_right, _slide_forward)
-	var yaw := wrapf(PI * 0.5 - heading, -PI, PI)
+	# 静止时尾巴在画面左侧、头在右侧。绕朝向镜头的轴转，卡片才不会在上下移动时侧过去。
+	# 往左时改镜像，避免转到背面。
+	var aim := atan2(_slide_forward, _slide_right)
 	_snake_mirror = false
-	if yaw > PI * 0.55:
+	if aim > PI * 0.55:
 		_snake_mirror = true
-		yaw -= PI
-	elif yaw < -PI * 0.55:
+		aim -= PI
+	elif aim < -PI * 0.55:
 		_snake_mirror = true
-		yaw += PI
+		aim += PI
 	if _snake_mirror:
-		yaw = -yaw
-	return clampf(yaw, -1.25, 1.25)
+		aim = -aim
+	var turn := wrapf(aim - _held_snake_yaw, -PI, PI)
+	var step := 9.0 * maxf(_yaw_delta, 0.016)
+	_held_snake_yaw += clampf(turn, -step, step)
+	return _held_snake_yaw
 
 
 func _weave_offset(signed_amount: float) -> Vector3:
@@ -485,15 +651,10 @@ func _weave_offset(signed_amount: float) -> Vector3:
 
 
 func _face_travel() -> void:
+	# 移动只改变肢体和身体位置，不把身体转离镜头。
+	_snake_mirror = false
 	var index: int = _bones["body"]
-	if assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
-		_snake_mirror = false
-		_skeleton.set_bone_pose_scale(index, Vector3.ONE)
-		return
-	var up_axis := (global_transform.basis.inverse() * Vector3.UP).normalized()
-	var current := _skeleton.get_bone_pose_rotation(index)
-	_skeleton.set_bone_pose_rotation(index, Quaternion(up_axis, _travel_yaw()) * current)
-	_skeleton.set_bone_pose_scale(index, Vector3(-1.0 if _snake_mirror else 1.0, 1.0, 1.0))
+	_skeleton.set_bone_pose_scale(index, Vector3.ONE)
 
 
 func _face_camera_once() -> void:

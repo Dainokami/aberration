@@ -34,6 +34,11 @@ func _ready() -> void:
 		parts.changed_loadout.connect(_on_loadout_changed)
 		parts.note.connect(_on_conflict_reported)
 		_on_loadout_changed()
+	if player:
+		var limbs := player.get_node_or_null("LimbBag") as LimbBag
+		if limbs:
+			limbs.note.connect(_on_conflict_reported)
+	_apply_playtest_caption()
 
 
 func _process(delta: float) -> void:
@@ -66,7 +71,22 @@ func _on_air_action_changed(_mode: PlayerController.AirAction) -> void:
 
 
 func _on_player_respawned() -> void:
+	if _is_level_playtest():
+		objective_label.text = "已回到出生点"
+		return
 	objective_label.text = "落水已复位 · 前往远端金色目标区"
+
+
+func _apply_playtest_caption() -> void:
+	if not _is_level_playtest():
+		return
+	$SafeArea/TopLeft/Content/Title.text = "关卡试玩"
+	$SafeArea/TopLeft/Content/Controls.text = "WASD移动  C旧拼接  R重置  Z上肢  X下肢  T突破  G捡肢体/交互  J攻击  Tab背包"
+	objective_label.text = str(player.get_meta("playtest_level"))
+
+
+func _is_level_playtest() -> bool:
+	return player != null and player.has_meta("playtest_level")
 
 
 func _on_loadout_changed() -> void:

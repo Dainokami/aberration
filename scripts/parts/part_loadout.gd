@@ -7,6 +7,8 @@ signal attacked(around: bool)
 
 const UNSPECIFIED_SPEED := 2.4
 const ENEMY_KINDS: PackedStringArray = ["enemy_small", "enemy_elite"]
+const ATTACK_KINDS: PackedStringArray = ["enemy_small", "enemy_elite", "destructible_hard", "destructible_soft"]
+const ATTACK_RANGE := 2.35
 
 var upper_index := 0
 var lower_index := 0
@@ -218,11 +220,13 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("cycle_upper_part"):
+		_stow_bag("upper")
 		upper_index = (upper_index + 1) % PartCatalog.uppers().size()
 		_release_all()
 		_emit_change("上肢：%s" % current_upper().display_name)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cycle_lower_part"):
+		_stow_bag("lower")
 		lower_index = (lower_index + 1) % PartCatalog.lowers().size()
 		_release_all()
 		_emit_change("下肢：%s" % current_lower().display_name)
@@ -267,7 +271,17 @@ func try_attack() -> void:
 	var power := PartDefinition.power_value(upper.attack_power)
 	_attack_cooldown = PartDefinition.cooldown_for(upper.attack_rate)
 	_swing = 0.24
-	_hit_in_shape(upper, power)
+	var target := _lock_attack_target(player)
+	if target == null:
+		note.emit("附近没有可攻击的对象")
+	else:
+		var rig := player.get_node_or_null("ArtRoot/PartSockets") as ModularCharacterRig
+		if rig:
+			rig.aim_attack(target.global_position - player.global_position)
+		target.take_hit(power)
+	var assembly := player.get_node_or_null("Assembly")
+	if assembly and assembly.has_method("request_attack"):
+		assembly.request_attack(_attack_channel(_displayed_upper_id()))
 	attacked.emit(upper.attack_shape == PartDefinition.AttackShape.AROUND)
 	if upper.has_ability("slam_end", breakthrough):
 		_slam_queued = true
@@ -309,6 +323,18 @@ func _interact() -> void:
 		_stuck = true
 		note.emit("吸附住了，松开 G 离开")
 		return
+	if upper.has_ability("smash_hard", breakthrough):
+		var hard := SceneProbe.nearest(origin, 2.1, PackedStringArray(["destructible_hard"]))
+		if hard:
+			var destroyed := hard.take_hit(PartDefinition.power_value(upper.attack_power))
+			note.emit("砸碎了" if destroyed else "砸了一下")
+			return
+	if upper.has_ability("dig_soft", breakthrough) and _tags().has("fluid"):
+		var soft := SceneProbe.nearest(origin, 2.1, PackedStringArray(["destructible_soft"]))
+		if soft:
+			var dug := soft.take_hit(PartDefinition.power_value(upper.attack_power) + 6)
+			note.emit("挖开了" if dug else "挖了一下")
+			return
 	note.emit("附近没有这个部件能用的东西")
 
 
@@ -340,6 +366,12 @@ func _try_throw_grab(origin: Vector3) -> bool:
 	target.set_carried(true)
 	note.emit("抓住了，再按 G 沿面朝方向抛出")
 	return true
+
+
+func _stow_bag(slot_name: String) -> void:
+	var bag := _player().get_node_or_null("LimbBag") as LimbBag
+	if bag:
+		bag.stow_equipped(slot_name)
 
 
 func _release_all() -> void:
@@ -526,18 +558,53 @@ func _tick_dive(player: PlayerController) -> void:
 		prop.take_hit(PartDefinition.power_value(current_upper().attack_power))
 
 
-func _hit_in_shape(upper: PartDefinition, power: int) -> void:
+func sync_movement() -> void:
 	var player := _player()
-	var facing := _facing(player)
-	for prop in SceneProbe.each_kind(ENEMY_KINDS):
-		var offset := prop.global_position - player.global_position
-		offset.y = 0.0
-		if offset.length() > 2.35:
-			continue
-		if upper.attack_shape == PartDefinition.AttackShape.FACING and offset.length() > 0.2:
-			if facing.dot(offset.normalized()) < 0.2:
-				continue
-		prop.take_hit(power)
+	if player == null:
+		return
+	var assembly := player.get_node_or_null("Assembly") as CharacterAssemblyController
+	if assembly:
+		assembly.apply_part_movement(_displayed_upper_id(), _displayed_lower_id())
+
+
+func _displayed_lower_id() -> String:
+	var player := _player()
+	if player == null:
+		return current_lower().id
+	var bag := player.get_node_or_null("LimbBag") as LimbBag
+	if bag != null and not bag.equipped_lower.is_empty():
+		return bag.equipped_lower
+	return current_lower().id
+
+
+func _displayed_upper_id() -> String:
+	var player := _player()
+	if player == null:
+		return current_upper().id
+	var bag := player.get_node_or_null("LimbBag") as LimbBag
+	if bag != null and not bag.equipped_upper.is_empty():
+		return bag.equipped_upper
+	return current_upper().id
+
+
+func _attack_channel(limb_id: String) -> StringName:
+	match limb_id:
+		"gorilla_arm":
+			return &"anim_arm"
+		"gibbon_arm", "gerbil_paw":
+			return &"hop_arm"
+		"octopus_arm":
+			return &"crawl"
+		"goose_wing", "bat_wing", "albatross_wing", "eagle_wing":
+			return &"wings"
+		"mantis_arm", "mantis_blade", "mantis_king":
+			return &"scythe"
+		_:
+			return &"anim_arm"
+
+
+func _lock_attack_target(player: PlayerController) -> AffordanceProp:
+	return SceneProbe.nearest(player.global_position, ATTACK_RANGE, ATTACK_KINDS)
 
 
 func _slam(player: PlayerController) -> void:

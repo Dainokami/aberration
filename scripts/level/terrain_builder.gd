@@ -56,6 +56,25 @@ func _build_objects() -> void:
 		object.scale = Vector3.ONE * float(record.get("scale", 1.0))
 		object.set_meta("object_id", record.get("id", ""))
 		generated.add_child(object)
+		_bind_affordance(object, definition.asset_id)
+
+func _bind_affordance(object: Node3D, asset_id: String) -> void:
+	var kind := ""
+	var health := 1
+	match asset_id:
+		"demo_rock":
+			kind = "pushable"
+		"demo_tree", "demo_fence":
+			kind = "destructible_hard"
+			health = 40
+		_:
+			return
+	var prop := AffordanceProp.new()
+	prop.configure_host(object, kind, health)
+	prop.position = object.position
+	prop.rotation = object.rotation
+	generated.add_child(prop)
+
 
 func _terrain_shader() -> Shader:
 	var shader := Shader.new()

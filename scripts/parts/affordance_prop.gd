@@ -11,11 +11,25 @@ var health := 3
 var spent := false
 var ballistic := false
 var throw_velocity := Vector3.ZERO
+var host: Node3D
+var rest_y := 0.0
+var _plain := false
+
+
+func configure_host(body: Node3D, kind_name: String, health_value: int) -> void:
+	host = body
+	kind = kind_name
+	max_health = health_value
+	health = health_value
+	_plain = true
 
 
 func _ready() -> void:
 	add_to_group("affordance")
 	health = max_health
+	rest_y = global_position.y
+	if _plain:
+		return
 	collision_layer = 1
 	collision_mask = 1
 	var shape := CollisionShape3D.new()
@@ -47,14 +61,22 @@ func take_hit(amount: int) -> bool:
 	if block and block.material_override is StandardMaterial3D:
 		(block.material_override as StandardMaterial3D).albedo_color = Color(0.75, 0.75, 0.75)
 	if health > 0:
+		_tint_host(1.0 - float(health) / float(maxi(max_health, 1)))
 		return false
 	spent = true
-	visible = false
-	collision_layer = 0
+	if host:
+		host.visible = false
+		_set_host_collision(false)
+	else:
+		visible = false
+		collision_layer = 0
 	return true
 
 
 func set_carried(carried: bool) -> void:
+	if host:
+		_set_host_collision(not carried)
+		return
 	collision_layer = 0 if carried else 1
 
 
@@ -74,12 +96,44 @@ func drop() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not ballistic:
+	if ballistic:
+		throw_velocity.y -= 14.0 * delta
+		global_position += throw_velocity * delta
+		if throw_velocity.y <= 0.0 and global_position.y <= rest_y:
+			global_position.y = rest_y
+			ballistic = false
+			throw_velocity = Vector3.ZERO
+			collision_layer = 0 if host else 1
+			if host:
+				_set_host_collision(true)
+	if host and is_instance_valid(host):
+		host.global_position = global_position
+
+
+func _set_host_collision(enabled: bool) -> void:
+	if host == null:
 		return
-	throw_velocity.y -= 14.0 * delta
-	global_position += throw_velocity * delta
-	if global_position.y <= 0.05:
-		global_position.y = 0.05
-		ballistic = false
-		throw_velocity = Vector3.ZERO
-		collision_layer = 1
+	_set_collision(host, enabled)
+
+
+func _set_collision(node: Node, enabled: bool) -> void:
+	var body := node as CollisionObject3D
+	if body and body != self:
+		body.collision_layer = 1 if enabled else 0
+	for child in node.get_children():
+		_set_collision(child, enabled)
+
+
+func _tint_host(amount: float) -> void:
+	if host == null:
+		return
+	_tint(host, Color(1, 1, 1).lerp(Color(0.55, 0.42, 0.38), clampf(amount, 0.0, 1.0)))
+
+
+func _tint(node: Node, color: Color) -> void:
+	if node is Sprite3D:
+		(node as Sprite3D).modulate = color
+	elif node is MeshInstance3D and (node as MeshInstance3D).material_override is StandardMaterial3D:
+		((node as MeshInstance3D).material_override as StandardMaterial3D).albedo_color = color
+	for child in node.get_children():
+		_tint(child, color)

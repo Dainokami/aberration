@@ -29,6 +29,10 @@ enum LocomotionMode {
 var _preset_index := 0
 var _movement_lock_remaining := 0.0
 var _locomotion_phase := 0.0
+var limbs_equipped := false
+var limb_upper_id := ""
+var limb_lower_id := ""
+var part_wings := false
 
 # 这套拆分稿只有本体、一条猩猩臂、一条虫子腿和蛇身。没有双足和四足的图。
 const PRESETS := [
@@ -66,7 +70,33 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func cycle_loadout() -> void:
+	var bag := get_node_or_null("../LimbBag")
+	if bag != null and bag.has_method("has_equipped") and bool(bag.call("has_equipped")):
+		bag.call("report", "身上有肢体，先卸下来再用 C 看旧拼接")
+		return
 	_apply_preset((_preset_index + 1) % PRESETS.size())
+	loadout_changed.emit()
+
+
+func apply_limb_loadout(upper_id: String, lower_id: String) -> void:
+	limbs_equipped = true
+	limb_upper_id = upper_id
+	limb_lower_id = lower_id
+	var upper := LimbCatalog.find(upper_id)
+	var lower := LimbCatalog.find(lower_id)
+	arm_count = 1 if upper != null and upper.visual == "scythe" else 0
+	lower_body = LowerBody.SNAKE if lower != null and lower.visual == "tail" else LowerBody.NONE
+	wings_equipped = false
+	loadout_changed.emit()
+
+
+func clear_limb_drive() -> void:
+	if not limbs_equipped and limb_upper_id.is_empty() and limb_lower_id.is_empty():
+		return
+	limbs_equipped = false
+	limb_upper_id = ""
+	limb_lower_id = ""
+	_apply_preset(_preset_index)
 	loadout_changed.emit()
 
 
@@ -77,8 +107,29 @@ func _apply_preset(index: int) -> void:
 	lower_body = preset["lower"]
 
 
+func apply_part_movement(upper_id: String, lower_id: String) -> void:
+	part_wings = upper_id in ["goose_wing", "bat_wing", "albatross_wing", "eagle_wing"]
+	if lower_id in ["water_snake", "fish_tail", "snake_body", "python_body", "crowned_snake"]:
+		lower_body = LowerBody.SNAKE
+		if upper_id in ["mantis_arm", "mantis_blade", "mantis_king", "octopus_arm"]:
+			arm_count = 2
+		elif upper_id in ["gorilla_arm", "gibbon_arm", "gerbil_paw"]:
+			arm_count = 1
+		else:
+			arm_count = 0
+	elif upper_id == "octopus_arm":
+		lower_body = LowerBody.NONE
+		arm_count = 2
+	elif upper_id in ["gorilla_arm", "gibbon_arm", "gerbil_paw"]:
+		lower_body = LowerBody.NONE
+		arm_count = 1
+	else:
+		lower_body = LowerBody.BIPED
+		arm_count = 0
+
+
 func resolve_locomotion() -> LocomotionMode:
-	# 策划优先级：下肢 > 上肢 > 头部。翅膀是叠加能力，不替换地面移动。
+	# 下肢的蛇行优先。其余时候上肢决定是跳、爬还是用腿走。翅膀只叠加飞行。
 	match lower_body:
 		LowerBody.BIPED:
 			return LocomotionMode.BIPED_WALK
@@ -107,7 +158,12 @@ func get_speed_multiplier() -> float:
 		LocomotionMode.QUADRUPED_WALK:
 			return 1.18
 		LocomotionMode.SNAKE_SLITHER:
-			return 0.9
+			var snake_scale := 1.0
+			if limbs_equipped:
+				var lower := LimbCatalog.find(limb_lower_id)
+				if lower != null:
+					snake_scale = lower.speed_scale
+			return 0.9 * snake_scale
 	return 1.0
 
 
@@ -195,6 +251,8 @@ func get_deceleration_multiplier() -> float:
 
 
 func get_collision_height() -> float:
+	if limbs_equipped and resolve_locomotion() != LocomotionMode.SNAKE_SLITHER:
+		return 2.16
 	match resolve_locomotion():
 		LocomotionMode.HEAD_ROLL:
 			return 2.16
@@ -206,14 +264,27 @@ func get_collision_height() -> float:
 
 
 func get_locomotion_label() -> String:
+	if limbs_equipped:
+		return "蛇行" if resolve_locomotion() == LocomotionMode.SNAKE_SLITHER else "站立"
 	return PRESETS[_preset_index]["name"]
 
 
 func get_loadout_summary() -> String:
+	if limbs_equipped:
+		return "移动：%s  |  上肢：%s  下肢：%s" % [
+			get_locomotion_label(), _limb_name(limb_upper_id), _limb_name(limb_lower_id)
+		]
 	var lower_label: String = ["无", "双足", "四足", "蛇类"][lower_body]
 	return "移动：%s  |  上肢：%d  下肢：%s  翅膀：%s" % [
 		get_locomotion_label(), arm_count, lower_label, "有" if wings_equipped else "无"
 	]
+
+
+func _limb_name(limb_id: String) -> String:
+	if limb_id.is_empty():
+		return "无"
+	var limb := LimbCatalog.find(limb_id)
+	return limb.display_name if limb else limb_id
 
 
 func can_fly() -> bool:
@@ -224,7 +295,10 @@ func is_movement_locked() -> bool:
 	return _movement_lock_remaining > 0.0
 
 
-func request_attack() -> void:
+func request_attack(channel: StringName = &"") -> void:
+	if channel != &"":
+		attack_started.emit(channel, false)
+		return
 	var arms_used_for_locomotion := lower_body == LowerBody.NONE and arm_count > 0
 	if arm_count == 0:
 		conflict_reported.emit("无上肢：改用低威力头部撞击；未来可由头部攻击模组替换。")
