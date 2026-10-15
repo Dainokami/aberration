@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_u1ojw"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_f43mi"]
+
+[resource]
+script = ExtResource("2_f43mi")
+asset_id = "painted_bigtree2"
+display_name = "细柏"
+category = "树木"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/bigtree2.png"
+scene_path = "res://assets/generated/painted_bigtree2/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_bigtree2/thumbnail.png"
+image_size = Vector2(1.3276, 4)
+pivot = Vector2(0.5, 0.99)
+collision = 2
+collision_size = Vector3(0.6, 2, 0.6)
+profile = ExtResource("1_u1ojw")
+generator_version = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": [331.0, 62.0, 630.0, 979.0],
+"version": 1.0
+}

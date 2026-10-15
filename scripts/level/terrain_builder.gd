@@ -31,6 +31,7 @@ var _built_bounds := Rect2i()
 var _built_stairs: Array[Dictionary] = []
 var _used_blends: Dictionary = {}
 var _raster_cache: Dictionary = {}
+var detail_renderer: DetailRenderer
 
 func _ready() -> void:
 	rebuild()
@@ -67,6 +68,7 @@ func rebuild() -> void:
 		_build_grid()
 	_build_spawn_marker()
 	_build_objects()
+	rebuild_details()
 	_built_stairs = level_data.stairs.duplicate(true)
 	_apply_slice_visibility()
 
@@ -141,6 +143,7 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 		if node.has_meta("object_id") or node.name == "SpawnMarker":
 			node.free()
 	_build_objects()
+	rebuild_details()
 	_build_spawn_marker()
 	_built_stairs = level_data.stairs.duplicate(true)
 	_apply_slice_visibility()
@@ -150,17 +153,34 @@ func _build_objects() -> void:
 		var definition := ObjectRules.definition(record)
 		if definition == null or not definition.validate_asset().is_empty():
 			continue
-		var object := AssetFactory.make_asset(definition)
+		var object := AssetFactory.instantiate_asset(definition)
 		if definition.fade_when_occluding and object.get_script() == null:
 			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
 		object.position = record.get("position", Vector3.ZERO)
 		object.rotation.y = float(record.get("yaw", 0.0))
 		object.scale = Vector3.ONE * float(record.get("scale", 1.0))
 		object.set_meta("object_id", record.get("id", ""))
+		object.set_meta("support_id", record.get("support_id", ""))
+		object.set_meta("anchor_kind", record.get("anchor_kind", "top"))
+		object.set_meta("wall_direction", record.get("wall_direction", -1))
+		if not Engine.is_editor_hint() and object is GameplayProp:
+			object.instance_id = str(record.get("id", ""))
 		object.set_meta("terrain_layer", int(record.get(
 			"anchor_layer",
 			level_data.elevation(level_data.world_to_cell(object.position)))))
 		generated.add_child(object)
+		if not build_collision:
+			for collision in object.find_children("*", "CollisionObject3D", true, false):
+				collision.collision_layer = 0
+				collision.collision_mask = 0
+
+func rebuild_details() -> void:
+	if not is_instance_valid(detail_renderer) or detail_renderer.get_parent() != generated:
+		detail_renderer = DetailRenderer.new()
+		detail_renderer.name = "Details"
+		generated.add_child(detail_renderer)
+	detail_renderer.refresh(level_data)
+	detail_renderer.set_slice_layer(slice_layer_limit)
 
 func _prepare_materials() -> void:
 	_tile_material_cache.clear()
@@ -467,6 +487,7 @@ func _build_cliffs_and_rims() -> void:
 					tile, level_data.terrain_tint(tile.tile_id))
 				rim.set_meta("terrain_tile", tile.tile_id)
 				rim.set_meta("terrain_layer", int(group["layer"]))
+				rim.set_meta("terrain_rim", true)
 				generated.add_child(rim)
 
 func _build_shore_foam() -> void:
@@ -506,6 +527,13 @@ func _build_stair(stair: Dictionary) -> void:
 	var run_vector := Vector3(vector.x, 0.0, vector.y)
 	var run_start := low_center - run_vector * LevelData.CELL_SIZE * 0.5
 	var run_end := high_center + run_vector * LevelData.CELL_SIZE * 0.5
+	var tile := TileRegistry.find(level_data.solid_tile_id(low + vector))
+	var step_material: Material = stair_material
+	var top_material: Material
+	if tile != null and tile.art_set != null:
+		step_material = TerrainMaterials.cliff_material(tile, level_data.terrain_tint(tile.tile_id), true)
+		top_material = TerrainMaterials.top_material(tile, null, null, 0, null,
+			level_data.terrain_tint(tile.tile_id), Color.TRANSPARENT, 0)
 	for i in 10:
 		var progress := (float(i) + 0.5) / 10.0
 		var pos := run_start.lerp(run_end, progress)
@@ -515,10 +543,22 @@ func _build_stair(stair: Dictionary) -> void:
 		var size := Vector3(LevelData.CELL_SIZE, thickness, LevelData.CELL_SIZE * 2.0 / 10.0)
 		if direction % 2 == 1:
 			size = Vector3(LevelData.CELL_SIZE * 2.0 / 10.0, thickness, LevelData.CELL_SIZE)
-		var step := _box("StairVisual_%02d" % i, pos, size, stair_material, false)
+		var step := _box("StairVisual_%02d" % i, pos, size, step_material, false)
 		step.set_meta("stair_step", i)
 		step.set_meta("stair_low_cell", low)
 		step.set_meta("terrain_layer", level_data.elevation(low))
+		if top_material != null:
+			var top := MeshInstance3D.new()
+			top.name = "StairTop_%02d" % i
+			var plane := PlaneMesh.new()
+			plane.size = Vector2(size.x, size.z)
+			top.mesh = plane
+			top.material_override = top_material
+			top.position = pos + Vector3.UP * (thickness * 0.5 + 0.003)
+			top.set_meta("terrain_layer", level_data.elevation(low))
+			generated.add_child(top)
+	if tile != null and tile.art_set != null and not tile.art_set.slope_side_path.is_empty():
+		_build_slope_art(run_start, run_end, low_height, tile, level_data.elevation(low))
 	if not build_collision:
 		return
 	var body := StaticBody3D.new()
@@ -541,6 +581,42 @@ func _build_stair(stair: Dictionary) -> void:
 	body.set_meta("terrain_layer", level_data.elevation(low))
 	body.set_meta("stair_low_cell", low)
 	generated.add_child(body)
+
+func _build_slope_art(start: Vector3, end: Vector3, bottom: float,
+		tile: TileDefinition, layer: int) -> void:
+	var texture := load(tile.art_set.slope_side_path) as Texture2D
+	if texture == null:
+		return
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = texture
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	material.alpha_scissor_threshold = 0.15
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.texture_repeat = false
+	var sideways := (end - start).normalized().cross(Vector3.UP) * (LevelData.CELL_SIZE * 0.5 + 0.006)
+	for side in [-1, 1]:
+		var points := PackedVector3Array([
+			Vector3(start.x, bottom + LevelData.ELEVATION_STEP, start.z),
+			Vector3(start.x, bottom, start.z), Vector3(end.x, bottom, end.z),
+			Vector3(end.x, bottom + LevelData.ELEVATION_STEP, end.z)])
+		for i in points.size():
+			points[i] += sideways * side
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = points
+		arrays[Mesh.ARRAY_TEX_UV] = PackedVector2Array([
+			Vector2.ZERO, Vector2.DOWN, Vector2.ONE, Vector2.RIGHT])
+		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2, 0, 2, 3])
+		var mesh := ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var node := MeshInstance3D.new()
+		node.name = "SlopeArt"
+		node.mesh = mesh
+		node.material_override = material
+		node.set_meta("terrain_layer", layer)
+		node.set_meta("slope_side", true)
+		generated.add_child(node)
 
 func _build_grid() -> void:
 	var material := StandardMaterial3D.new()
@@ -587,6 +663,8 @@ func set_slice_layer(layer: int) -> void:
 func _apply_slice_visibility() -> void:
 	if generated == null or not is_instance_valid(generated):
 		return
+	if is_instance_valid(detail_renderer):
+		detail_renderer.set_slice_layer(slice_layer_limit)
 	if is_instance_valid(_slice_caps):
 		_slice_caps.free()
 	_slice_caps = null

@@ -77,6 +77,18 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	var screen_b := camera.unproject_position(map.world_center(cell, 1))
 	suite.check(plugin._pick(camera, screen_b) == cell and plugin.picked_layer == 1,
 		"editor picks B on the temporary slice cap")
+	var before_sample := map.clone_data()
+	plugin.height_select.select(0)
+	var sample := InputEventMouseButton.new()
+	sample.button_index = MOUSE_BUTTON_LEFT
+	sample.position = screen_b
+	sample.alt_pressed = true # macOS Option is delivered as Alt by Godot.
+	sample.pressed = true
+	plugin._forward_3d_gui_input(camera, sample)
+	sample.pressed = false
+	plugin._forward_3d_gui_input(camera, sample)
+	suite.check(plugin.height_select.selected == 1 and map.clone_data() == before_sample
+		and not plugin.drawing, "Option-click selects the visible layer without painting")
 	plugin.slice_select.select(0)
 	plugin._slice_changed(0)
 	plugin.mode_select.selected = 0

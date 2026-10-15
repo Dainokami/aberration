@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/samllflowers.png" id="1_d4ukd"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wy823"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_d4ukd")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_3ae83"]
+_surfaces = [{
+"aabb": AABB(-0.38835, -0.009271829, -0.37086052, 0.7767, 0.92718387, 0.37460658),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(208, 213, 198, 190, 73, 252, 106, 63, 110, 225, 189, 190, 208, 213, 198, 190, 223, 232, 23, 188, 127, 128, 117, 59, 208, 213, 198, 62, 223, 232, 23, 188, 127, 128, 117, 59, 208, 213, 198, 62, 73, 252, 106, 63, 110, 225, 189, 190)
+}]
+
+[node name="painted_samllflowers" type="Node3D" unique_id=1359742483]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1251839279]
+material_override = SubResource("StandardMaterial3D_wy823")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_3ae83")

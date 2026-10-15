@@ -18,6 +18,25 @@ func run(plugin: EditorPlugin) -> void:
 	tree.root.add_child(host)
 	plugin._edit(host)
 	var initial: Dictionary = plugin.data.clone_data()
+	if "--capture-art-panels" in OS.get_cmdline_user_args():
+		await load("res://tests/editor_panel_capture.gd").new().run(plugin)
+		plugin.builder = null
+		plugin.data = null
+		host.queue_free()
+		await tree.process_frame
+		print("PANEL CAPTURE DONE")
+		tree.quit(0)
+		return
+	if "--capture-interaction" in OS.get_cmdline_user_args():
+		await load("res://tests/editor_layout_checks.gd").new().run(plugin, self)
+		plugin._disable_2_5d_view()
+		plugin.builder = null
+		plugin.data = null
+		host.queue_free()
+		await tree.process_frame
+		print("EDITOR INTERACTION TEST FAILURES: ", failures)
+		tree.quit(0 if failures.is_empty() else 1)
+		return
 
 	# Test commit_external records action (manually apply first)
 	plugin.data.objects.remove_at(0)
@@ -79,7 +98,7 @@ func run(plugin: EditorPlugin) -> void:
 
 	# Generate-as selector exists
 	check(importer.generate_as != null, "generate_as selector exists")
-	check(importer.generate_as.item_count == 2, "generate_as has tile and object options")
+	check(importer.generate_as.item_count == 7, "importer retains legacy modes and exposes five art workflows")
 
 	# Prefab preview
 	plugin.world_tools.prefab = load("res://data/prefabs/demo_camp.tres")
@@ -132,6 +151,21 @@ func run(plugin: EditorPlugin) -> void:
 	# Prefab sub-tabs
 	check(plugin.world_tools.prefab_sub_tabs.get_child(0).name == "制作预制", "prefab sub-tab 0 is create")
 	check(plugin.world_tools.prefab_sub_tabs.get_child(1).name == "使用预制", "prefab sub-tab 1 is use")
+	var prefab_mode = plugin.world_tools.prefab_mode
+	var create_button: Button = prefab_mode.buttons[0]
+	var use_button: Button = prefab_mode.buttons[1]
+	check(not plugin.world_tools.prefab_sub_tabs.tabs_visible
+		and create_button.custom_minimum_size.y >= plugin.ui_px(40)
+		and create_button.has_theme_stylebox_override("normal")
+		and create_button.has_theme_stylebox_override("pressed")
+		and use_button.has_theme_stylebox_override("normal"),
+		"prefab create and use entries are prominent action buttons")
+	prefab_mode.selected = 1
+	check(plugin.world_tools.prefab_sub_tabs.current_tab == 1,
+		"prefab use button changes the active workflow")
+	prefab_mode.selected = 0
+	check(plugin.world_tools.prefab_sub_tabs.current_tab == 0,
+		"prefab create button changes the active workflow")
 
 	var art_checks = load("res://tests/editor_art_regression.gd").new()
 	art_checks.run(plugin, self)
@@ -139,8 +173,11 @@ func run(plugin: EditorPlugin) -> void:
 	await layout_checks.run(plugin, self)
 	var stacked_checks = load("res://tests/editor_stacked_checks.gd").new()
 	await stacked_checks.run(plugin, self)
+	var art_tools_checks = load("res://tests/editor_art_tools_checks.gd").new()
+	await art_tools_checks.run(plugin, self)
 	var import_checks = load("res://tests/editor_import_checks.gd").new()
 	import_checks.run(plugin, self)
+	await load("res://tests/editor_scene_import_checks.gd").new().run(plugin, self)
 	if "--capture-import-panel" in OS.get_cmdline_user_args():
 		await import_checks.capture_panel(plugin)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_path))

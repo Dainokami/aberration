@@ -35,6 +35,13 @@ var generate_button: Button
 var advanced_toggle: CheckBox
 var needs_analysis := false
 var source_summary: Label
+var scene_panel
+
+## Logical px; the editor scale is applied so HiDPI docks keep their proportions.
+const LABEL_WIDTH := 96
+
+static func _scale() -> float:
+	return EditorInterface.get_editor_scale()
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
@@ -56,11 +63,14 @@ func _ready() -> void:
 	gen_label.text = "类型"
 	var type_row := HBoxContainer.new()
 	add_child(type_row)
-	gen_label.custom_minimum_size.x = 96
+	gen_label.custom_minimum_size.x = LABEL_WIDTH * _scale()
 	type_row.add_child(gen_label)
 	generate_as = OptionButton.new()
-	generate_as.add_item("物件")
-	generate_as.add_item("地块")
+	for title in ["物件 · 单张原画", "地块 · 单张顶面", "地形套件", "细节图集",
+			"物件 · 多面岩石", "物件 · 双状态宝箱", "物件 · 贴墙攀岩点"]:
+		generate_as.add_item(title)
+	generate_as.clip_text = true
+	generate_as.get_popup().max_size.y = 280
 	generate_as.tooltip_text = "物件放在地块上；地块是完整的可行走方格。"
 	generate_as.item_selected.connect(_on_generate_as_changed)
 	generate_as.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -74,7 +84,7 @@ func _ready() -> void:
 	tile_color_picker = ColorPickerButton.new()
 	tile_color_picker.color = Color(0.45, 0.53, 0.34)
 	tile_color_picker.tooltip_text = "用于侧壁和图片透明区域；透明不表示地形缺口。"
-	tile_color_picker.custom_minimum_size.y = 30
+	tile_color_picker.custom_minimum_size.y = 30 * _scale()
 	tile_section.add_child(tile_color_picker)
 	var th_label := Label.new()
 	th_label.text = "默认实体层"
@@ -82,10 +92,14 @@ func _ready() -> void:
 	tile_height_option = OptionButton.new()
 	for layer in LevelData.MAX_LAYERS:
 		tile_height_option.add_item("第 %d 层（顶面 %dm）" % [layer, (layer + 1) * 2])
+	tile_height_option.clip_text = true
+	tile_height_option.get_popup().max_size.y = 280
 	tile_section.add_child(tile_height_option)
 	tile_role_option = OptionButton.new()
 	for role in ["实体地块（固定厚度 2m）", "液体（附着在柱顶）", "贴花（覆盖柱顶）"]:
 		tile_role_option.add_item(role)
+	tile_role_option.clip_text = true
+	tile_role_option.get_popup().max_size.y = 280
 	tile_section.add_child(tile_role_option)
 	var object_start := get_child_count()
 	carrier = _option("载体", ["固定相机卡片", "贴地平面", "投影盒体", "投影坡体"])
@@ -108,7 +122,8 @@ func _ready() -> void:
 	add_child(advanced)
 	advanced.hide()
 	advanced.add_child(analysis_label)
-	advanced_toggle.toggled.connect(func(enabled: bool): advanced.visible = enabled and generate_as.selected == 0)
+	advanced_toggle.toggled.connect(func(enabled: bool):
+		advanced.visible = enabled and generate_as.selected in [0, 4, 5, 6])
 	build_parent = advanced
 	_numbers("density", "像素密度 · px/m", [256.0], 1, 4096)
 	density = fields["density"][0]
@@ -131,7 +146,7 @@ func _ready() -> void:
 	build_parent = self
 	_section("预览")
 	var container := SubViewportContainer.new()
-	container.custom_minimum_size = Vector2(280, 210)
+	container.custom_minimum_size = Vector2(240, 195) * _scale()
 	container.stretch = true
 	container.tooltip_text = "固定相机预览。黄点为接地点，蓝框为碰撞范围，格线间隔 2m。\n卡片或贴地物件可点击修改接地点。"
 	add_child(container)
@@ -186,6 +201,10 @@ func _ready() -> void:
 	fields["foreground"].text_submitted.connect(func(_text: String): _schedule_preview())
 	tile_color_picker.color_changed.connect(func(_color: Color): _schedule_preview())
 	tile_height_option.item_selected.connect(func(_index: int): _schedule_preview())
+	scene_panel = load("res://addons/terrain_editor/scene_import_panel.gd").new()
+	add_child(scene_panel)
+	move_child(scene_panel, type_row.get_index() + 1)
+	scene_panel.setup(self)
 	_on_generate_as_changed(0)
 
 func _section(title: String) -> void:
@@ -193,7 +212,7 @@ func _section(title: String) -> void:
 	row.add_theme_constant_override("separation", 10)
 	var label := Label.new()
 	label.text = title
-	label.custom_minimum_size.x = 96
+	label.custom_minimum_size.x = LABEL_WIDTH * _scale()
 	label.modulate = Color(1, 1, 1, 0.65)
 	row.add_child(label)
 	var line := HSeparator.new()
@@ -206,7 +225,7 @@ func _line(key: String, title: String, text: String) -> void:
 	build_parent.add_child(row)
 	var label := Label.new()
 	label.text = title
-	label.custom_minimum_size.x = 96
+	label.custom_minimum_size.x = LABEL_WIDTH * _scale()
 	row.add_child(label)
 	var edit := LineEdit.new()
 	edit.text = text
@@ -220,7 +239,7 @@ func _numbers(key: String, title: String, values: Array, low: float, high: float
 	var row := HBoxContainer.new()
 	build_parent.add_child(row)
 	if values.size() == 1:
-		label.custom_minimum_size.x = 96
+		label.custom_minimum_size.x = LABEL_WIDTH * _scale()
 		row.add_child(label)
 	else:
 		build_parent.add_child(label)
@@ -248,16 +267,20 @@ func _option(title: String, options: Array[String]) -> OptionButton:
 	build_parent.add_child(row)
 	var label := Label.new()
 	label.text = title
-	label.custom_minimum_size.x = 96
+	label.custom_minimum_size.x = LABEL_WIDTH * _scale()
 	row.add_child(label)
 	var select := OptionButton.new()
 	select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for option in options:
 		select.add_item(option)
+	select.clip_text = true
+	select.get_popup().max_size.y = 280
 	row.add_child(select)
 	return select
 
 func _choose_image(key: String) -> void:
+	if scene_panel != null and scene_panel.busy:
+		return
 	target_field = key
 	image_dialog.popup_centered_ratio(0.7)
 
@@ -273,6 +296,9 @@ func _image_selected(path: String) -> void:
 			message.text = "复制源图失败：" + str(error)
 			return
 		EditorInterface.get_resource_filesystem().scan()
+	if not fields.has(target_field):
+		scene_panel.accept_slot(target_field, local)
+		return
 	fields[target_field].text = local
 	if target_field == "source":
 		original_filename = path.get_file()
@@ -301,6 +327,11 @@ func _accept_source(path: String) -> void:
 	carrier.selected = 0
 	blocking.set_pressed_no_signal(false)
 	collision.selected = 0
+	if generate_as.selected == 4:
+		blocking.set_pressed_no_signal(true)
+		collision.selected = 1
+	if scene_panel != null:
+		scene_panel.source_changed()
 	if ResourceLoader.exists(path):
 		_calculate_defaults()
 	else:
@@ -348,6 +379,16 @@ func _calculate_defaults() -> void:
 		fields["collision"][axis].value = analysis["proxy"][axis]
 		fields["volume"][axis].value = analysis["proxy"][axis]
 		fields["offset"][axis].value = 0
+	if generate_as.selected == 4:
+		for axis in 3:
+			fields["volume"][axis].value = 2.0
+			fields["collision"][axis].value = 2.0
+	if generate_as.selected == 6:
+		fields["image"][0].value = 2.0
+		fields["image"][1].value = 2.0
+		display_width.value = 2.0
+		fields["pivot"][0].value = 0.5
+		fields["pivot"][1].value = 1.0
 	updating = false
 	var rect: Rect2i = analysis["bounds"]
 	analysis_label.text = "画布 %s px · 有效内容 %s px\n%.1f px/m" % [
@@ -421,11 +462,16 @@ func make_definition() -> PlaceableDefinition:
 	d.collision_offset = _vector("offset")
 	d.fade_foreground = foreground_fade.button_pressed
 	d.profile = load("res://data/art_profile.tres") as ArtProfile
+	if scene_panel != null:
+		scene_panel.configure_definition(d)
 	return d
 
 func _refresh_preview() -> void:
-	if generate_as.selected == 1:
+	if generate_as.selected in [1, 2]:
 		_refresh_tile_preview()
+		return
+	if generate_as.selected == 3:
+		_refresh_detail_preview()
 		return
 	var d := make_definition()
 	var errors := d.validate_asset()
@@ -437,7 +483,13 @@ func _refresh_preview() -> void:
 		preview_root.queue_free()
 	preview_root = Node3D.new()
 	viewport.add_child(preview_root)
-	preview_root.add_child(AssetFactory.make_asset(d))
+	var asset := AssetFactory.make_asset(d)
+	preview_root.add_child(asset)
+	if generate_as.selected == 5:
+		var state := "closed" if scene_panel.state_preview.selected == 0 else "open"
+		for child in asset.get_children():
+			if child is Node3D and str(child.name).begins_with("State_"):
+				child.visible = str(child.name) == "State_" + state
 	var camera := Camera3D.new()
 	var center := d.profile.camera_basis().y * d.image_size.y * (d.pivot.y - 0.5)
 	preview_root.add_child(camera)
@@ -485,7 +537,7 @@ func _add_ground_reference() -> void:
 	preview_root.add_child(marker)
 
 func _preview_input(event: InputEvent, container: Control) -> void:
-	if generate_as.selected == 1:
+	if generate_as.selected in [1, 2, 3, 4, 6]:
 		return
 	if not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
 		return
@@ -595,8 +647,13 @@ func _preset_selected(path: String) -> void:
 		message.text = "已应用配置；保持当前图片比例，请确认碰撞和落点。" if error.is_empty() else error
 
 func _generate() -> void:
-	if generate_as.selected == 1:
+	if scene_panel.busy:
+		return
+	if generate_as.selected in [1, 2]:
 		_generate_tile()
+		return
+	if generate_as.selected == 3:
+		_generate_details()
 		return
 	var image := _source_image()
 	var measured := ImageDefaults.analyze(image, density.value)
@@ -618,20 +675,35 @@ func _generate() -> void:
 	generated.emit(directory.path_join("definition.tres"))
 
 func _on_generate_as_changed(index: int) -> void:
-	tile_section.visible = (index == 1)
+	tile_section.visible = index in [1, 2]
 	for control in object_controls:
-		control.visible = index == 0
-	advanced.visible = index == 0 and advanced_toggle.button_pressed
-	generate_button.text = "生成地块" if index == 1 else "生成物件"
-	generate_button.tooltip_text = "生成后加入地块库" if index == 1 else "生成后加入物件库"
-	analysis_label.visible = index == 0
+		control.visible = index in [0, 4, 5, 6]
+	carrier.get_parent().visible = index == 0
+	display_width.get_parent().visible = index in [0, 3, 5, 6]
+	blocking.visible = index in [0, 4, 5]
+	advanced.visible = index in [0, 4, 5, 6] and advanced_toggle.button_pressed
+	generate_button.text = "生成地形套件" if index == 2 else "生成细节套件" if index == 3 \
+		else "生成地块" if index == 1 else "生成物件"
+	generate_button.tooltip_text = "生成后加入相应资源库；已有 ID 不会被覆盖"
+	analysis_label.visible = index in [0, 4, 5, 6]
+	tile_role_option.visible = index == 1
+	if scene_panel != null:
+		scene_panel.set_mode(index)
+	if index == 4:
+		blocking.button_pressed = true
+		collision.selected = 1
+		for axis in 3:
+			fields["volume"][axis].value = 2
+			fields["collision"][axis].value = 2
 	_schedule_preview()
 
 func _available_id(filename: String) -> String:
 	var base := ImageDefaults.available_id(filename)
 	var result := base
 	var number := 2
-	while FileAccess.file_exists("res://data/tiles/" + result + ".tres") or TileRegistry.find(result) != null or DirAccess.dir_exists_absolute("res://assets/generated/" + result):
+	while FileAccess.file_exists("res://data/tiles/" + result + ".tres") \
+			or FileAccess.file_exists("res://data/details/" + result + ".tres") \
+			or TileRegistry.find(result) != null or DirAccess.dir_exists_absolute("res://assets/generated/" + result):
 		result = base + "_%02d" % number
 		number += 1
 	return result
@@ -665,6 +737,25 @@ func _generate_tile() -> void:
 		tile.surface_kind = TileDefinition.SurfaceKind.WATER
 	tile.is_builtin = false
 	tile.transition_priority = TileRegistry.next_transition_priority()
+	var art_path := ""
+	if generate_as.selected == 2:
+		var art: TerrainArtSet = scene_panel.make_terrain()
+		var errors := art.validate_asset()
+		if not errors.is_empty():
+			message.text = "\n".join(errors)
+			return
+		art_path = "res://data/terrain_art/" + id + ".tres"
+		if FileAccess.file_exists(art_path):
+			message.text = "地形套件 ID 已存在，请更换。"
+			return
+		DirAccess.make_dir_recursive_absolute("res://data/terrain_art")
+		var art_error := ResourceSaver.save(art, art_path)
+		if art_error != OK:
+			message.text = "地形套件保存失败：" + error_string(art_error)
+			return
+		tile.art_set = art
+		tile.terrain_role = TileDefinition.TerrainRole.SOLID
+		tile.resolve_art()
 	var thumb_dir := "res://data/tiles"
 	var mkdir_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(thumb_dir))
 	if mkdir_error != OK:
@@ -672,6 +763,8 @@ func _generate_tile() -> void:
 		return
 	var error := ResourceSaver.save(tile, path)
 	if error != OK:
+		if not art_path.is_empty():
+			DirAccess.remove_absolute(art_path)
 		message.text = "保存地块失败：" + str(error)
 		return
 	EditorInterface.get_resource_filesystem().scan()
@@ -694,14 +787,27 @@ func _refresh_tile_preview() -> void:
 	var tile := TileDefinition.new()
 	tile.texture_path = fields["source"].text
 	tile.base_color = tile_color_picker.color
+	if generate_as.selected == 2:
+		tile.art_set = scene_panel.make_terrain()
+		tile.resolve_art()
 	var height := (tile_height_option.selected + 1) * 2.0
 	var block := MeshInstance3D.new()
 	var block_mesh := BoxMesh.new()
 	block_mesh.size = Vector3(2, 2, 2)
 	block.mesh = block_mesh
 	block.position.y = height - 1
-	block.material_override = tile.wall_material()
+	block.material_override = TerrainMaterials.cliff_material(tile, tile.tint_default(), true) \
+		if generate_as.selected == 2 else tile.wall_material()
 	preview_root.add_child(block)
+	if generate_as.selected == 2 and tile.has_soft_rim():
+		# Same edge builder and material as the map, around the preview block.
+		var outline := PackedVector2Array([Vector2(-1, -1), Vector2(1, -1),
+			Vector2(1, 1), Vector2(-1, 1), Vector2(-1, -1)])
+		var rim := MeshInstance3D.new()
+		rim.mesh = TerrainEdgeBuilder.make_rim_mesh(outline, height, tile,
+			load(TerrainBuilder.DEFAULT_STYLE) as TerrainStyleProfile)
+		rim.material_override = TerrainMaterials.rim_material(tile, tile.tint_default())
+		preview_root.add_child(rim)
 	var top := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(2, 2)
@@ -722,3 +828,64 @@ func _refresh_tile_preview() -> void:
 	message.text = ""
 	if pixels.x != pixels.y:
 		message.text = "非方形图片，铺满地块会拉伸。"
+
+func _generate_details() -> void:
+	var detail: DetailSet = scene_panel.make_details()
+	if scene_panel.atlas_result.is_empty():
+		scene_panel.tools.visible = true
+		message.text = "先在「图片处理与对照」中处理图片、生成图集。"
+		return
+	var errors := detail.validate_asset()
+	if not errors.is_empty():
+		message.text = "\n".join(errors)
+		return
+	var path := "res://data/details/" + detail.set_id + ".tres"
+	if FileAccess.file_exists(path):
+		message.text = "细节套件 ID 已存在，请更换。"
+		return
+	DirAccess.make_dir_recursive_absolute("res://data/details")
+	var error := ResourceSaver.save(detail, path)
+	if error != OK:
+		message.text = "保存失败：" + error_string(error)
+		return
+	EditorInterface.get_resource_filesystem().scan()
+	message.text = "已加入细节库：" + detail.display_name
+	generated.emit(path)
+
+func _refresh_detail_preview() -> void:
+	var detail: DetailSet = scene_panel.make_details()
+	if detail.variants.is_empty():
+		message.text = "添加变体后，在「图片处理与对照」中生成图集。"
+		return
+	if is_instance_valid(preview_root):
+		viewport.remove_child(preview_root)
+		preview_root.queue_free()
+	preview_root = Node3D.new()
+	viewport.add_child(preview_root)
+	var multi := MultiMesh.new()
+	multi.transform_format = MultiMesh.TRANSFORM_3D
+	multi.use_custom_data = true
+	multi.mesh = DetailRenderer.unit_mesh(detail.orientation)
+	multi.instance_count = detail.variants.size()
+	var profile := load("res://data/art_profile.tres") as ArtProfile
+	var texture := load(detail.atlas_path) as Texture2D
+	for i in detail.variants.size():
+		var record := {"variant": detail.variants[i]["id"],
+			"position": Vector3((i % 3 - 1) * display_width.value * 1.4, 0,
+				(i / 3) * display_width.value * 1.4)}
+		multi.set_instance_transform(i, DetailRenderer.instance_transform(detail, record, profile))
+		var rect := Rect2(detail.variants[i]["rect"])
+		var origin := (rect.position + Vector2.ONE * 0.5) / texture.get_size()
+		var span := (rect.size - Vector2.ONE) / texture.get_size()
+		multi.set_instance_custom_data(i, Color(origin.x, origin.y, span.x, span.y))
+	var mesh := MultiMeshInstance3D.new()
+	mesh.multimesh = multi
+	mesh.material_override = DetailRenderer.atlas_material(detail)
+	preview_root.add_child(mesh)
+	var camera := Camera3D.new()
+	preview_root.add_child(camera)
+	profile.configure(camera, Vector3.ZERO, maxf(display_width.value * 6, 3))
+	camera.current = true
+	preview_camera = camera
+	_add_ground_reference()
+	message.text = "%d 个细节变体 · 无碰撞" % detail.variants.size()

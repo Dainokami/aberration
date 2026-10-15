@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/pillar.png" id="1_s8anh"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2ysfa"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_s8anh")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_b5cfp"]
+_surfaces = [{
+"aabb": AABB(-0.63645, -0.037087318, -1.4834421, 1.2729, 3.7087355, 1.4984263),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(99, 238, 34, 191, 73, 252, 106, 64, 110, 225, 189, 191, 99, 238, 34, 191, 223, 232, 23, 189, 127, 128, 117, 60, 99, 238, 34, 63, 223, 232, 23, 189, 127, 128, 117, 60, 99, 238, 34, 63, 73, 252, 106, 64, 110, 225, 189, 191)
+}]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_r2yu1"]
+radius = 0.3
+
+[node name="painted_pillar" type="Node3D" unique_id=1885506178]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1909580425]
+material_override = SubResource("StandardMaterial3D_2ysfa")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_b5cfp")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=246069408]
+
+[node name="Shape" type="CollisionShape3D" parent="ProxyCollision" unique_id=2146347883]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_r2yu1")

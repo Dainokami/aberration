@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_u24oy"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_sfv6w"]
+
+[resource]
+script = ExtResource("2_sfv6w")
+asset_id = "painted_decayrock"
+display_name = "风化岩石"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/decayrock_frontface.png"
+scene_path = "res://assets/generated/painted_decayrock/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_decayrock/thumbnail.png"
+carrier = 4
+image_size = Vector2(2, 2)
+volume_size = Vector3(2, 2, 2)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("1_u24oy")
+generator_version = 3
+face_images = {
+"back": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_frontface.png",
+"front": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_frontface.png",
+"left": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_sideface.png",
+"right": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_sideface2.png",
+"top": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_topface2.png"
+}
+behaviour = 2
+supports_objects = true
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": null,
+"quad": [[0.202637, 0.210449], [0.802734, 0.211914], [0.803711, 0.793945], [0.206055, 0.797363]],
+"version": 1.0
+}

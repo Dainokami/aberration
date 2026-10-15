@@ -2,8 +2,9 @@
 class_name PlaceableDefinition
 extends Resource
 
-enum Carrier { CARD, GROUND, PROJECTED_BOX, PROJECTED_WEDGE }
+enum Carrier { CARD, GROUND, PROJECTED_BOX, PROJECTED_WEDGE, MULTI_FACE, WALL }
 enum Collision { NONE, BOX, CYLINDER }
+enum Behaviour { DECORATION, ROCK, BREAKABLE, CHEST, CLIMBABLE }
 
 @export var asset_id := ""
 @export var display_name := ""
@@ -25,6 +26,17 @@ enum Collision { NONE, BOX, CYLINDER }
 @export var fade_when_occluding := true
 @export var profile: ArtProfile
 @export var generator_version := 2
+## MULTI_FACE uses rectified images. UV perspective is removed during preparation.
+@export var face_images: Dictionary = {}
+@export var state_images: Dictionary = {}
+## Different poses may shift the painted contact even with a shared canvas.
+@export var state_pivots: Dictionary = {}
+@export var behaviour: Behaviour = Behaviour.DECORATION
+@export var supports_objects := false
+@export_range(1, 1000) var max_health := 3
+@export var source_manifest := ""
+## Recipes keep source quads/masks editable instead of baking away provenance.
+@export var preparation: Dictionary = {}
 
 func validate_asset() -> PackedStringArray:
 	var errors := PackedStringArray()
@@ -44,7 +56,30 @@ func validate_asset() -> PackedStringArray:
 		errors.append("碰撞尺寸必须大于零")
 	if profile == null:
 		errors.append("缺少固定相机配置")
+	if carrier == Carrier.MULTI_FACE:
+		for face in ["front", "back", "left", "right", "top"]:
+			var path := str(face_images.get(face, ""))
+			if not ResourceLoader.exists(path) or not load(path) is Texture2D:
+				errors.append("缺少面片：" + face)
+	for state in state_images:
+		var path := str(state_images[state])
+		if not ResourceLoader.exists(path) or not load(path) is Texture2D:
+			errors.append("状态图缺失：" + str(state))
+	for state in state_pivots:
+		var value: Vector2 = state_pivots[state]
+		if not value.is_finite() or value.x < 0 or value.x > 1 or value.y < 0 or value.y > 1:
+			errors.append("状态接地点无效：" + str(state))
+	if behaviour == Behaviour.CHEST and (not state_images.has("closed") or
+			not state_images.has("open")):
+		errors.append("宝箱需要关闭和开启两张状态图")
+	if supports_objects and collision != Collision.BOX:
+		errors.append("可承托物件必须使用盒体碰撞")
+	if carrier == Carrier.WALL and collision != Collision.NONE:
+		errors.append("贴墙物件共用宿主碰撞，请关闭独立阻挡")
 	return errors
+
+func behaviour_label() -> String:
+	return ["装饰", "可登顶", "可破坏", "可交互", "可攀爬"][behaviour]
 
 func footprint(scale_value: float, yaw: float) -> Vector2:
 	var size := Vector2(collision_size.x, collision_size.z)

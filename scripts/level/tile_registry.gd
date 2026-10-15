@@ -63,4 +63,6 @@ static func _rebuild() -> void:
 				if res != null and not res.tile_id.is_empty() and not ids.has(res.tile_id):
 					_cache.append(res)
 					ids[res.tile_id] = true
+	for tile in _cache:
+		tile.resolve_art()
 	_dirty = false

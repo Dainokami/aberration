@@ -49,8 +49,9 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = real_data
 	suite.check(plugin.mode_select.buttons.size() == 4 and not plugin.mode_select.buttons.has(1),
 		"terrain has four horizontal modes and no height mode")
-	suite.check(plugin.tabs.get_child_count() == 5 and
-		plugin.tabs.get_child(4).name == "视角", "view settings tab exists")
+	suite.check(plugin.tabs.get_child_count() == 6 and
+		plugin.tabs.get_child(4).name == "视角" and plugin.tabs.get_child(5).name == "细节",
+		"detail tab added while preserving all existing tab indices")
 	for mode in [0, 2, 3, 4]:
 		plugin.mode_select.selected = mode
 		var correct := true
@@ -106,11 +107,21 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		and camera.global_basis.is_equal_approx(expected_top_basis)
 		and plugin.top_view_button.button_pressed,
 		"top mode uses a north-up orthographic camera")
+	var before_free := camera.transform
 	plugin._free_view_pressed()
-	suite.check(camera.transform.is_equal_approx(initial)
+	suite.check(camera.transform.is_equal_approx(before_free)
 		and plugin.free_view_button.button_pressed
-		and not plugin.fixed_view_active,
-		"free mode restores previous editor camera")
+		and plugin.free_view_active and not plugin.fixed_view_active,
+		"free mode preserves current camera instead of jumping to an old position")
+	plugin.view_move_keys[KEY_W] = true
+	plugin._move_free_view(camera, 0.25)
+	plugin._clear_view_input()
+	plugin._apply_fixed_view()
+	suite.check((camera.position - before_free.origin).dot(before_free.basis.y) > 1.0,
+		"free navigation from top view moves visibly across the screen")
+	plugin._disable_2_5d_view()
+	suite.check(camera.transform.is_equal_approx(initial),
+		"leaving terrain navigation restores native editor camera")
 	camera.queue_free()
 	plugin.editing_camera = null
 	var viewport := EditorInterface.get_editor_viewport_3d(0)
@@ -124,6 +135,9 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 			"actual editor camera receives fixed perspective mode")
 		suite.check(plugin.fixed_view_active and plugin.fixed_view_button.toggle_mode,
 			"2.5D button is active fixed-navigation mode")
+		var focus := plugin.get_tree().root.gui_get_focus_owner()
+		if focus != null:
+			focus.release_focus()
 		var old_center: Vector3 = plugin.view_pan_offset
 		plugin.view_move_keys[KEY_D] = true
 		plugin._process(0.5)
@@ -134,6 +148,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		plugin._zoom_fixed_view(0.88)
 		suite.check(plugin._effective_distance() < old_distance,
 			"mouse wheel zoom changes fixed view distance")
+		await _check_free_navigation(plugin, suite, actual)
 		plugin._disable_2_5d_view()
 	var live := Camera3D.new()
 	plugin.get_tree().root.add_child(live)
@@ -190,6 +205,112 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		await plugin.get_tree().process_frame
 	suite.check(list.get_combined_minimum_size().y <= small, "palette shrinks after filtering")
 	list.queue_free()
+	await _check_layer_popups(plugin, suite)
+
+func _check_free_navigation(plugin: EditorPlugin, suite: RefCounted, camera: Camera3D) -> void:
+	var before := camera.global_transform
+	plugin._free_view_pressed()
+	suite.check(camera.global_transform.is_equal_approx(before), "perspective free view retains the current pose")
+	plugin._enable_initial_view(plugin.builder)
+	suite.check(plugin.free_view_active, "delayed default view cannot override an explicit free view")
+	var event := InputEventKey.new()
+	event.physical_keycode = KEY_W
+	event.pressed = true
+	var handled: int = plugin._forward_3d_gui_input(camera, event)
+	plugin._process(0.25)
+	event.pressed = false
+	plugin._forward_3d_gui_input(camera, event)
+	var moved := camera.global_transform
+	suite.check(handled == EditorPlugin.AFTER_GUI_INPUT_STOP
+		and (moved.origin - before.origin).dot(-before.basis.z) > 1.0,
+		"free view W moves along the viewing direction without holding a mouse button")
+	for frame in 4:
+		await plugin.get_tree().process_frame
+	suite.check(camera.global_transform.is_equal_approx(moved),
+		"native editor updates do not reset the free camera")
+	event.physical_keycode = KEY_D
+	event.pressed = true
+	plugin._forward_3d_gui_input(camera, event)
+	plugin._process(0.25)
+	event.pressed = false
+	plugin._input(event)
+	suite.check((camera.global_position - moved.origin).dot(moved.basis.x) > 1.0
+		and not plugin.view_move_keys[KEY_D], "free D strafes and key release outside viewport stops movement")
+	var before_zoom := camera.global_position
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.pressed = true
+	plugin._forward_3d_gui_input(camera, wheel)
+	suite.check((camera.global_position - before_zoom).dot(-camera.global_basis.z) > 1.0,
+		"free wheel zoom makes a visible forward movement")
+	var drag := InputEventMouseMotion.new()
+	drag.button_mask = MOUSE_BUTTON_MASK_RIGHT
+	drag.relative = Vector2(32, 12)
+	var before_turn := camera.global_basis
+	plugin._forward_3d_gui_input(camera, drag)
+	suite.check(not camera.global_basis.is_equal_approx(before_turn),
+		"free right drag changes the viewing direction")
+	var magnify := InputEventMagnifyGesture.new()
+	magnify.factor = 1.15
+	var before_pinch := camera.global_position
+	plugin._forward_3d_gui_input(camera, magnify)
+	suite.check((camera.global_position - before_pinch).dot(-camera.global_basis.z) > 0,
+		"mac trackpad pinch zooms the free view")
+	var field := LineEdit.new()
+	plugin.get_tree().root.add_child(field)
+	field.grab_focus()
+	event.physical_keycode = KEY_W
+	event.pressed = true
+	before = camera.global_transform
+	plugin._forward_3d_gui_input(camera, event)
+	plugin._process(0.25)
+	suite.check(camera.global_transform.is_equal_approx(before)
+		and not plugin.view_move_keys[KEY_W], "typing into a field cannot move the free camera")
+	field.release_focus()
+	field.queue_free()
+
+func _check_layer_popups(plugin: EditorPlugin, suite: RefCounted) -> void:
+	var root := plugin.get_tree().root
+	var capture := "--capture-interaction" in OS.get_cmdline_user_args()
+	if capture:
+		plugin.editor_dock.make_visible()
+		plugin.tabs.current_tab = 0
+		for frame in 4:
+			await plugin.get_tree().process_frame
+	for option: OptionButton in [plugin.height_select, plugin.slice_select]:
+		var popup := option.get_popup()
+		if capture:
+			option.show_popup()
+		else:
+			popup.popup(Rect2i(0, 0, 300, 1))
+		for frame in 2:
+			await plugin.get_tree().process_frame
+		var scroll := _popup_scroll(popup)
+		print("POPUP SIZE ", option.name, " actual=", popup.size, " max=", popup.max_size,
+			" scroll=", scroll)
+		suite.check(popup.size.y <= popup.max_size.y and popup.max_size.y > 0
+			and popup.max_size.y < plugin.get_tree().root.size.y * 0.5
+			and scroll != null and scroll.get_v_scroll_bar().visible,
+			"layer popup stays below half the window and offers scrolling: " + option.name)
+		if capture:
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png("/tmp/terrain-%s-panel.png" % option.name)
+			popup.get_texture().get_image().save_png("/tmp/terrain-%s-popup.png" % option.name)
+		popup.set_focused_item(popup.item_count - 1)
+		for frame in 2:
+			await plugin.get_tree().process_frame
+		suite.check(scroll != null and scroll.scroll_vertical > 0,
+			"last layer remains reachable in a capped popup: " + option.name)
+		popup.hide()
+
+func _popup_scroll(node: Node) -> ScrollContainer:
+	if node is ScrollContainer:
+		return node
+	for child in node.get_children(true):
+		var found := _popup_scroll(child)
+		if found != null:
+			return found
+	return null
 
 func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
 		suite: RefCounted, real_builder: TerrainBuilder, real_data: LevelData,
@@ -260,6 +381,50 @@ func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
 	suite.check(display != null and not display.build_collision
 		and preview_steps.size() == 10 and preview_rises,
 		"stair brush previews the final rising 3D staircase")
+	pick_builder.free()
+	var sparse_data := LevelData.new()
+	sparse_data.setup_blank(Vector2i(8, 8))
+	var anchor := Vector2i(3, 3)
+	var front := anchor + Vector2i(0, 1)
+	sparse_data.set_layer(anchor, 0, {"tile_id": "grass"})
+	var sparse_builder := TerrainBuilder.new()
+	sparse_builder.level_data = sparse_data
+	sparse_builder.show_grid = false
+	sparse_builder.build_collision = true
+	world.add_child(sparse_builder)
+	plugin.builder = sparse_builder
+	plugin.data = sparse_data
+	plugin.tabs.current_tab = 0
+	plugin.mode_select.selected = 0
+	plugin.brush_select.selected = 0
+	plugin.height_select.selected = 0
+	plugin._make_preview()
+	await plugin.get_tree().physics_frame
+	await plugin.get_tree().physics_frame
+	var front_base := sparse_data.world_center(front, 0) - Vector3.UP * LevelData.ELEVATION_STEP
+	var front_screen := camera.unproject_position(front_base)
+	var picked_front: Vector2i = plugin._pick(camera, front_screen)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.position = front_screen
+	click.pressed = true
+	plugin._forward_3d_gui_input(camera, click)
+	click.pressed = false
+	plugin._forward_3d_gui_input(camera, click)
+	suite.check(picked_front == front and sparse_data.cell_exists(front)
+		and not sparse_data.cell_exists(front + Vector2i(0, 1)),
+		"2.5D ground brush places the front neighbor without skipping a cell")
+	var back := anchor + Vector2i(0, -1)
+	var back_screen := camera.unproject_position(sparse_data.world_center(back, 0))
+	var picked_back: Vector2i = plugin._pick(camera, back_screen)
+	click.position = back_screen
+	click.pressed = true
+	plugin._forward_3d_gui_input(camera, click)
+	click.pressed = false
+	plugin._forward_3d_gui_input(camera, click)
+	suite.check(picked_back == back and sparse_data.cell_exists(back)
+		and not sparse_data.cell_exists(back + Vector2i(0, -1)),
+		"2.5D ground brush places the far neighbor without skipping a cell")
 	plugin.mode_select.selected = 0
 	plugin.builder = real_builder
 	plugin.data = real_data

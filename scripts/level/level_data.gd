@@ -8,7 +8,7 @@ const BASE_Y := 0.0
 const TERRAIN_GRASS := 0
 const TERRAIN_ROCK := 1
 const DIRS := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
-const FORMAT_VERSION := 6
+const FORMAT_VERSION := 7
 const MAX_MAP_SIZE := Vector2i(128, 128)
 const MAX_LAYERS := 32
 const DEFAULT_SOLID_TILE := "grass"
@@ -29,6 +29,8 @@ const DEFAULT_SOLID_TILE := "grass"
 @export var spawn_layer := -1
 @export var format_version := 5
 @export var objects: Array[Dictionary] = []
+## Non-colliding decoration instances. Stored separately from gameplay objects.
+@export var details: Array[Dictionary] = []
 ## Per-map color overrides. Alpha is tint strength; RGB is the target hue.
 @export var terrain_tints: Dictionary = {}
 
@@ -46,6 +48,7 @@ func setup_blank(size := Vector2i(16, 16)) -> void:
 	cells.clear()
 	stairs.clear()
 	objects.clear()
+	details.clear()
 	terrain_tints.clear()
 	spawn_cell = Vector2i(-1, -1)
 	spawn_layer = -1
@@ -74,7 +77,7 @@ func ensure_layout() -> void:
 				columns[i] = _blank_column()
 			else:
 				columns[i] = _normalized_column(columns[i])
-		if format_version < FORMAT_VERSION:
+		if format_version < 6:
 			_migrate_anchors()
 	cells.clear()
 	format_version = FORMAT_VERSION
@@ -515,6 +518,7 @@ func validate_content() -> PackedStringArray:
 		if not error.is_empty():
 			errors.append("阶梯 %d：%s" % [i + 1, error])
 	errors.append_array(ObjectRules.validate_all(self))
+	errors.append_array(DetailRules.validate_all(self))
 	return errors
 
 ## Copy the index, share unchanged columns, and copy only columns on write.
@@ -530,6 +534,7 @@ func fork_for_edit() -> LevelData:
 	copy.columns = columns.duplicate(false)
 	copy.stairs = stairs.duplicate(true)
 	copy.objects = objects.duplicate(true)
+	copy.details = details.duplicate(true)
 	copy.spawn_cell = spawn_cell
 	copy.spawn_layer = spawn_layer
 	copy.terrain_tints = terrain_tints
@@ -566,6 +571,7 @@ func clone_data() -> Dictionary:
 		"spawn_cell": spawn_cell,
 		"spawn_layer": spawn_layer,
 		"objects": objects.duplicate(true),
+		"details": details.duplicate(true),
 		"terrain_tints": terrain_tints.duplicate(true),
 		"format_version": FORMAT_VERSION,
 	}
@@ -581,6 +587,7 @@ func restore_data(snapshot: Dictionary) -> void:
 	spawn_cell = snapshot.get("spawn_cell", Vector2i(-1, -1))
 	spawn_layer = int(snapshot.get("spawn_layer", -1))
 	objects.assign(snapshot.get("objects", []).duplicate(true))
+	details.assign(snapshot.get("details", []).duplicate(true))
 	terrain_tints = snapshot.get("terrain_tints", {}).duplicate(true)
 	format_version = int(snapshot.get("format_version", 2))
 	ensure_layout()
@@ -693,6 +700,10 @@ func _normalize_anchors() -> void:
 		stairs[i] = stair
 	for i in objects.size():
 		var record: Dictionary = objects[i]
+		record["anchor_kind"] = str(record.get("anchor_kind", "top"))
+		if record["anchor_kind"] != "top":
+			objects[i] = record
+			continue
 		var position: Vector3 = record.get("position", Vector3.ZERO)
 		var anchor: Vector2i = record.get(
 			"anchor_cell", _world_to_cell_unchecked(position))

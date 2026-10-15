@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/gameplay_prop.gd" id="1_w8o63"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_1dd04"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_rjgni"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/treasurebox.png" id="4_3ue2i"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/treasurebox_open.png" id="5_htlg6"]
+
+[sub_resource type="Resource" id="Resource_rjx3p"]
+script = ExtResource("3_rjgni")
+asset_id = "painted_treasurebox"
+display_name = "独眼宝箱"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/treasurebox.png"
+scene_path = "res://assets/generated/painted_treasurebox/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_treasurebox/thumbnail.png"
+image_size = Vector2(1.75, 1.49)
+pivot = Vector2(0.53, 0.92)
+collision = 1
+collision_size = Vector3(1.5, 1.2, 1.5)
+fade_when_occluding = false
+profile = ExtResource("2_1dd04")
+generator_version = 3
+state_images = {
+"closed": "res://assets/derived_art/scene_pack_20261014/objects/treasurebox.png",
+"open": "res://assets/derived_art/scene_pack_20261014/objects/treasurebox_open.png"
+}
+state_pivots = {
+"open": Vector2(0.53, 0.95)
+}
+behaviour = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": [260.0, 240.0, 2010.0, 1730.0],
+"version": 1.0
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tciht"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_3ue2i")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_3i6qk"]
+_surfaces = [{
+"aabb": AABB(-0.92749995, -0.110520296, -0.5135107, 1.75, 1.3815039, 0.5581638),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(163, 112, 109, 191, 152, 175, 162, 63, 112, 117, 3, 191, 163, 112, 109, 191, 119, 88, 226, 189, 42, 230, 54, 61, 93, 143, 82, 63, 119, 88, 226, 189, 42, 230, 54, 61, 93, 143, 82, 63, 152, 175, 162, 63, 112, 117, 3, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e86a1"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("5_htlg6")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_y7uxs"]
+_surfaces = [{
+"aabb": AABB(-0.92749995, -0.06907521, -0.5302556, 1.75, 1.381504, 0.5581638),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(163, 112, 109, 191, 171, 253, 167, 63, 213, 190, 7, 191, 163, 112, 109, 191, 78, 119, 141, 189, 187, 159, 228, 60, 93, 143, 82, 63, 78, 119, 141, 189, 187, 159, 228, 60, 93, 143, 82, 63, 171, 253, 167, 63, 213, 190, 7, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_okm5i"]
+size = Vector3(1.5, 1.2, 1.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ut51p"]
+size = Vector3(1.5, 1.2, 1.5)
+
+[node name="painted_treasurebox" type="Node3D" unique_id=1630454110]
+script = ExtResource("1_w8o63")
+definition = SubResource("Resource_rjx3p")
+
+[node name="State_closed" type="MeshInstance3D" parent="." unique_id=1619768571]
+material_override = SubResource("StandardMaterial3D_tciht")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_3i6qk")
+
+[node name="State_open" type="MeshInstance3D" parent="." unique_id=1478980490]
+visible = false
+material_override = SubResource("StandardMaterial3D_e86a1")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_y7uxs")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=198441329]
+
+[node name="Shape" type="CollisionShape3D" parent="ProxyCollision" unique_id=962268479]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("BoxShape3D_okm5i")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=429113696]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=289755596]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("BoxShape3D_ut51p")

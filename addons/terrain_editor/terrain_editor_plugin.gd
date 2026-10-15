@@ -29,6 +29,8 @@ var top_view_button: Button
 var free_view_button: Button
 var editing_camera: Camera3D
 var fixed_view_active := false
+var free_view_active := false
+var free_view_states: Dictionary = {}
 var view_mode: ViewMode = ViewMode.FREE
 var fixed_view_cameras: Array[Camera3D] = []
 var fixed_view_states: Dictionary = {}
@@ -95,6 +97,7 @@ func _enter_tree() -> void:
 	view_settings = load("res://addons/terrain_editor/view_settings.gd").new()
 	_add_page("视角", view_settings)
 	view_settings.setup(self)
+	world_tools.add_detail_page()
 	editor_dock = EditorDock.new()
 	editor_dock.title = "关卡编辑器"
 	editor_dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BR
@@ -106,16 +109,23 @@ func _enter_tree() -> void:
 	dock_started_closed = true
 	set_input_event_forwarding_always_enabled()
 	RenderingServer.frame_pre_draw.connect(_apply_fixed_view)
+	get_tree().root.focus_exited.connect(_clear_view_input)
+	get_tree().root.gui_focus_changed.connect(_view_focus_changed)
 	if "--test-v2-editor" in OS.get_cmdline_user_args():
 		_run_editor_checks.call_deferred()
 
 func _run_editor_checks() -> void:
-	await get_tree().process_frame
+	# Wait for startup imports before tests create/delete temporary resources.
+	await get_tree().create_timer(1.0).timeout
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
 	var suite = load("res://tests/editor_v2_checks.gd").new()
 	await suite.run(self)
 
 func _exit_tree() -> void:
 	_disable_2_5d_view()
+	get_tree().root.focus_exited.disconnect(_clear_view_input)
+	get_tree().root.gui_focus_changed.disconnect(_view_focus_changed)
 	if RenderingServer.frame_pre_draw.is_connected(_apply_fixed_view):
 		RenderingServer.frame_pre_draw.disconnect(_apply_fixed_view)
 	if world_tools:
@@ -137,6 +147,8 @@ func _edit(object: Object) -> void:
 	if world_tools:
 		world_tools.reset()
 	if object is TerrainBuilder:
+		if builder != object:
+			_disable_2_5d_view()
 		builder = object
 		data = builder.level_data
 		if data:
@@ -145,12 +157,17 @@ func _edit(object: Object) -> void:
 			_set_status("已载入：" + current_path)
 			_make_preview()
 			_sync_tint_controls()
-			_enable_2_5d_view.call_deferred()
+			_enable_initial_view.call_deferred(builder)
 	else:
+		_disable_2_5d_view()
 		builder = null
 		data = null
 		if preview and is_instance_valid(preview):
 			preview.queue_free()
+
+func _enable_initial_view(target: TerrainBuilder) -> void:
+	if builder == target and not fixed_view_active and not free_view_active:
+		_enable_2_5d_view()
 
 func _open_editor_workspace() -> void:
 	if opening_workspace:
@@ -198,7 +215,7 @@ func _find_terrain_builder(root: Node) -> TerrainBuilder:
 func _build_dock() -> void:
 	dock_root = VBoxContainer.new()
 	dock_root.name = "关卡编辑器"
-	dock_root.custom_minimum_size.x = 310
+	dock_root.custom_minimum_size.x = ui_px(310)
 
 	var title := Label.new()
 	title.text = "畸变 关卡编辑器 v0.5"
@@ -228,7 +245,7 @@ func _build_dock() -> void:
 			["俯视", "_top_view_pressed",
 				"正交垂直俯视；适合精确选择和摆放格子"],
 			["自由", "_free_view_pressed",
-				"恢复Godot默认自由视角"],
+				"WASD移动，滚轮缩放，右键拖动转向，中键拖动平移"],
 		]:
 		var button := Button.new()
 		button.text = spec[0]
@@ -299,23 +316,32 @@ func _build_terrain_tab() -> void:
 	mode_select.item_selected.connect(_terrain_mode_changed)
 
 	# Active layer and slice selector
-	layer_controls.append(_add_label(placement, "活动实体层"))
+	layer_controls.append(_add_label(placement, "地位摆放层次"))
 	height_select = OptionButton.new()
+	height_select.name = "PlacementLayer"
 	for layer in LevelData.MAX_LAYERS:
 		height_select.add_item("第 %d 层（顶面 %dm）" % [
 			layer, (layer + 1) * roundi(LevelData.ELEVATION_STEP)])
 	height_select.item_selected.connect(func(_index: int): _refresh_brush_preview())
 	placement.add_child(height_select)
+	_limit_layer_popup(height_select)
 	layer_controls.append(height_select)
-	layer_controls.append(_add_label(placement, "切片查看"))
+	layer_controls.append(_add_label(placement, "地块显示层次"))
 	slice_select = OptionButton.new()
+	slice_select.name = "DisplayLayer"
 	slice_select.add_item("显示全部层")
 	for layer in LevelData.MAX_LAYERS:
 		slice_select.add_item("仅显示至第 %d 层" % layer)
 	slice_select.item_selected.connect(_slice_changed)
 	placement.add_child(slice_select)
+	_limit_layer_popup(slice_select)
 	layer_controls.append(slice_select)
-	layer_controls.append(_add_label(placement, "Alt + 点击：取样可见地块的层级"))
+	var sample_key := "⌥ Option" if OS.get_name() == "macOS" else "Alt"
+	var sample_hint := _add_label(placement,
+		sample_key + "＋左键：选择点击位置的摆放层次")
+	sample_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sample_hint.tooltip_text = "点击顶面选中最高可见层，点击侧面选中对应层；只切换摆放层次，不绘制地块。"
+	layer_controls.append(sample_hint)
 	erase_select = OptionButton.new()
 	for label in ["擦除实体块", "仅清除液体", "仅清除贴花", "仅移除阶梯"]:
 		erase_select.add_item(label)
@@ -358,7 +384,7 @@ func _build_terrain_tab() -> void:
 	tile_list.auto_height = true
 	tile_list.size_flags_vertical = Control.SIZE_FILL
 	tile_list.icon_mode = ItemList.ICON_MODE_TOP
-	tile_list.fixed_icon_size = Vector2i(80, 72)
+	tile_list.fixed_icon_size = ui_size(Vector2(80, 72))
 	tile_list.max_columns = 0
 	tile_list.same_column_width = true
 	tile_list.item_selected.connect(_on_tile_selected)
@@ -816,32 +842,60 @@ func _slice_changed(index: int) -> void:
 		builder.set_slice_layer(index - 1)
 	_refresh_brush_preview()
 
+func _limit_layer_popup(option: OptionButton) -> void:
+	var popup := option.get_popup()
+	popup.prefer_native_menu = false
+	popup.about_to_popup.connect(_resize_layer_popup.bind(popup))
+	_resize_layer_popup(popup)
+
+## Fixed pixel sizes in docks must follow the editor's HiDPI scale.
+static func ui_px(value: float) -> int:
+	return roundi(value * EditorInterface.get_editor_scale())
+
+static func ui_size(value: Vector2) -> Vector2i:
+	return Vector2i((value * EditorInterface.get_editor_scale()).round())
+
+func _resize_layer_popup(popup: PopupMenu) -> void:
+	_clear_view_input()
+	var font := popup.get_theme_font("font")
+	var row_height := font.get_height(popup.get_theme_font_size("font_size")) \
+		+ popup.get_theme_constant("v_separation")
+	var padding := popup.get_theme_stylebox("panel").get_minimum_size().y
+	var available := get_tree().root.size.y * 0.45
+	# Godot 4.7 ignores the whole limit if max width is below the menu's minimum.
+	popup.max_size = Vector2i(maxi(1, get_tree().root.size.x),
+		maxi(1, roundi(minf(row_height * 8 + padding, available))))
+
+func _clear_view_input() -> void:
+	for key in view_move_keys:
+		view_move_keys[key] = false
+
+func _view_focus_changed(_control: Control) -> void:
+	_clear_view_input()
+
+func _text_input_focused() -> bool:
+	var focus := get_tree().root.gui_get_focus_owner()
+	return focus is LineEdit or focus is TextEdit
+
+func _input(event: InputEvent) -> void:
+	# A release can arrive outside the 3D viewport, after a popup or focus change.
+	if event is InputEventKey and not event.pressed:
+		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+		if key in view_move_keys:
+			view_move_keys[key] = false
+
 # ============================================================
 # Input forwarding
 # ============================================================
 func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 	editing_camera = camera
-	if fixed_view_active:
-		if event is InputEventKey and event.keycode in view_move_keys and not (
-				get_viewport().gui_get_focus_owner() is LineEdit):
-			view_move_keys[event.keycode] = event.pressed
-			return EditorPlugin.AFTER_GUI_INPUT_STOP
-		if event is InputEventMouseButton and event.pressed:
-			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				_zoom_fixed_view(0.88)
-				return EditorPlugin.AFTER_GUI_INPUT_STOP
-			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				_zoom_fixed_view(1.14)
-				return EditorPlugin.AFTER_GUI_INPUT_STOP
-			if event.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
-				return EditorPlugin.AFTER_GUI_INPUT_STOP
-		if event is InputEventMouseMotion and event.button_mask & (
-				MOUSE_BUTTON_MASK_RIGHT | MOUSE_BUTTON_MASK_MIDDLE):
-			return EditorPlugin.AFTER_GUI_INPUT_STOP
 	if not is_instance_valid(builder) or data == null:
 		builder = null
 		data = null
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	_apply_fixed_view()
+	if (fixed_view_active or free_view_active) and _handle_view_input(camera, event):
+		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	# Tabs 1+ (物件/导入/预制) handled by world_tools
 	if world_tools and world_tools.active():
 		return world_tools.handle(camera, event)
@@ -889,20 +943,74 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
 
+func _handle_view_input(camera: Camera3D, event: InputEvent) -> bool:
+	if event is InputEventKey:
+		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+		if key in view_move_keys:
+			if not event.pressed:
+				view_move_keys[key] = false
+				return true
+			if _text_input_focused() or event.ctrl_pressed or event.meta_pressed or event.alt_pressed:
+				return false
+			view_move_keys[key] = true
+			return true
+	if event is InputEventMouseButton:
+		if event.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+			return true
+		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			var direction := -1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0
+			_zoom_editor_view(camera, pow(1.14, direction * maxf(event.factor, 0.1)))
+			return true
+	if event is InputEventMagnifyGesture:
+		_zoom_editor_view(camera, 1.0 / maxf(event.factor, 0.01))
+		return true
+	if event is InputEventPanGesture:
+		_zoom_editor_view(camera, exp(clampf(event.delta.y * 0.06, -1.0, 1.0)))
+		return true
+	if event is InputEventMouseMotion and event.button_mask & (
+			MOUSE_BUTTON_MASK_RIGHT | MOUSE_BUTTON_MASK_MIDDLE):
+		if free_view_active:
+			_drag_free_view(camera, event)
+		return true
+	return false
+
 func _fixed_view_pressed() -> void:
 	if fixed_view_active and view_mode == ViewMode.PERSPECTIVE_2_5D:
-		_disable_2_5d_view()
+		_free_view_pressed()
 	else:
 		_enable_2_5d_view()
 
 func _top_view_pressed() -> void:
 	if fixed_view_active and view_mode == ViewMode.TOP:
-		_disable_2_5d_view()
+		_free_view_pressed()
 	else:
 		_enable_fixed_view(ViewMode.TOP)
 
 func _free_view_pressed() -> void:
-	_disable_2_5d_view()
+	if not is_instance_valid(builder) or not builder.is_inside_tree():
+		return
+	if free_view_active:
+		_sync_view_buttons()
+		return
+	if not fixed_view_active:
+		_capture_view_cameras()
+	if fixed_view_cameras.is_empty():
+		return
+	_apply_fixed_view()
+	free_view_states.clear()
+	for camera in fixed_view_cameras:
+		if is_instance_valid(camera) and camera.is_inside_tree():
+			free_view_states[camera.get_instance_id()] = {
+				"transform": camera.global_transform, "projection": camera.projection,
+				"fov": camera.fov, "size": camera.size,
+			}
+	fixed_view_active = false
+	free_view_active = true
+	view_mode = ViewMode.FREE
+	_clear_view_input()
+	_sync_view_buttons()
+	_apply_fixed_view()
+	_set_status("自由视角：WASD移动，滚轮/触控板缩放，右键拖动转向")
 
 func _enable_2_5d_view() -> void:
 	_enable_fixed_view(ViewMode.PERSPECTIVE_2_5D)
@@ -910,46 +1018,49 @@ func _enable_2_5d_view() -> void:
 func _enable_fixed_view(mode: ViewMode) -> void:
 	if not is_instance_valid(builder) or not builder.is_inside_tree():
 		return
-	if not fixed_view_active:
-		var previous_camera := editing_camera
-		fixed_view_cameras.clear()
-		fixed_view_states.clear()
-		for index in 4:
-			var viewport := EditorInterface.get_editor_viewport_3d(index)
-			if viewport != null and is_instance_valid(viewport.get_camera_3d()):
-				var camera := viewport.get_camera_3d()
-				if camera not in fixed_view_cameras:
-					fixed_view_cameras.append(camera)
-		if is_instance_valid(previous_camera) and previous_camera not in fixed_view_cameras:
-			fixed_view_cameras.append(previous_camera)
-		if fixed_view_cameras.is_empty():
-			_set_status("没有可用的3D编辑视口")
-			_sync_view_buttons()
-			return
-		editing_camera = fixed_view_cameras[0]
-		for camera in fixed_view_cameras:
-			fixed_view_states[camera.get_instance_id()] = {
-				"camera": camera,
-				"transform": camera.global_transform,
-				"projection": camera.projection,
-				"fov": camera.fov,
-				"size": camera.size,
-			}
-		view_pan_offset = Vector3.ZERO
+	if not fixed_view_active and not free_view_active:
+		_capture_view_cameras()
+	if fixed_view_cameras.is_empty():
+		_set_status("没有可用的3D编辑视口")
+		return
 	EditorInterface.set_main_screen_editor("3D")
 	fixed_view_active = true
+	free_view_active = false
+	free_view_states.clear()
 	view_mode = mode
 	_sync_view_buttons()
-	for key in view_move_keys:
-		view_move_keys[key] = false
+	_clear_view_input()
 	_apply_fixed_view()
 	_set_status(
 		"俯视视角已固定；WASD平移，滚轮缩放"
 		if mode == ViewMode.TOP
 		else "2.5D视角已固定；WASD平移，滚轮缩放")
 
+func _capture_view_cameras() -> void:
+	var previous_camera := editing_camera
+	fixed_view_cameras.clear()
+	fixed_view_states.clear()
+	for index in 4:
+		var viewport := EditorInterface.get_editor_viewport_3d(index)
+		if viewport != null and is_instance_valid(viewport.get_camera_3d()):
+			var camera := viewport.get_camera_3d()
+			if camera.is_inside_tree() and camera not in fixed_view_cameras:
+				fixed_view_cameras.append(camera)
+	if is_instance_valid(previous_camera) and previous_camera.is_inside_tree() \
+			and previous_camera not in fixed_view_cameras:
+		fixed_view_cameras.append(previous_camera)
+	if fixed_view_cameras.is_empty():
+		return
+	editing_camera = previous_camera if previous_camera in fixed_view_cameras else fixed_view_cameras[0]
+	for camera in fixed_view_cameras:
+		fixed_view_states[camera.get_instance_id()] = {
+			"camera": camera, "transform": camera.global_transform,
+			"projection": camera.projection, "fov": camera.fov, "size": camera.size,
+		}
+	view_pan_offset = Vector3.ZERO
+
 func _disable_2_5d_view() -> void:
-	if fixed_view_active:
+	if fixed_view_active or free_view_active:
 		for state: Dictionary in fixed_view_states.values():
 			var camera: Camera3D = state["camera"]
 			if not is_instance_valid(camera) or not camera.is_inside_tree():
@@ -959,11 +1070,12 @@ func _disable_2_5d_view() -> void:
 			camera.fov = state["fov"]
 			camera.size = state["size"]
 	fixed_view_active = false
+	free_view_active = false
+	free_view_states.clear()
 	view_mode = ViewMode.FREE
 	fixed_view_cameras.clear()
 	fixed_view_states.clear()
-	for key in view_move_keys:
-		view_move_keys[key] = false
+	_clear_view_input()
 	_sync_view_buttons()
 
 func _sync_view_buttons() -> void:
@@ -980,12 +1092,19 @@ func _process(delta: float) -> void:
 		_preview_pending = false
 		if is_instance_valid(tabs) and tabs.current_tab == 0:
 			_update_preview(hover_cell)
-	if not fixed_view_active or not is_instance_valid(builder) or not builder.is_inside_tree():
+	if not (fixed_view_active or free_view_active) \
+			or not is_instance_valid(builder) or not builder.is_inside_tree():
 		return
+	if _text_input_focused():
+		_clear_view_input()
 	var camera := editing_camera
 	if not is_instance_valid(camera) and not fixed_view_cameras.is_empty():
 		camera = fixed_view_cameras[0]
 	if is_instance_valid(camera) and camera.is_inside_tree():
+		if free_view_active:
+			_move_free_view(camera, delta)
+			_apply_fixed_view()
+			return
 		var right := camera.global_basis.x
 		right.y = 0
 		right = right.normalized()
@@ -1001,15 +1120,71 @@ func _process(delta: float) -> void:
 	_apply_fixed_view()
 
 func _apply_fixed_view() -> void:
-	if not fixed_view_active or not is_instance_valid(builder) or not builder.is_inside_tree():
+	if not (fixed_view_active or free_view_active) \
+			or not is_instance_valid(builder) or not builder.is_inside_tree():
 		return
 	var profile := load("res://data/art_profile.tres") as ArtProfile
 	for camera in fixed_view_cameras:
 		if is_instance_valid(camera) and camera.is_inside_tree():
-			if view_mode == ViewMode.TOP:
+			if free_view_active:
+				var state: Dictionary = free_view_states.get(camera.get_instance_id(), {})
+				if not state.is_empty():
+					camera.global_transform = state["transform"]
+					camera.projection = state["projection"]
+					camera.fov = state["fov"]
+					camera.size = state["size"]
+			elif view_mode == ViewMode.TOP:
 				_configure_top_camera(camera, profile)
 			else:
 				_configure_view_camera(camera, profile)
+
+func _move_free_view(camera: Camera3D, delta: float) -> void:
+	var state: Dictionary = free_view_states.get(camera.get_instance_id(), {})
+	if state.is_empty():
+		return
+	var motion := Vector2(
+		float(view_move_keys[KEY_D]) - float(view_move_keys[KEY_A]),
+		float(view_move_keys[KEY_W]) - float(view_move_keys[KEY_S]))
+	if motion == Vector2.ZERO:
+		return
+	var pose: Transform3D = state["transform"]
+	# Moving into an orthographic view does not visibly move the scene.
+	var forward := pose.basis.y if state["projection"] == Camera3D.PROJECTION_ORTHOGONAL \
+		else -pose.basis.z
+	pose.origin += (pose.basis.x * motion.x + forward * motion.y).normalized() \
+		* maxf(_effective_distance() * 0.45, 4.0) * delta
+	state["transform"] = pose
+
+func _zoom_editor_view(camera: Camera3D, factor: float) -> void:
+	if not free_view_active:
+		_zoom_fixed_view(factor)
+		return
+	var state: Dictionary = free_view_states.get(camera.get_instance_id(), {})
+	if state.is_empty():
+		return
+	if state["projection"] == Camera3D.PROJECTION_ORTHOGONAL:
+		state["size"] = clampf(float(state["size"]) * factor, 2.0, 240.0)
+	else:
+		var pose: Transform3D = state["transform"]
+		pose.origin += pose.basis.z * (factor - 1.0) * maxf(_effective_distance(), 4.0)
+		state["transform"] = pose
+	_apply_fixed_view()
+
+func _drag_free_view(camera: Camera3D, event: InputEventMouseMotion) -> void:
+	var state: Dictionary = free_view_states.get(camera.get_instance_id(), {})
+	if state.is_empty():
+		return
+	var pose: Transform3D = state["transform"]
+	if event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
+		pose.origin += (-pose.basis.x * event.relative.x + pose.basis.y * event.relative.y) \
+			* maxf(_effective_distance(), 4.0) * 0.0015
+	else:
+		pose.basis = Basis(Vector3.UP, -event.relative.x * 0.004) * pose.basis
+		var pitch := asin(clampf(-pose.basis.z.y, -1.0, 1.0))
+		var next_pitch := clampf(pitch - event.relative.y * 0.004, -PI * 0.495, PI * 0.495)
+		pose.basis = (pose.basis * Basis(Vector3.RIGHT, next_pitch - pitch)).orthonormalized()
+	state["transform"] = pose
+	_apply_fixed_view()
 
 func _zoom_fixed_view(factor: float) -> void:
 	if view_mode == ViewMode.TOP:
@@ -1089,6 +1264,25 @@ func _apply_map_snapshot(target: LevelData, snapshot: Dictionary) -> void:
 		_refresh_brush_preview()
 		_set_dirty(true)
 
+func _commit_details(target: LevelData, before: Array[Dictionary],
+		after: Array[Dictionary], label: String) -> void:
+	if before == after:
+		return
+	var undo_redo := get_undo_redo()
+	undo_redo.create_action(label, UndoRedo.MERGE_DISABLE, target)
+	undo_redo.add_do_method(self, "_apply_details", target, after.duplicate(true))
+	undo_redo.add_undo_method(self, "_apply_details", target, before.duplicate(true))
+	undo_redo.commit_action(false)
+	if target == data:
+		_set_dirty(true)
+
+func _apply_details(target: LevelData, values: Array[Dictionary]) -> void:
+	target.details = values.duplicate(true)
+	target.emit_changed()
+	if target == data and is_instance_valid(builder):
+		builder.rebuild_details()
+		_set_dirty(true)
+
 func _begin_stroke() -> void:
 	stroke_cells_before.clear()
 	stroke_aux_before = _terrain_aux_snapshot(data)
@@ -1131,6 +1325,7 @@ func _terrain_aux_snapshot(target: LevelData) -> Dictionary:
 		"spawn_cell": target.spawn_cell,
 		"spawn_layer": target.spawn_layer,
 		"objects": target.objects.duplicate(true),
+		"details": target.details.duplicate(true),
 	}
 
 func _stroke_start_snapshot() -> Dictionary:
@@ -1143,6 +1338,7 @@ func _stroke_start_snapshot() -> Dictionary:
 	snapshot["spawn_cell"] = stroke_aux_before["spawn_cell"]
 	snapshot["spawn_layer"] = stroke_aux_before["spawn_layer"]
 	snapshot["objects"] = stroke_aux_before["objects"].duplicate(true)
+	snapshot["details"] = stroke_aux_before["details"].duplicate(true)
 	return snapshot
 
 func _ground_brush_region(cell: Vector2i) -> Rect2i:
@@ -1178,6 +1374,7 @@ func _apply_terrain_delta(target: LevelData, cell_values: Dictionary,
 	target.spawn_cell = aux["spawn_cell"]
 	target.spawn_layer = int(aux.get("spawn_layer", -1))
 	target.objects.assign(aux["objects"].duplicate(true))
+	target.details.assign(aux.get("details", []).duplicate(true))
 	target.emit_changed()
 	if target == data:
 		if is_instance_valid(builder):
@@ -1286,11 +1483,7 @@ func _erase_cells(targets: Array[Vector2i]) -> Array[Dictionary]:
 				"before_surface": before_surface, "after_surface": candidate.get_cell(cell)})
 			continue
 		# Removing a top support also removes content resting on that surface.
-		for i in range(candidate.objects.size() - 1, -1, -1):
-			var record: Dictionary = candidate.objects[i]
-			if int(record.get("anchor_layer", -1)) == active_layer \
-					and cell in ObjectRules.covered_cells(candidate, record):
-				candidate.objects.remove_at(i)
+		ObjectRules.remove_terrain_support(candidate, cell, active_layer)
 		var stair_idx := candidate.stair_at(cell)
 		if stair_idx >= 0:
 			candidate.stairs.remove_at(stair_idx)
@@ -1311,6 +1504,7 @@ func _erase_cells(targets: Array[Vector2i]) -> Array[Dictionary]:
 			"after_surface": candidate.get_cell(cell),
 		})
 	if not changes.is_empty():
+		DetailRules.prune_invalid(candidate)
 		_apply_candidate_columns(candidate, changes)
 	return changes
 
@@ -1374,6 +1568,7 @@ func _prepare_ground(pending: Array[Vector2i]) -> Dictionary:
 			"before_surface": before_surface,
 			"after_surface": candidate.get_cell(cell),
 		})
+	DetailRules.prune_invalid(candidate)
 	var errors := candidate.validate_content()
 	if errors.has("缺少有效的玩家出生点"):
 		errors.remove_at(errors.find("缺少有效的玩家出生点"))
@@ -1389,6 +1584,7 @@ func _apply_candidate_columns(candidate: LevelData, changes: Array[Dictionary]) 
 		values[change["cell"]] = change["after"]
 	data.set_columns(values)
 	data.objects = candidate.objects
+	data.details = candidate.details
 	data.stairs = candidate.stairs
 	data.spawn_cell = candidate.spawn_cell
 	data.spawn_layer = candidate.spawn_layer
@@ -1396,22 +1592,7 @@ func _apply_candidate_columns(candidate: LevelData, changes: Array[Dictionary]) 
 
 func _move_top_anchors(candidate: LevelData, cell: Vector2i,
 		old_top: int, new_top: int) -> void:
-	if old_top < 0 or new_top <= old_top:
-		return
-	var delta := (new_top - old_top) * LevelData.ELEVATION_STEP
-	for i in candidate.objects.size():
-		var record: Dictionary = candidate.objects[i]
-		var anchor: Vector2i = record.get(
-			"anchor_cell", candidate.world_to_cell(record.get(
-				"position", Vector3.ZERO)))
-		if anchor != cell or int(record.get("anchor_layer", old_top)) != old_top:
-			continue
-		var position: Vector3 = record.get("position", Vector3.ZERO)
-		position.y += delta
-		record["position"] = position
-		record["anchor_cell"] = cell
-		record["anchor_layer"] = new_top
-		candidate.objects[i] = record
+	ObjectRules.move_top_anchors(candidate, cell, old_top, new_top)
 
 func _ground_candidate(cell: Vector2i) -> Dictionary:
 	if not data.in_bounds(cell):
@@ -1487,9 +1668,25 @@ func _pick(camera: Camera3D, mouse: Vector2) -> Vector2i:
 			picked_layer = elevation
 	if is_inf(best):
 		var layer := height_select.selected
-		var distance: float = (data.surface_y(layer) - origin.y) / ray.y
+		var base_y := data.surface_y(layer) - LevelData.ELEVATION_STEP
+		var distance: float = (base_y - origin.y) / ray.y
 		var p := origin + ray * maxf(distance, 0)
-		result = data.world_to_cell(p)
+		var top_distance: float = (data.surface_y(layer) - origin.y) / ray.y
+		var top_point := origin + ray * maxf(top_distance, 0)
+		var base_cell := data.world_to_cell(p)
+		var top_cell := data.world_to_cell(top_point)
+		var base_neighbors := _terrain_neighbor_count(base_cell)
+		var top_neighbors := _terrain_neighbor_count(top_cell)
+		# A perspective ray can cross two plausible empty cells. The intended
+		# construction frontier is the candidate touching existing terrain.
+		result = top_cell if top_neighbors > base_neighbors else base_cell
+	return result
+
+func _terrain_neighbor_count(cell: Vector2i) -> int:
+	var result := 0
+	for direction in LevelData.DIRS:
+		if data.cell_exists(cell + direction):
+			result += 1
 	return result
 
 func _pick_terrain_collision(camera: Camera3D, mouse: Vector2) -> Vector2i:
@@ -1527,6 +1724,8 @@ func _adopt_picked_layer() -> void:
 		return
 	height_select.select(picked_layer)
 	_refresh_brush_preview()
+	_set_status("摆放层次已切换为第 %d 层（顶面 %dm）" % [
+		picked_layer, (picked_layer + 1) * roundi(LevelData.ELEVATION_STEP)])
 
 func _update_preview(cell: Vector2i) -> void:
 	hover_cell = cell

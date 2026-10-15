@@ -120,7 +120,7 @@ func _init() -> void:
 		"position": Vector3(1.0, 4.0, 1.0),
 	}])
 	legacy.ensure_layout()
-	check(legacy.format_version == 6 and legacy.cells.is_empty()
+	check(legacy.format_version == LevelData.FORMAT_VERSION and legacy.cells.is_empty()
 		and legacy.layer_count(Vector2i.ZERO) == 3
 		and legacy.tile_id(Vector2i.ZERO, 0) == "rock"
 		and legacy.tile_id(Vector2i.ZERO, 2) == "rock",

@@ -13,6 +13,8 @@ func _init() -> void:
 func _run() -> void:
 	var packed := load("res://scenes/level_playtest.tscn") as PackedScene
 	var playtest = packed.instantiate()
+	# Independent of the last editor playtest request stored in user://.
+	playtest.level_override = "res://data/levels/acceptance_map.tres"
 	root.add_child(playtest)
 	await process_frame
 	var profile := load("res://data/art_profile.tres") as ArtProfile

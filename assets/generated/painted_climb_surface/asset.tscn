@@ -1,0 +1,69 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/gameplay_prop.gd" id="1_5mioy"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_qbt7o"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_xqrsf"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/climb_grips.png" id="4_cni6d"]
+
+[sub_resource type="Resource" id="Resource_lmogu"]
+script = ExtResource("3_xqrsf")
+asset_id = "painted_climb_surface"
+display_name = "攀岩抓点"
+category = "墙面附件"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/climb_grips.png"
+scene_path = "res://assets/generated/painted_climb_surface/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_climb_surface/thumbnail.png"
+carrier = 5
+image_size = Vector2(2, 2)
+collision_size = Vector3(2, 2, 0.16)
+fade_when_occluding = false
+profile = ExtResource("2_qbt7o")
+generator_version = 3
+behaviour = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": [113.0, 209.0, 405.0, 317.0],
+"version": 1.0
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p0s2m"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_cni6d")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_aofuo"]
+_surfaces = [{
+"aabb": AABB(-1, 0, 0.025, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 205, 204, 204, 60, 0, 0, 128, 191, 0, 0, 0, 0, 205, 204, 204, 60, 0, 0, 128, 63, 0, 0, 0, 0, 205, 204, 204, 60, 0, 0, 128, 63, 0, 0, 0, 64, 205, 204, 204, 60)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_flfq3"]
+size = Vector3(2, 2, 0.16)
+
+[node name="painted_climb_surface" type="Node3D" unique_id=552734055]
+script = ExtResource("1_5mioy")
+definition = SubResource("Resource_lmogu")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1555386479]
+material_override = SubResource("StandardMaterial3D_p0s2m")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_aofuo")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1103088498]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=817326673]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_flfq3")

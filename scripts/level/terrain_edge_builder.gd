@@ -288,6 +288,9 @@ static func make_rim_mesh(path: PackedVector2Array, high_y: float,
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var lengths := _path_lengths(path)
 	var closed := path.size() > 2 and path[0].is_equal_approx(path[path.size() - 1])
+	# A cut-out fringe is a strip just in front of the wall, so its art must
+	# not be lifted by the soft-rim surface offset.
+	var lift := 0.0 if tile.rim_cutout else style.rim_surface_offset_m
 	for i in path.size():
 		var tangent := _path_tangent(path, i, closed)
 		var outward := Vector2(tangent.y, -tangent.x).normalized()
@@ -295,11 +298,15 @@ static func make_rim_mesh(path: PackedVector2Array, high_y: float,
 			var sample: Vector2 = profile[j]
 			var t := float(j) / float(profile.size() - 1)
 			var u := lengths[i] / maxf(tile.rim_u_span_m, 0.001)
+			if tile.rim_cutout:
+				# Same world mapping as the wall below, so the painted fringe
+				# continues across cells instead of restarting every 2m.
+				u = (path[i].x + path[i].y) / maxf(tile.rim_u_span_m, 0.001)
 			tool.set_uv(Vector2(u, lerpf(tile.rim_alpha_range.x, tile.rim_alpha_range.y, t)))
 			tool.set_uv2(Vector2(t, 0.0))
 			tool.add_vertex(Vector3(
 				path[i].x + outward.x * sample.x,
-				high_y + sample.y + style.rim_surface_offset_m,
+				high_y + sample.y + lift,
 				path[i].y + outward.y * sample.x))
 	for i in path.size() - 1:
 		for j in profile.size() - 1:

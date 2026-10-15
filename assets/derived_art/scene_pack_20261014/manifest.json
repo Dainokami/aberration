@@ -1,0 +1,3575 @@
+{
+  "version": 2,
+  "pack": "scene_pack_20261014",
+  "entries": [
+    {
+      "id": "block_reference",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "侧.png",
+      "source": "terrain/block_reference.png",
+      "sha256": "49bdc474271eaa2c826c796a0b6da046e37c1e8766fb73988825bf721fcc5adf",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": 8,
+        "crop": [
+          109,
+          149,
+          884,
+          945
+        ]
+      },
+      "kind": "reference",
+      "size_m": [
+        4.0,
+        2.0
+      ],
+      "output": "terrain/block_reference.png",
+      "output_size": [
+        499,
+        512
+      ]
+    },
+    {
+      "id": "earth",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "土面.png",
+      "source": "terrain/earth.png",
+      "sha256": "dab24e27c0ba2d8645717969b41b56a2f5efdc06d69334872d882620d5b11f3e",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null
+      },
+      "kind": "ground",
+      "size_m": [
+        8.0,
+        8.0
+      ],
+      "output": "terrain/earth.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "detail_sheet",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "小场景.png",
+      "source": "terrain/detail_sheet.png",
+      "sha256": "a49afb416b24bbf3942f0a30f4817a574cb04e23023c47dfa9729a40c517461b",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": 8,
+        "crop": [
+          36,
+          55,
+          485,
+          466
+        ]
+      },
+      "kind": "reference",
+      "size_m": [
+        4.0,
+        2.0
+      ],
+      "output": "terrain/detail_sheet.png",
+      "output_size": [
+        457,
+        419
+      ]
+    },
+    {
+      "id": "cliff",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "悬崖边.png",
+      "source": "terrain/cliff.png",
+      "sha256": "cd1200f5b941a485ce4028ef0917c77e42e70e637beb6535fd773b74ab1c3137",
+      "source_size": [
+        2048,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": 8,
+        "crop": [
+          46,
+          259,
+          1992,
+          785
+        ]
+      },
+      "kind": "cliff",
+      "size_m": [
+        4.0,
+        2.0
+      ],
+      "output": "terrain/cliff.png",
+      "output_size": [
+        1024,
+        280
+      ]
+    },
+    {
+      "id": "corner_reference",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "拐角.png",
+      "source": "terrain/corner_reference.png",
+      "sha256": "e0889b167705422ca4746ec643b246f9380062d46b83731c790cc55ddb38bf35",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": 8,
+        "crop": [
+          79,
+          252,
+          953,
+          898
+        ]
+      },
+      "kind": "reference",
+      "size_m": [
+        4.0,
+        2.0
+      ],
+      "output": "terrain/corner_reference.png",
+      "output_size": [
+        690,
+        512
+      ]
+    },
+    {
+      "id": "corner_color_reference",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "拐角2.png",
+      "source": "terrain/corner_color_reference.png",
+      "sha256": "b3661cde515621bfa040a0bb6da87e691387319a8150f445d916f9bf079d2249",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          79,
+          157,
+          934,
+          814
+        ],
+        "mask": "masks/corner_color_reference.png",
+        "mask_recipe": {
+          "roi_xyxy": [
+            65,
+            150,
+            945,
+            825
+          ],
+          "r_over_g": 1.12,
+          "g_over_b": 1.15,
+          "largest_component": true,
+          "fill_holes": true,
+          "dilate": 0
+        }
+      },
+      "kind": "reference",
+      "note": "专用灰度遮罩已剥离彩色构图背景；地形转角使用套件几何，不重复投射整张透视图。",
+      "output": "terrain/corner_color_reference.png",
+      "output_size": [
+        512,
+        395
+      ]
+    },
+    {
+      "id": "slope",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "斜坡.png",
+      "source": "terrain/slope.png",
+      "sha256": "7288e7e5d1162196ed8be7e2c302f4dad48d3b5f6bb7fc0ca1eb12e04034b8e6",
+      "source_size": [
+        1774,
+        887
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": 8,
+        "crop": [
+          39,
+          94,
+          1735,
+          802
+        ]
+      },
+      "kind": "slope",
+      "size_m": [
+        4.0,
+        2.0
+      ],
+      "output": "terrain/slope.png",
+      "output_size": [
+        1024,
+        430
+      ]
+    },
+    {
+      "id": "grass",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "草地.png",
+      "source": "terrain/grass.png",
+      "sha256": "e50781561cb11e19d68127eefc48034020c4af38605e9e46a3460b051b753cbd",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null
+      },
+      "kind": "ground",
+      "size_m": [
+        8.0,
+        8.0
+      ],
+      "output": "terrain/grass.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "meadow",
+      "group": "terrain",
+      "archive": "素材_PNG.zip",
+      "original_name": "草坪.png",
+      "source": "terrain/meadow.png",
+      "sha256": "e4833f4a14fba4006d3e98df438a2eda5ca408c4f5f0cb3dc8055de9321f02f0",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null
+      },
+      "kind": "ground",
+      "size_m": [
+        8.0,
+        8.0
+      ],
+      "output": "terrain/meadow.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "biggrass",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "biggrass.png",
+      "source": "objects/biggrass.png",
+      "sha256": "eca4cedea8f00be8419758813d2a140d03e7841756d976a621d8590e40d8fadc",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          175,
+          376,
+          818,
+          920
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        2.3587,
+        2.0
+      ],
+      "output": "objects/biggrass.png",
+      "output_size": [
+        651,
+        552
+      ]
+    },
+    {
+      "id": "bigtree",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "bigtree.png",
+      "source": "objects/bigtree.png",
+      "sha256": "99c3cc894ba33dcec56810cb04d9fce7bcff0d8a72f4da86530c707d4d6d85a8",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          182,
+          71,
+          858,
+          952
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        3.0776,
+        4.0
+      ],
+      "output": "objects/bigtree.png",
+      "output_size": [
+        684,
+        889
+      ]
+    },
+    {
+      "id": "bigtree2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "bigtree2.png",
+      "source": "objects/bigtree2.png",
+      "sha256": "58f256d29a81b429ad5c235ef804fd74e6865aee9a535f0f2ea8de8786a83c09",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          331,
+          62,
+          630,
+          979
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        1.3276,
+        4.0
+      ],
+      "output": "objects/bigtree2.png",
+      "output_size": [
+        307,
+        925
+      ]
+    },
+    {
+      "id": "bigtree3",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "bigtree3.png",
+      "source": "objects/bigtree3.png",
+      "sha256": "53711150a000e30d238290c39c0a11ca0b180f4547e2f8ccbf86438f4ecaa361",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          228,
+          41,
+          828,
+          981
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        2.5654,
+        4.0
+      ],
+      "output": "objects/bigtree3.png",
+      "output_size": [
+        608,
+        948
+      ]
+    },
+    {
+      "id": "climbingrock_frontface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "climbingrock_frontface.png",
+      "source": "objects/climbingrock_frontface.png",
+      "sha256": "8a21278c98b992438de5178a91ba4ef07a3be0d26cbd16ae76cae6f77a2c7b9e",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          113,
+          209,
+          405,
+          317
+        ]
+      },
+      "kind": "wall",
+      "size_m": [
+        2.0,
+        0.7733
+      ],
+      "output": "objects/climbingrock_frontface.png",
+      "output_size": [
+        300,
+        116
+      ]
+    },
+    {
+      "id": "climbingrock_sideface2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "climbingrock_sideface2.png",
+      "source": "objects/climbingrock_sideface2.png",
+      "sha256": "26c7d6d5c1f1616cf075a670c4ad5724bc903cb548472e8c33fc7a8b62dee5c5",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          110,
+          166,
+          353,
+          400
+        ]
+      },
+      "kind": "wall",
+      "size_m": [
+        2.0,
+        1.9283
+      ],
+      "output": "objects/climbingrock_sideface2.png",
+      "output_size": [
+        251,
+        242
+      ]
+    },
+    {
+      "id": "climbingrock_sideface3",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "climbingrock_sideface3.png",
+      "source": "objects/climbingrock_sideface3.png",
+      "sha256": "c65973714ead0b39efa3bd49650d84eb29a367808553fe900ffe7eb9eb7d8efd",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          219,
+          181,
+          298,
+          331
+        ]
+      },
+      "kind": "wall",
+      "size_m": [
+        2.0,
+        3.6322
+      ],
+      "output": "objects/climbingrock_sideface3.png",
+      "output_size": [
+        87,
+        158
+      ]
+    },
+    {
+      "id": "climbingrock_topface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "climbingrock_topface.png",
+      "source": "objects/climbingrock_topface.png",
+      "sha256": "760afaa70edcfb21d53575c601954eed171a9f130fe4e4199132d77a6be6d7f1",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          113,
+          148,
+          404,
+          215
+        ]
+      },
+      "kind": "wall",
+      "size_m": [
+        2.0,
+        0.5017
+      ],
+      "output": "objects/climbingrock_topface.png",
+      "output_size": [
+        299,
+        75
+      ]
+    },
+    {
+      "id": "climbingrock_topface2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "climbingrock_topface2.png",
+      "source": "objects/climbingrock_topface2.png",
+      "sha256": "3950c5b3ff5f753d864ea037753f3f40302544fdd25eb5b1e3828e3b39b22a6c",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          110,
+          135,
+          426,
+          291
+        ]
+      },
+      "kind": "wall",
+      "size_m": [
+        2.0,
+        1.0123
+      ],
+      "output": "objects/climbingrock_topface2.png",
+      "output_size": [
+        324,
+        164
+      ]
+    },
+    {
+      "id": "decayrock_frontface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "Decayrock_frontface.png",
+      "source": "objects/decayrock_frontface.png",
+      "sha256": "964bc421b9f58d2a051193b294b31255bc3ec0128da11a9d4fa6c97b277604a4",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.202637,
+            0.210449
+          ],
+          [
+            0.802734,
+            0.211914
+          ],
+          [
+            0.803711,
+            0.793945
+          ],
+          [
+            0.206055,
+            0.797363
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/decayrock_frontface.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "decayrock_sideface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "Decayrock_sideface.png",
+      "source": "objects/decayrock_sideface.png",
+      "sha256": "aba93d1b404212222a0762d601c9f98c9f3e3e8cbed67ed2b4a74ba3a2df18dd",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.317383,
+            0.345215
+          ],
+          [
+            0.71582,
+            0.176758
+          ],
+          [
+            0.70459,
+            0.655762
+          ],
+          [
+            0.311035,
+            0.848145
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/decayrock_sideface.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "decayrock_sideface2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "Decayrock_sideface2.png",
+      "source": "objects/decayrock_sideface2.png",
+      "sha256": "48cfc1fbb6181908ed714d1cb32ef1e4e088763f21ce211bac9df6c992307cf4",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.280762,
+            0.1875
+          ],
+          [
+            0.658203,
+            0.375977
+          ],
+          [
+            0.662598,
+            0.865234
+          ],
+          [
+            0.287598,
+            0.638184
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/decayrock_sideface2.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "decayrock_topface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "Decayrock_topface.png",
+      "source": "objects/decayrock_topface.png",
+      "sha256": "4c8d1e0e843d59b4697129a76edd805b03cf839315a7e7cafbb3d49654b02f73",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.117188,
+            0.496582
+          ],
+          [
+            0.544434,
+            0.34082
+          ],
+          [
+            0.90332,
+            0.502441
+          ],
+          [
+            0.492188,
+            0.692871
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/decayrock_topface.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "decayrock_topface2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "Decayrock_topface2.png",
+      "source": "objects/decayrock_topface2.png",
+      "sha256": "85d5c2a045f975c150535de7afc20061fcb58126df155fc5624fa1de2b22d6dd",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.268555,
+            0.380859
+          ],
+          [
+            0.726562,
+            0.383789
+          ],
+          [
+            0.812012,
+            0.59082
+          ],
+          [
+            0.201172,
+            0.601562
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/decayrock_topface2.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "pillar",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "pillar.png",
+      "source": "objects/pillar.png",
+      "sha256": "a9ff123a968d1bc83fbd20e3d1f577f309f851dac5da6711ac860317fa52d1c5",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          738,
+          200,
+          1285,
+          1936
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        1.2729,
+        4.0
+      ],
+      "output": "objects/pillar.png",
+      "output_size": [
+        326,
+        1024
+      ]
+    },
+    {
+      "id": "rock_frontface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "rock_frontface.png",
+      "source": "objects/rock_frontface.png",
+      "sha256": "60c33c5b54afd846d288e1bb998506eb62d405eedc701478fc9bcb1a8b5b9eb9",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.20752,
+            0.224121
+          ],
+          [
+            0.785156,
+            0.225098
+          ],
+          [
+            0.79248,
+            0.792969
+          ],
+          [
+            0.208008,
+            0.785645
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/rock_frontface.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "rock_sideface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "rock_sideface.png",
+      "source": "objects/rock_sideface.png",
+      "sha256": "7d7cfb5c1ea12597946463e510f19b0a6db04b3be740aa52dabe48cde322398a",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.322754,
+            0.35498
+          ],
+          [
+            0.680664,
+            0.200195
+          ],
+          [
+            0.671875,
+            0.620605
+          ],
+          [
+            0.327637,
+            0.792969
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/rock_sideface.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "rock_sideface2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "rock_sideface2.png",
+      "source": "objects/rock_sideface2.png",
+      "sha256": "e177097db26981e24248b4c79d67c875dafd41223118b65c5124eaa9cd150e26",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.324707,
+            0.218262
+          ],
+          [
+            0.640137,
+            0.375488
+          ],
+          [
+            0.652344,
+            0.820312
+          ],
+          [
+            0.322266,
+            0.614746
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/rock_sideface2.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "rock_topface",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "rock_topface.png",
+      "source": "objects/rock_topface.png",
+      "sha256": "d99d32e4108805608c5d885f2ddaa9efb6876eb7aab34bc0954b3686088755f1",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.263672,
+            0.398438
+          ],
+          [
+            0.703125,
+            0.399902
+          ],
+          [
+            0.783203,
+            0.604492
+          ],
+          [
+            0.200684,
+            0.603516
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/rock_topface.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "rock_topface2",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "rock_topface2.png",
+      "source": "objects/rock_topface2.png",
+      "sha256": "c6e1c58932dc25f6a55ae0007c2247360bce5217337dcb2fd3c48fdbf1bc2e7e",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": null,
+        "quad": [
+          [
+            0.15625,
+            0.476562
+          ],
+          [
+            0.518066,
+            0.342285
+          ],
+          [
+            0.835938,
+            0.479004
+          ],
+          [
+            0.493652,
+            0.633789
+          ]
+        ]
+      },
+      "kind": "face",
+      "size_m": [
+        2.0,
+        2.0
+      ],
+      "output": "objects/rock_topface2.png",
+      "output_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "id": "samllflowers",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "samllflowers.png",
+      "source": "objects/samllflowers.png",
+      "sha256": "eea82008238eca5e6ae71c7c42014bcbeaeeb3ca4d3959175093c4f4e822b97f",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          142,
+          87,
+          381,
+          397
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        0.7767,
+        1.0
+      ],
+      "output": "objects/samllflowers.png",
+      "output_size": [
+        247,
+        318
+      ]
+    },
+    {
+      "id": "smallbush",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "smallbush.png",
+      "source": "objects/smallbush.png",
+      "sha256": "78f78064442788a8efc7652fb1220c3a110e4e5aeddc3b384ad1a9f54c8ed68d",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          73,
+          137,
+          431,
+          375
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        1.4878,
+        1.0
+      ],
+      "output": "objects/smallbush.png",
+      "output_size": [
+        366,
+        246
+      ]
+    },
+    {
+      "id": "smallgrass",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "smallgrass.png",
+      "source": "objects/smallgrass.png",
+      "sha256": "a75ecaf7fc5aa33d08b1ec1fd8b850dd5a0435ae7472e01e2815c2ea23ee1976",
+      "source_size": [
+        512,
+        512
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          72,
+          61,
+          455,
+          454
+        ]
+      },
+      "kind": "card",
+      "size_m": [
+        0.9751,
+        1.0
+      ],
+      "output": "objects/smallgrass.png",
+      "output_size": [
+        391,
+        401
+      ]
+    },
+    {
+      "id": "treasurebox",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "treasurebox.png",
+      "source": "objects/treasurebox.png",
+      "sha256": "a279cbba169eff0af448f22a3ef08d6b8932cd36279b42b596b8cfa98b8b6291",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          260,
+          240,
+          2010,
+          1730
+        ]
+      },
+      "kind": "state",
+      "size_m": [
+        1.75,
+        1.49
+      ],
+      "output": "objects/treasurebox.png",
+      "output_size": [
+        1024,
+        872
+      ]
+    },
+    {
+      "id": "treasurebox_open",
+      "group": "objects",
+      "archive": "素材.zip",
+      "original_name": "treasurebox_open.png",
+      "source": "objects/treasurebox_open.png",
+      "sha256": "174adf5ede5575ce88036b0ce6be76af558bf7e44df51150327b05387f9cbb00",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          260,
+          240,
+          2010,
+          1730
+        ]
+      },
+      "kind": "state",
+      "size_m": [
+        1.75,
+        1.49
+      ],
+      "output": "objects/treasurebox_open.png",
+      "output_size": [
+        1024,
+        872
+      ]
+    },
+    {
+      "id": "detail_01",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "01_泥土地块_大.png",
+      "source": "details/detail_01.png",
+      "sha256": "f5e9bbf52017633cdd06e31ac8e5e2f14c3ad915d2dffe3b05e5ed6c3e20db6d",
+      "source_size": [
+        801,
+        359
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          798,
+          356
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        2.0,
+        0.9005
+      ],
+      "output": "details/detail_01.png",
+      "output_size": [
+        512,
+        231
+      ]
+    },
+    {
+      "id": "detail_02",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "02_泥土地块_小.png",
+      "source": "details/detail_02.png",
+      "sha256": "0e55d30a3f3f6396461d706c2a50058438392d4d5feed36da06be9e4a2c58162",
+      "source_size": [
+        306,
+        239
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          3,
+          303,
+          235
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        1.1758,
+        0.9132
+      ],
+      "output": "details/detail_02.png",
+      "output_size": [
+        309,
+        240
+      ]
+    },
+    {
+      "id": "detail_03",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "03_裂土地块_大.png",
+      "source": "details/detail_03.png",
+      "sha256": "257a8886d9eb37a137a8fbd75a0a000014fcb26a8c7241260d2ee39471829001",
+      "source_size": [
+        489,
+        321
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          3,
+          486,
+          318
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        1.8867,
+        1.2412
+      ],
+      "output": "details/detail_03.png",
+      "output_size": [
+        491,
+        323
+      ]
+    },
+    {
+      "id": "detail_04",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "04_裂土地块_中.png",
+      "source": "details/detail_04.png",
+      "sha256": "c4e6fb486a8d23fce14922246d52724056bee802ad100df7c87bbf506b5626d8",
+      "source_size": [
+        339,
+        238
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          337,
+          236
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        1.3086,
+        0.9233
+      ],
+      "output": "details/detail_04.png",
+      "output_size": [
+        343,
+        242
+      ]
+    },
+    {
+      "id": "detail_05",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "05_裂土地块_小.png",
+      "source": "details/detail_05.png",
+      "sha256": "5bfa5d4a607c4afe11add7ed8810330492b61ff78152284b3a3c0b4b583377d3",
+      "source_size": [
+        283,
+        217
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          3,
+          278,
+          215
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        1.0703,
+        0.835
+      ],
+      "output": "details/detail_05.png",
+      "output_size": [
+        282,
+        220
+      ]
+    },
+    {
+      "id": "detail_06",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "06_泥土斑块.png",
+      "source": "details/detail_06.png",
+      "sha256": "a13525314c9cf31f216fdf4f93d5e4d6b3797df102c6fe8c3e7af75a2e3a1157",
+      "source_size": [
+        217,
+        200
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          3,
+          215,
+          197
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.8281,
+        0.7604
+      ],
+      "output": "details/detail_06.png",
+      "output_size": [
+        220,
+        202
+      ]
+    },
+    {
+      "id": "detail_07",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "07_石块.png",
+      "source": "details/detail_07.png",
+      "sha256": "13fdc1df8bdb37c9af6cd4d868370eb2136fca455a129035067e12c3487f9582",
+      "source_size": [
+        80,
+        76
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          2,
+          78,
+          74
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.2891,
+        0.282
+      ],
+      "output": "details/detail_07.png",
+      "output_size": [
+        82,
+        80
+      ]
+    },
+    {
+      "id": "detail_08",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "08_石块.png",
+      "source": "details/detail_08.png",
+      "sha256": "166d8c525af475727422d6702b22346fd951be76aa22b43f95ab2d56ddf39926",
+      "source_size": [
+        78,
+        65
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          2,
+          76,
+          61
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.2852,
+        0.2359
+      ],
+      "output": "details/detail_08.png",
+      "output_size": [
+        81,
+        67
+      ]
+    },
+    {
+      "id": "detail_09",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "09_石块组合.png",
+      "source": "details/detail_09.png",
+      "sha256": "9196d513e46ce11ad50e9c1b676907513b574b490262d9b62837d1eb416ac976",
+      "source_size": [
+        154,
+        130
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          151,
+          127
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.582,
+        0.4931
+      ],
+      "output": "details/detail_09.png",
+      "output_size": [
+        157,
+        133
+      ]
+    },
+    {
+      "id": "detail_10",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "10_石块组合.png",
+      "source": "details/detail_10.png",
+      "sha256": "74eda87d3f90c9e968350f0e686d9e7c4bc4f1fc334700b9b650434bfccc71a1",
+      "source_size": [
+        257,
+        158
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          253,
+          155
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.9805,
+        0.6095
+      ],
+      "output": "details/detail_10.png",
+      "output_size": [
+        259,
+        161
+      ]
+    },
+    {
+      "id": "detail_11",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "11_石块.png",
+      "source": "details/detail_11.png",
+      "sha256": "9af7827a17bd37eaa9d30e93ecb73921c15095f072454cbb1c99f3fd67116257",
+      "source_size": [
+        73,
+        59
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          2,
+          71,
+          55
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.2656,
+        0.2132
+      ],
+      "output": "details/detail_11.png",
+      "output_size": [
+        76,
+        61
+      ]
+    },
+    {
+      "id": "detail_12",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "12_草丛.png",
+      "source": "details/detail_12.png",
+      "sha256": "995991b1da07f9ea210d31552e89b136f227be22abf717d308f48fca8fe7f04b",
+      "source_size": [
+        151,
+        122
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          148,
+          118
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.5703,
+        0.4592
+      ],
+      "output": "details/detail_12.png",
+      "output_size": [
+        154,
+        124
+      ]
+    },
+    {
+      "id": "detail_13",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "13_草丛.png",
+      "source": "details/detail_13.png",
+      "sha256": "054acf9dc2d85537163cdc44ab6696b820d34fe1d7c3544ffea155a2aac8c541",
+      "source_size": [
+        263,
+        182
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          3,
+          260,
+          178
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        1.0078,
+        0.6933
+      ],
+      "output": "details/detail_13.png",
+      "output_size": [
+        266,
+        183
+      ]
+    },
+    {
+      "id": "detail_14",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "14_草丛.png",
+      "source": "details/detail_14.png",
+      "sha256": "a80ae990e38d29c4746d344e182c3b2231546490f121533bc2b3cbc0bb6ca913",
+      "source_size": [
+        165,
+        91
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          3,
+          162,
+          88
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.625,
+        0.346
+      ],
+      "output": "details/detail_14.png",
+      "output_size": [
+        168,
+        93
+      ]
+    },
+    {
+      "id": "detail_15",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "15_草丛.png",
+      "source": "details/detail_15.png",
+      "sha256": "721ba7c1e6ebd602dd9bfba553b5edb7f730d4b04b57da9456f774454fec58c2",
+      "source_size": [
+        198,
+        147
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          195,
+          142
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.7539,
+        0.5551
+      ],
+      "output": "details/detail_15.png",
+      "output_size": [
+        201,
+        148
+      ]
+    },
+    {
+      "id": "detail_16",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "16_草丛.png",
+      "source": "details/detail_16.png",
+      "sha256": "da936cfaeb200d04abfddfa4834c18cce8feb4b08edf73c0d81144f4342f90f0",
+      "source_size": [
+        588,
+        211
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          2,
+          585,
+          209
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        2.0,
+        0.7301
+      ],
+      "output": "details/detail_16.png",
+      "output_size": [
+        512,
+        187
+      ]
+    },
+    {
+      "id": "detail_17",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "17_草丛.png",
+      "source": "details/detail_17.png",
+      "sha256": "0b9ecf3e4332565f1a75cd5f6b425545f0f979ecb4793a9b6f13d1a3d8c33a6d",
+      "source_size": [
+        122,
+        98
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          3,
+          119,
+          95
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.4492,
+        0.3652
+      ],
+      "output": "details/detail_17.png",
+      "output_size": [
+        123,
+        100
+      ]
+    },
+    {
+      "id": "detail_18",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "18_草丛.png",
+      "source": "details/detail_18.png",
+      "sha256": "ec933cd85b47e41836c1b0a47fb6b7830b2f23f4237d31dff1fc425c1c1b1111",
+      "source_size": [
+        167,
+        148
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          165,
+          146
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.6367,
+        0.566
+      ],
+      "output": "details/detail_18.png",
+      "output_size": [
+        171,
+        152
+      ]
+    },
+    {
+      "id": "detail_19",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "19_草丛.png",
+      "source": "details/detail_19.png",
+      "sha256": "dd647796085c1040a2e3ffc2d8a0ef27f9103e22761ffae8d1d335b48494470c",
+      "source_size": [
+        134,
+        103
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          132,
+          99
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.5078,
+        0.3864
+      ],
+      "output": "details/detail_19.png",
+      "output_size": [
+        138,
+        105
+      ]
+    },
+    {
+      "id": "detail_20",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "20_草丛.png",
+      "source": "details/detail_20.png",
+      "sha256": "e1c4bee7b64563832a36f3d82aa7c985338b31f3f0f27fe96f67ed0e9569bdce",
+      "source_size": [
+        123,
+        111
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          121,
+          107
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.4648,
+        0.4136
+      ],
+      "output": "details/detail_20.png",
+      "output_size": [
+        127,
+        113
+      ]
+    },
+    {
+      "id": "detail_21",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "21_草丛.png",
+      "source": "details/detail_21.png",
+      "sha256": "10030420df52fde588a5e62be4f4681cc649d61955566945f66a08b7da47e2ae",
+      "source_size": [
+        124,
+        111
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          120,
+          108
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.4609,
+        0.417
+      ],
+      "output": "details/detail_21.png",
+      "output_size": [
+        126,
+        114
+      ]
+    },
+    {
+      "id": "detail_22",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "22_草丛.png",
+      "source": "details/detail_22.png",
+      "sha256": "02826951b1bb76757532f5a048787c5938f0767e5f32038bfbf7faebd68d2051",
+      "source_size": [
+        344,
+        197
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          341,
+          195
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        1.3242,
+        0.7671
+      ],
+      "output": "details/detail_22.png",
+      "output_size": [
+        347,
+        201
+      ]
+    },
+    {
+      "id": "detail_23",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "23_草丛.png",
+      "source": "details/detail_23.png",
+      "sha256": "408f67de5ad3824e6943a7d1516687fde3742895c0716b8db05319bba7b9ced8",
+      "source_size": [
+        149,
+        96
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          2,
+          147,
+          93
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.5586,
+        0.3662
+      ],
+      "output": "details/detail_23.png",
+      "output_size": [
+        151,
+        99
+      ]
+    },
+    {
+      "id": "detail_24",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "24_草丛.png",
+      "source": "details/detail_24.png",
+      "sha256": "6df3b91a0ee9454f8bdba313a90fa034224184f1ae2cbe5648b185aa13e271eb",
+      "source_size": [
+        147,
+        89
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          2,
+          143,
+          86
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.5469,
+        0.3399
+      ],
+      "output": "details/detail_24.png",
+      "output_size": [
+        148,
+        92
+      ]
+    },
+    {
+      "id": "detail_25",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "25_草丛.png",
+      "source": "details/detail_25.png",
+      "sha256": "8bdcafac0b4818d540979f4201fe94ec756c223646cd1381b116d71bc9cda065",
+      "source_size": [
+        179,
+        119
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          175,
+          116
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.6758,
+        0.4555
+      ],
+      "output": "details/detail_25.png",
+      "output_size": [
+        181,
+        122
+      ]
+    },
+    {
+      "id": "detail_26",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "26_草丛.png",
+      "source": "details/detail_26.png",
+      "sha256": "ce4f59cfbe0d196fc94c6a6fdd59c16692f2e5baa76866e5da2feed4c9d647e9",
+      "source_size": [
+        74,
+        57
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          72,
+          55
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.2734,
+        0.2138
+      ],
+      "output": "details/detail_26.png",
+      "output_size": [
+        78,
+        61
+      ]
+    },
+    {
+      "id": "detail_27",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "27_草丛.png",
+      "source": "details/detail_27.png",
+      "sha256": "cdee3f3d85015da7c0fb724c0eae93c64e75a2495c70095fbfb063cddfe5475a",
+      "source_size": [
+        91,
+        79
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          3,
+          89,
+          75
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.3398,
+        0.2862
+      ],
+      "output": "details/detail_27.png",
+      "output_size": [
+        95,
+        80
+      ]
+    },
+    {
+      "id": "detail_28",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "28_草丛.png",
+      "source": "details/detail_28.png",
+      "sha256": "7caa309b92e812ca064fa042f071bfe55e9ec0c8e0052c4083e2f23052c63c88",
+      "source_size": [
+        159,
+        92
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          157,
+          89
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.6055,
+        0.3529
+      ],
+      "output": "details/detail_28.png",
+      "output_size": [
+        163,
+        95
+      ]
+    },
+    {
+      "id": "detail_29",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "29_草丛.png",
+      "source": "details/detail_29.png",
+      "sha256": "889388452302ca154b251362ce8a66b67442e3ffc761c83fba024fc03c5dae90",
+      "source_size": [
+        138,
+        95
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          3,
+          136,
+          91
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.5156,
+        0.3536
+      ],
+      "output": "details/detail_29.png",
+      "output_size": [
+        140,
+        96
+      ]
+    },
+    {
+      "id": "detail_30",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "30_草丛.png",
+      "source": "details/detail_30.png",
+      "sha256": "e984ed15b81508601da0f6569f808c3cb0c37d0a9e48e43fbeec8625f4899651",
+      "source_size": [
+        88,
+        83
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          2,
+          84,
+          81
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.3164,
+        0.3093
+      ],
+      "output": "details/detail_30.png",
+      "output_size": [
+        89,
+        87
+      ]
+    },
+    {
+      "id": "detail_31",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "31_草丛.png",
+      "source": "details/detail_31.png",
+      "sha256": "9d5eea7e5a493dee26c0335dbf83ddcd9e356fbdce0e059c9325f90fa242f721",
+      "source_size": [
+        99,
+        82
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          97,
+          79
+        ]
+      },
+      "kind": "upright",
+      "size_m": [
+        0.3711,
+        0.3062
+      ],
+      "output": "details/detail_31.png",
+      "output_size": [
+        103,
+        85
+      ]
+    },
+    {
+      "id": "detail_32",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "32_落叶.png",
+      "source": "details/detail_32.png",
+      "sha256": "89fdfe09a63d218387f4153c9d3178db48ea4dbda36c4b9a28747505b8542b37",
+      "source_size": [
+        165,
+        110
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          3,
+          162,
+          107
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.4012,
+        0.2707
+      ],
+      "output": "details/detail_32.png",
+      "output_size": [
+        166,
+        112
+      ]
+    },
+    {
+      "id": "detail_33",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "33_落叶.png",
+      "source": "details/detail_33.png",
+      "sha256": "9a8f05ba1f73cf20a2fb3b77fc33b13e61f47da3b90c6924b3a779e0b1824091",
+      "source_size": [
+        175,
+        100
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          171,
+          97
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.4291,
+        0.2497
+      ],
+      "output": "details/detail_33.png",
+      "output_size": [
+        177,
+        103
+      ]
+    },
+    {
+      "id": "detail_34",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "34_落叶.png",
+      "source": "details/detail_34.png",
+      "sha256": "90dc8981d530df32ac553f76a47b5e9e1f751ae079e1f23a89d9282ce7274aa5",
+      "source_size": [
+        142,
+        103
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          2,
+          140,
+          101
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.3504,
+        0.2568
+      ],
+      "output": "details/detail_34.png",
+      "output_size": [
+        146,
+        107
+      ]
+    },
+    {
+      "id": "detail_35",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "35_落叶.png",
+      "source": "details/detail_35.png",
+      "sha256": "971d156bdf61d3dcb1305d43e7b58df7c563dfdf47219eeb290c2ace5d043e45",
+      "source_size": [
+        126,
+        100
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          4,
+          122,
+          98
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.2996,
+        0.2425
+      ],
+      "output": "details/detail_35.png",
+      "output_size": [
+        126,
+        102
+      ]
+    },
+    {
+      "id": "detail_36",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "36_落叶.png",
+      "source": "details/detail_36.png",
+      "sha256": "331e9cfac158d1f63456ea9bb42b6cc24a9b027f6a7cfaf1bd17947b34d0f6e1",
+      "source_size": [
+        153,
+        111
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          3,
+          151,
+          107
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.3783,
+        0.2699
+      ],
+      "output": "details/detail_36.png",
+      "output_size": [
+        157,
+        112
+      ]
+    },
+    {
+      "id": "detail_37",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "37_落叶.png",
+      "source": "details/detail_37.png",
+      "sha256": "69c92363f67d2a2125853dc76146a6e76c8fb66f28f7548ac19099763e9eb9ec",
+      "source_size": [
+        95,
+        115
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          3,
+          93,
+          112
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.2285,
+        0.2728
+      ],
+      "output": "details/detail_37.png",
+      "output_size": [
+        98,
+        117
+      ]
+    },
+    {
+      "id": "detail_38",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "38_落叶.png",
+      "source": "details/detail_38.png",
+      "sha256": "eb8a024c50db575b8da7c4f8b7e07f7e47783eaf216276d622cffcb653a0a4d1",
+      "source_size": [
+        102,
+        62
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          3,
+          100,
+          60
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.2438,
+        0.1523
+      ],
+      "output": "details/detail_38.png",
+      "output_size": [
+        104,
+        65
+      ]
+    },
+    {
+      "id": "detail_39",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "39_落叶.png",
+      "source": "details/detail_39.png",
+      "sha256": "1b25993c130ff751c5749d223bcb1d10b2d01e8ced2f48477d0da3cb67643770",
+      "source_size": [
+        112,
+        68
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          2,
+          3,
+          108,
+          64
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.2691,
+        0.1629
+      ],
+      "output": "details/detail_39.png",
+      "output_size": [
+        114,
+        69
+      ]
+    },
+    {
+      "id": "detail_40",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "40_落叶.png",
+      "source": "details/detail_40.png",
+      "sha256": "f957b46cd6ec3aee55fc5d7a83d66e29598394295345b2d93817e61e0171e792",
+      "source_size": [
+        89,
+        78
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          2,
+          85,
+          76
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.2082,
+        0.1897
+      ],
+      "output": "details/detail_40.png",
+      "output_size": [
+        90,
+        82
+      ]
+    },
+    {
+      "id": "detail_41",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "41_落叶.png",
+      "source": "details/detail_41.png",
+      "sha256": "0f298f831d6c05924a26dff320b89bc02914a1ff3737fdfc4052c06588cf4f05",
+      "source_size": [
+        164,
+        110
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          3,
+          162,
+          108
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.4037,
+        0.2732
+      ],
+      "output": "details/detail_41.png",
+      "output_size": [
+        167,
+        113
+      ]
+    },
+    {
+      "id": "detail_42",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "42_落叶.png",
+      "source": "details/detail_42.png",
+      "sha256": "eb2e0ca2851e806f9e95152f5b8964b3c98b990e81396d9bbf1e5e40f442e931",
+      "source_size": [
+        128,
+        69
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          4,
+          126,
+          67
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.3098,
+        0.1692
+      ],
+      "output": "details/detail_42.png",
+      "output_size": [
+        130,
+        71
+      ]
+    },
+    {
+      "id": "detail_43",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "43_三叶草组合.png",
+      "source": "details/detail_43.png",
+      "sha256": "f3aaf7349ce5401a02f4ad3a5455d141b522067b91ef8d59caea64d7ab3647a8",
+      "source_size": [
+        186,
+        155
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          4,
+          2,
+          184,
+          151
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.457,
+        0.3817
+      ],
+      "output": "details/detail_43.png",
+      "output_size": [
+        188,
+        157
+      ]
+    },
+    {
+      "id": "detail_44",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "44_独立碎渣.png",
+      "source": "details/detail_44.png",
+      "sha256": "8d7b56b72fcc340c8bd927cc7d4719518c984f5176e4f8b1ace3975dff5bec5b",
+      "source_size": [
+        62,
+        59
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          3,
+          59,
+          56
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.1422,
+        0.1355
+      ],
+      "output": "details/detail_44.png",
+      "output_size": [
+        64,
+        61
+      ]
+    },
+    {
+      "id": "detail_45",
+      "group": "details",
+      "archive": "独立PNG素材_带碎渣版_45件.zip",
+      "original_name": "45_独立碎渣.png",
+      "source": "details/detail_45.png",
+      "sha256": "934e37808faba25a316ba59e2aa78fc9e2f81259ce6f822baf88a0780f8fc4bf",
+      "source_size": [
+        72,
+        63
+      ],
+      "recipe": {
+        "version": 1,
+        "black_threshold": null,
+        "crop": [
+          3,
+          3,
+          68,
+          60
+        ]
+      },
+      "kind": "flat",
+      "size_m": [
+        0.165,
+        0.147
+      ],
+      "output": "details/detail_45.png",
+      "output_size": [
+        73,
+        65
+      ]
+    }
+  ],
+  "atlases": {
+    "flat": {
+      "image": "flat_atlas.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "variants": [
+        {
+          "id": "detail_01",
+          "name": "01_泥土地块_大",
+          "rect": [
+            8,
+            8,
+            512,
+            231
+          ],
+          "size_m": [
+            2.0,
+            0.9005
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_02",
+          "name": "02_泥土地块_小",
+          "rect": [
+            536,
+            8,
+            309,
+            240
+          ],
+          "size_m": [
+            1.1758,
+            0.9132
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_03",
+          "name": "03_裂土地块_大",
+          "rect": [
+            861,
+            8,
+            491,
+            323
+          ],
+          "size_m": [
+            1.8867,
+            1.2412
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_04",
+          "name": "04_裂土地块_中",
+          "rect": [
+            1368,
+            8,
+            343,
+            242
+          ],
+          "size_m": [
+            1.3086,
+            0.9233
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_05",
+          "name": "05_裂土地块_小",
+          "rect": [
+            1727,
+            8,
+            282,
+            220
+          ],
+          "size_m": [
+            1.0703,
+            0.835
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_06",
+          "name": "06_泥土斑块",
+          "rect": [
+            8,
+            347,
+            220,
+            202
+          ],
+          "size_m": [
+            0.8281,
+            0.7604
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_32",
+          "name": "32_落叶",
+          "rect": [
+            244,
+            347,
+            166,
+            112
+          ],
+          "size_m": [
+            0.4012,
+            0.2707
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_33",
+          "name": "33_落叶",
+          "rect": [
+            426,
+            347,
+            177,
+            103
+          ],
+          "size_m": [
+            0.4291,
+            0.2497
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_34",
+          "name": "34_落叶",
+          "rect": [
+            619,
+            347,
+            146,
+            107
+          ],
+          "size_m": [
+            0.3504,
+            0.2568
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_35",
+          "name": "35_落叶",
+          "rect": [
+            781,
+            347,
+            126,
+            102
+          ],
+          "size_m": [
+            0.2996,
+            0.2425
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_36",
+          "name": "36_落叶",
+          "rect": [
+            923,
+            347,
+            157,
+            112
+          ],
+          "size_m": [
+            0.3783,
+            0.2699
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_37",
+          "name": "37_落叶",
+          "rect": [
+            1096,
+            347,
+            98,
+            117
+          ],
+          "size_m": [
+            0.2285,
+            0.2728
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_38",
+          "name": "38_落叶",
+          "rect": [
+            1210,
+            347,
+            104,
+            65
+          ],
+          "size_m": [
+            0.2438,
+            0.1523
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_39",
+          "name": "39_落叶",
+          "rect": [
+            1330,
+            347,
+            114,
+            69
+          ],
+          "size_m": [
+            0.2691,
+            0.1629
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_40",
+          "name": "40_落叶",
+          "rect": [
+            1460,
+            347,
+            90,
+            82
+          ],
+          "size_m": [
+            0.2082,
+            0.1897
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_41",
+          "name": "41_落叶",
+          "rect": [
+            1566,
+            347,
+            167,
+            113
+          ],
+          "size_m": [
+            0.4037,
+            0.2732
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_42",
+          "name": "42_落叶",
+          "rect": [
+            1749,
+            347,
+            130,
+            71
+          ],
+          "size_m": [
+            0.3098,
+            0.1692
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_43",
+          "name": "43_三叶草组合",
+          "rect": [
+            8,
+            565,
+            188,
+            157
+          ],
+          "size_m": [
+            0.457,
+            0.3817
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_44",
+          "name": "44_独立碎渣",
+          "rect": [
+            212,
+            565,
+            64,
+            61
+          ],
+          "size_m": [
+            0.1422,
+            0.1355
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "id": "detail_45",
+          "name": "45_独立碎渣",
+          "rect": [
+            292,
+            565,
+            73,
+            65
+          ],
+          "size_m": [
+            0.165,
+            0.147
+          ],
+          "pivot": [
+            0.5,
+            0.5
+          ]
+        }
+      ]
+    },
+    "upright": {
+      "image": "upright_atlas.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "variants": [
+        {
+          "id": "detail_07",
+          "name": "07_石块",
+          "rect": [
+            8,
+            8,
+            82,
+            80
+          ],
+          "size_m": [
+            0.2891,
+            0.282
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_08",
+          "name": "08_石块",
+          "rect": [
+            106,
+            8,
+            81,
+            67
+          ],
+          "size_m": [
+            0.2852,
+            0.2359
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_09",
+          "name": "09_石块组合",
+          "rect": [
+            203,
+            8,
+            157,
+            133
+          ],
+          "size_m": [
+            0.582,
+            0.4931
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_10",
+          "name": "10_石块组合",
+          "rect": [
+            376,
+            8,
+            259,
+            161
+          ],
+          "size_m": [
+            0.9805,
+            0.6095
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_11",
+          "name": "11_石块",
+          "rect": [
+            651,
+            8,
+            76,
+            61
+          ],
+          "size_m": [
+            0.2656,
+            0.2132
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_12",
+          "name": "12_草丛",
+          "rect": [
+            743,
+            8,
+            154,
+            124
+          ],
+          "size_m": [
+            0.5703,
+            0.4592
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_13",
+          "name": "13_草丛",
+          "rect": [
+            913,
+            8,
+            266,
+            183
+          ],
+          "size_m": [
+            1.0078,
+            0.6933
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_14",
+          "name": "14_草丛",
+          "rect": [
+            1195,
+            8,
+            168,
+            93
+          ],
+          "size_m": [
+            0.625,
+            0.346
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_15",
+          "name": "15_草丛",
+          "rect": [
+            1379,
+            8,
+            201,
+            148
+          ],
+          "size_m": [
+            0.7539,
+            0.5551
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_16",
+          "name": "16_草丛",
+          "rect": [
+            8,
+            207,
+            512,
+            187
+          ],
+          "size_m": [
+            2.0,
+            0.7301
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_17",
+          "name": "17_草丛",
+          "rect": [
+            536,
+            207,
+            123,
+            100
+          ],
+          "size_m": [
+            0.4492,
+            0.3652
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_18",
+          "name": "18_草丛",
+          "rect": [
+            675,
+            207,
+            171,
+            152
+          ],
+          "size_m": [
+            0.6367,
+            0.566
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_19",
+          "name": "19_草丛",
+          "rect": [
+            862,
+            207,
+            138,
+            105
+          ],
+          "size_m": [
+            0.5078,
+            0.3864
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_20",
+          "name": "20_草丛",
+          "rect": [
+            1016,
+            207,
+            127,
+            113
+          ],
+          "size_m": [
+            0.4648,
+            0.4136
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_21",
+          "name": "21_草丛",
+          "rect": [
+            1159,
+            207,
+            126,
+            114
+          ],
+          "size_m": [
+            0.4609,
+            0.417
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_22",
+          "name": "22_草丛",
+          "rect": [
+            1301,
+            207,
+            347,
+            201
+          ],
+          "size_m": [
+            1.3242,
+            0.7671
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_23",
+          "name": "23_草丛",
+          "rect": [
+            1664,
+            207,
+            151,
+            99
+          ],
+          "size_m": [
+            0.5586,
+            0.3662
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_24",
+          "name": "24_草丛",
+          "rect": [
+            1831,
+            207,
+            148,
+            92
+          ],
+          "size_m": [
+            0.5469,
+            0.3399
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_25",
+          "name": "25_草丛",
+          "rect": [
+            8,
+            424,
+            181,
+            122
+          ],
+          "size_m": [
+            0.6758,
+            0.4555
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_26",
+          "name": "26_草丛",
+          "rect": [
+            205,
+            424,
+            78,
+            61
+          ],
+          "size_m": [
+            0.2734,
+            0.2138
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_27",
+          "name": "27_草丛",
+          "rect": [
+            299,
+            424,
+            95,
+            80
+          ],
+          "size_m": [
+            0.3398,
+            0.2862
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_28",
+          "name": "28_草丛",
+          "rect": [
+            410,
+            424,
+            163,
+            95
+          ],
+          "size_m": [
+            0.6055,
+            0.3529
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_29",
+          "name": "29_草丛",
+          "rect": [
+            589,
+            424,
+            140,
+            96
+          ],
+          "size_m": [
+            0.5156,
+            0.3536
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_30",
+          "name": "30_草丛",
+          "rect": [
+            745,
+            424,
+            89,
+            87
+          ],
+          "size_m": [
+            0.3164,
+            0.3093
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        },
+        {
+          "id": "detail_31",
+          "name": "31_草丛",
+          "rect": [
+            850,
+            424,
+            103,
+            85
+          ],
+          "size_m": [
+            0.3711,
+            0.3062
+          ],
+          "pivot": [
+            0.5,
+            1.0
+          ]
+        }
+      ]
+    }
+  },
+  "modules": {
+    "rim_grass": {
+      "source": "terrain/cliff.png",
+      "columns": [
+        50,
+        1900
+      ],
+      "cutout": {
+        "grass_rule": "g-b>40 and g-r>15",
+        "ground_row": 60,
+        "band_components": 1,
+        "outline_dilate": 10,
+        "outline_max_rgb": 95,
+        "rows": 188
+      },
+      "seamless_overlap": [
+        200,
+        0
+      ],
+      "px_per_m": 256,
+      "span_m": 6.4453,
+      "rise_m": 0.2344,
+      "drop_m": 0.5,
+      "output": "terrain/rim_grass.png"
+    },
+    "cliff_body": {
+      "source": "terrain/cliff.png",
+      "crop": [
+        50,
+        182,
+        1900,
+        488
+      ],
+      "seamless_overlap": [
+        200,
+        48
+      ],
+      "px_per_m": 256,
+      "span_m": [
+        6.4453,
+        1.0078
+      ],
+      "output": "terrain/cliff_body.png"
+    },
+    "climb_grips": {
+      "sources": [
+        "objects/climbingrock_frontface.png",
+        "objects/climbingrock_topface.png"
+      ],
+      "white_threshold": 210,
+      "stripe_cutoff": 368,
+      "mark_size": [
+        65,
+        25
+      ],
+      "rotate": 90,
+      "placements": [
+        [
+          100,
+          85
+        ],
+        [
+          310,
+          115
+        ],
+        [
+          200,
+          200
+        ],
+        [
+          345,
+          285
+        ],
+        [
+          80,
+          310
+        ],
+        [
+          235,
+          410
+        ]
+      ],
+      "output": "objects/climb_grips.png"
+    }
+  }
+}

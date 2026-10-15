@@ -11,6 +11,10 @@
 assets/fonts/ArialUnicode.ttf
 assets/fonts/ArialUnicode.ttf.import
 
+# Original scene-pack art from the art team's ZIP archives stays local.
+# Derived art and its manifest are committed; tools/prepare_scene_art.py rebuilds both.
+assets/source_art/scene_pack_20261014/
+
 # Exported builds
 builds/
 exports/

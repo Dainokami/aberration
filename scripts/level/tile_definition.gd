@@ -10,6 +10,8 @@ enum TerrainRole { SOLID, LIQUID, OVERLAY }
 @export var tile_id := ""
 ## Display name shown in the palette.
 @export var display_name := ""
+## Optional continuous art kit; legacy individual texture fields remain supported.
+@export var art_set: TerrainArtSet
 ## Path to the albedo texture for the top face. Empty means use base_color shader.
 @export var texture_path := ""
 ## Path to a 64x64 thumbnail for the palette list. Empty means auto-generate.
@@ -38,6 +40,12 @@ enum TerrainRole { SOLID, LIQUID, OVERLAY }
 @export var rim_drop_m := 0.0
 @export var corner_radius_m := 0.0
 @export var grass_roll_profile: Array[Vector2] = []
+## Painted edge module: an alpha-tested fringe overlaid on the wall, instead of
+## the legacy opaque rim that blends top and cliff colours underneath.
+@export var rim_cutout := false
+## Each 2m layer shows the cliff art once, top of the art at the top of the layer.
+## Legacy tiles mirror the art every texture span instead.
+@export var cliff_course_repeat := false
 @export var surface_kind: SurfaceKind = SurfaceKind.LAND
 ## Storage/rendering role in stacked terrain columns.
 @export var terrain_role: TerrainRole = TerrainRole.SOLID
@@ -45,6 +53,10 @@ enum TerrainRole { SOLID, LIQUID, OVERLAY }
 @export var foam_u_span_m := 8.0
 @export var foam_width_m := 0.35
 @export var foam_alpha_range := Vector2(0.0, 1.0)
+
+func resolve_art() -> void:
+	if art_set != null:
+		art_set.apply_to(self)
 
 func is_water() -> bool:
 	return terrain_role == TerrainRole.LIQUID \

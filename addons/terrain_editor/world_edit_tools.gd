@@ -20,6 +20,7 @@ var selected_id := ""
 var dragging := false
 var drag_before: Dictionary
 var prefab: LevelPrefab
+var prefab_mode
 var prefab_sub_tabs: TabContainer
 var objects_only: CheckBox
 var prefab_turns := 0
@@ -35,6 +36,9 @@ var last_candidate: Dictionary = {}
 var clipboard: Dictionary = {}
 var search: LineEdit
 var selected_label: Label
+var object_info: Label
+var detail_tools: VBoxContainer
+const Picker := preload("res://addons/terrain_editor/surface_picker.gd")
 
 func setup(plugin: EditorPlugin, tab_container: TabContainer) -> void:
 	host = plugin
@@ -58,11 +62,15 @@ func setup(plugin: EditorPlugin, tab_container: TabContainer) -> void:
 	library.auto_height = true
 	library.size_flags_vertical = Control.SIZE_FILL
 	library.icon_mode = ItemList.ICON_MODE_TOP
-	library.fixed_icon_size = Vector2i(48, 48)
+	library.fixed_icon_size = host.ui_size(Vector2(48, 48))
 	library.max_columns = 0
 	library.same_column_width = true
 	library.item_selected.connect(func(_index: int): object_mode.selected = 0; clear_ghost())
 	object_page.add_child(library)
+	library.fixed_column_width = host.ui_px(92)
+	library.max_text_lines = 2
+	library.item_selected.connect(_show_object_info)
+	object_info = _label(object_page, "")
 	_button(object_page, "刷新物件库", refresh_library)
 	for i in range(place_start, object_page.get_child_count()):
 		placement_controls.append(object_page.get_child(i))
@@ -88,6 +96,8 @@ func setup(plugin: EditorPlugin, tab_container: TabContainer) -> void:
 	_page("导入", importer)
 	importer.generated.connect(func(_path: String):
 		refresh_library()
+		if detail_tools != null:
+			detail_tools.refresh_library()
 		host.refresh_tile_list())
 
 	# Tab 3: 预制
@@ -95,6 +105,14 @@ func setup(plugin: EditorPlugin, tab_container: TabContainer) -> void:
 
 	tabs.tab_changed.connect(func(_index: int): clear_ghost(); region_start = Vector2i(-1, -1))
 	refresh_library()
+
+func add_detail_page() -> void:
+	detail_tools = load("res://addons/terrain_editor/detail_dock.gd").new()
+	_page("细节", detail_tools)
+	detail_tools.setup(host)
+	tabs.tab_changed.connect(func(_index: int):
+		detail_tools.finish_stroke()
+		detail_tools.clear_preview())
 
 func _object_mode_changed(value: int) -> void:
 	if dragging and host.data != null:
@@ -115,11 +133,25 @@ func _object_mode_changed(value: int) -> void:
 
 func _build_prefab_tab() -> void:
 	var prefab_outer := VBoxContainer.new()
+	prefab_outer.add_theme_constant_override("separation", 10)
 	_page("预制", prefab_outer)
+	var action_label := _label(prefab_outer, "预制操作")
+	action_label.modulate = Color(1, 1, 1, 0.72)
+	prefab_mode = load("res://addons/terrain_editor/mode_bar.gd").new()
+	prefab_mode.name = "PrefabActionButtons"
+	prefab_mode.add_theme_constant_override("separation", host.ui_px(8))
+	prefab_mode.add_mode("制作预制", 0)
+	prefab_mode.add_mode("使用预制", 1)
+	for button: Button in prefab_mode.buttons.values():
+		_style_prefab_action(button)
+	prefab_outer.add_child(prefab_mode)
 	prefab_sub_tabs = TabContainer.new()
+	prefab_sub_tabs.tabs_visible = false
 	prefab_sub_tabs.size_flags_vertical = Control.SIZE_FILL
 	prefab_sub_tabs.use_hidden_tabs_for_min_size = false
 	prefab_outer.add_child(prefab_sub_tabs)
+	prefab_mode.item_selected.connect(func(index: int):
+		prefab_sub_tabs.current_tab = index)
 
 	# Sub-tab 0: 制作预制
 	var make_page := VBoxContainer.new()
@@ -152,7 +184,7 @@ func _build_prefab_tab() -> void:
 	prefab_library.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	prefab_library.size_flags_vertical = Control.SIZE_FILL
 	prefab_library.icon_mode = ItemList.ICON_MODE_TOP
-	prefab_library.fixed_icon_size = Vector2i(96, 80)
+	prefab_library.fixed_icon_size = host.ui_size(Vector2(96, 80))
 	prefab_library.max_columns = 0
 	prefab_library.same_column_width = true
 	prefab_library.item_selected.connect(_on_prefab_selected)
@@ -169,12 +201,38 @@ func _build_prefab_tab() -> void:
 	_button_to(rotate_row, "右转 90°", rotate_prefab.bind(1))
 
 	prefab_sub_tabs.tab_changed.connect(func(idx: int):
+		prefab_mode.selected = idx
 		clear_ghost()
 		region_start = Vector2i(-1, -1)
 		if idx == 1:
 			refresh_prefab_list())
 
 	refresh_prefab_list()
+
+func _style_prefab_action(button: Button) -> void:
+	button.custom_minimum_size.y = host.ui_px(40)
+	button.add_theme_stylebox_override("normal",
+		_button_style(Color("#303943"), Color("#6c7885")))
+	button.add_theme_stylebox_override("hover",
+		_button_style(Color("#3b4853"), Color("#8b98a6")))
+	button.add_theme_stylebox_override("pressed",
+		_button_style(Color("#23594f"), Color("#80d6b5"), 2))
+	button.add_theme_stylebox_override("focus",
+		_button_style(Color("#303943"), Color("#80d6b5"), 2))
+	button.add_theme_color_override("font_pressed_color", Color("#e8fff8"))
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+
+func _button_style(background: Color, border: Color, width := 1) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = border
+	style.set_border_width_all(host.ui_px(width))
+	style.set_corner_radius_all(host.ui_px(4))
+	style.content_margin_left = host.ui_px(10)
+	style.content_margin_right = host.ui_px(10)
+	style.content_margin_top = host.ui_px(7)
+	style.content_margin_bottom = host.ui_px(7)
+	return style
 
 func _page(title: String, content: Control) -> void:
 	var scroll := ScrollContainer.new()
@@ -226,6 +284,8 @@ func _spin(parent: Node, title: String, low: float, high: float, step: float, va
 func refresh_library() -> void:
 	if library == null:
 		return
+	var selected := library.get_selected_items()
+	var previous := paths[selected[0]] if not selected.is_empty() and selected[0] < paths.size() else ""
 	library.clear()
 	paths.clear()
 	for path in ObjectRules.library():
@@ -238,9 +298,27 @@ func refresh_library() -> void:
 			texture = load(d.thumbnail_path) as Texture2D
 		if texture == null:
 			texture = load(d.source_image) as Texture2D
-		library.add_item(d.display_name, texture)
+		var index := library.add_item(d.display_name, texture)
+		library.set_item_tooltip(index, "%s · %s\n%.1f × %.1f × %.1f 米" % [
+			d.display_name, d.behaviour_label(), d.volume_size.x, d.volume_size.y, d.volume_size.z])
 	if library.item_count > 0:
-		library.select(0)
+		var index := maxi(0, paths.find(previous))
+		library.select(index)
+		_show_object_info(index)
+	elif object_info != null:
+		object_info.text = "没有匹配的物件"
+
+func _show_object_info(index: int) -> void:
+	if object_info == null or index < 0 or index >= paths.size():
+		return
+	var d := load(paths[index]) as PlaceableDefinition
+	var placement := "点击外露侧壁放置" if d.carrier == PlaceableDefinition.Carrier.WALL \
+		else "可放地面或承托物件的顶面"
+	object_info.text = "%s · %s\n%s" % [d.display_name, d.behaviour_label(), placement]
+	if d.supports_objects:
+		object_info.text += "\n可承托其他物件"
+	if d.behaviour == PlaceableDefinition.Behaviour.BREAKABLE:
+		object_info.text += " · 耐久 %d" % d.max_health
 
 # ============================================================
 # Prefab library (visual grid)
@@ -330,6 +408,9 @@ func clear_ghost() -> void:
 	last_cell = Vector2i(-999, -999)
 
 func reset() -> void:
+	if detail_tools != null:
+		detail_tools.finish_stroke()
+		detail_tools.clear_preview()
 	clear_ghost()
 	selected_id = ""
 	dragging = false
@@ -404,6 +485,8 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 	# Import and view settings do not own 3D editing input.
 	if tabs.current_tab in [2, 4]:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if tabs.current_tab == 5:
+		return detail_tools.handle(camera, event)
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode in [KEY_Q, KEY_E]:
 			var delta := -1 if event.keycode == KEY_Q else 1
@@ -429,24 +512,27 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 	if event is InputEventMouseMotion:
 		if event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS
-		var point := _point(camera, event.position, not snap.button_pressed or event.shift_pressed)
-		if not point.is_finite():
-			return EditorPlugin.AFTER_GUI_INPUT_PASS
 		if tabs.current_tab == 1:
+			var surface := Picker.pick(host.builder, camera, event.position, selected_id if dragging else "")
 			if dragging:
-				_move_selected(point)
+				_move_selected_surface(surface, snap.button_pressed and not event.shift_pressed)
 				return EditorPlugin.AFTER_GUI_INPUT_STOP
 			if object_mode.selected == 0:
-				_preview_object(_candidate(point))
+				_preview_object(_surface_candidate(surface, snap.button_pressed and not event.shift_pressed))
+				if surface.has("error"):
+					host._set_status(surface["error"])
 		elif tabs.current_tab == 3:
+			var point := _point(camera, event.position, not snap.button_pressed or event.shift_pressed)
+			if not point.is_finite():
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			_preview_prefab(host.data.world_to_cell(point))
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		var point := _point(camera, event.position, not snap.button_pressed or event.shift_pressed)
-		if not point.is_finite():
-			return EditorPlugin.AFTER_GUI_INPUT_PASS
 		if tabs.current_tab == 1:
 			if object_mode.selected == 0 and event.pressed:
-				place_object(_candidate(point))
+				var surface := Picker.pick(host.builder, camera, event.position)
+				place_object(_surface_candidate(surface, snap.button_pressed and not event.shift_pressed))
+				if surface.has("error"):
+					host._set_status(surface["error"])
 			elif object_mode.selected == 1:
 				if event.pressed:
 					selected_id = _pick_object(camera, event.position)
@@ -466,23 +552,29 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 					dragging = false
 					host._commit_external(drag_before, host.data.clone_data(), "移动物件")
 		elif tabs.current_tab == 3 and event.pressed:
-			_prefab_click(host.data.world_to_cell(point))
+			var point := _point(camera, event.position, not snap.button_pressed or event.shift_pressed)
+			if point.is_finite():
+				_prefab_click(host.data.world_to_cell(point))
 		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
 
 # ============================================================
 # Object preview / place / move / delete
 # ============================================================
+func _surface_candidate(surface: Dictionary, snapped: bool) -> Dictionary:
+	return Picker.placement(host.data, _candidate(Vector3.ZERO), surface, snapped)
+
 func _preview_object(record: Dictionary, ignore := "") -> void:
 	clear_ghost()
 	if record.is_empty():
+		host._set_status("指向有效支撑面：普通物件选顶面，墙面附件选外露侧壁")
 		return
 	var d := ObjectRules.definition(record)
 	if d == null:
 		return
 	var error := ObjectRules.validate_record(host.data, record, ignore)
 	ghost = AssetFactory.make_asset(d)
-	for body in ghost.find_children("*", "StaticBody3D", true, false):
+	for body in ghost.find_children("*", "CollisionObject3D", true, false):
 		body.collision_layer = 0
 		body.collision_mask = 0
 	ghost.position = record["position"]
@@ -509,7 +601,7 @@ func _preview_object(record: Dictionary, ignore := "") -> void:
 
 func place_object(record: Dictionary) -> void:
 	if record.is_empty():
-		host._set_status("请先导入或选择物件")
+		host._set_status("请选择物件并指向匹配的顶面或侧壁")
 		return
 	var error := ObjectRules.validate_record(host.data, record)
 	if not error.is_empty():
@@ -525,12 +617,31 @@ func _move_selected(point: Vector3) -> void:
 		return
 	var record: Dictionary = host.data.objects[index].duplicate(true)
 	record["position"] = point
+	record["anchor_kind"] = "top"
+	record.erase("support_id")
 	record = ObjectRules.anchor_record(host.data, record)
-	var error := ObjectRules.validate_record(host.data, record, selected_id)
-	_preview_object(record, selected_id)
-	if not error.is_empty():
+	_apply_moved_record(record, index)
+
+func _move_selected_surface(surface: Dictionary, snapped: bool) -> void:
+	var index := _selected_index()
+	if index < 0:
 		return
-	host.data.objects[index] = record
+	var record := Picker.placement(host.data, host.data.objects[index], surface, snapped)
+	if record.is_empty():
+		host._set_status(surface.get("error", "移动目标缺少有效支撑面"))
+		return
+	_apply_moved_record(record, index)
+
+func _apply_moved_record(record: Dictionary, index: int) -> void:
+	var candidate: LevelData = host.data.fork_for_edit()
+	candidate.objects[index] = record
+	ObjectRules.sync_dependents(candidate)
+	var errors := ObjectRules.validate_all(candidate)
+	_preview_object(record, selected_id)
+	if not errors.is_empty():
+		host._set_status("\n".join(errors))
+		return
+	host.data.objects = candidate.objects
 	host.builder.rebuild()
 
 func apply_transform() -> void:
@@ -540,12 +651,18 @@ func apply_transform() -> void:
 	var record: Dictionary = host.data.objects[index].duplicate(true)
 	record["yaw"] = deg_to_rad(yaw_input.value)
 	record["scale"] = scale_input.value
-	var error := ObjectRules.validate_record(host.data, record, selected_id)
-	if not error.is_empty():
-		host._set_status(error)
+	if record.has("support_id"):
+		var parent := ObjectRules.find_record(host.data, record["support_id"])
+		record["support_yaw"] = float(record["yaw"]) - float(parent.get("yaw", 0.0))
+	var candidate: LevelData = host.data.fork_for_edit()
+	candidate.objects[index] = record
+	ObjectRules.sync_dependents(candidate)
+	var errors := ObjectRules.validate_all(candidate)
+	if not errors.is_empty():
+		host._set_status("\n".join(errors))
 		return
 	var before: Dictionary = host.data.clone_data()
-	host.data.objects[index] = record
+	host.data.objects = candidate.objects
 	host._commit_external(before, host.data.clone_data(), "调整物件")
 	_preview_object(record, selected_id)
 
@@ -554,7 +671,7 @@ func delete_selected() -> void:
 	if index < 0:
 		return
 	var before: Dictionary = host.data.clone_data()
-	host.data.objects.remove_at(index)
+	ObjectRules.remove_with_dependents(host.data, [selected_id])
 	host._commit_external(before, host.data.clone_data(), "删除物件")
 	selected_id = ""
 	selected_label.text = "未选择物件"

@@ -9,10 +9,11 @@
 - 47类地貌拓扑Mask、四地貌权重混合、稳定不规则变体与连续世界底纹；
 - 草地卷边、岩沙圆钝崖顶、连续侧壁与水岸泡沫；
 - 地图级动态着色，不修改美术源图；
-- PNG／WebP地块和物件导入；
-- 物件放置、移动、碰撞、遮挡淡出；
+- PNG／WebP地块和物件导入；地形套件、细节图集、多面岩石、双状态宝箱和贴墙攀岩点导入，含去黑底、四角校正与遮罩；
+- 物件放置、移动、碰撞、遮挡淡出；物件叠放、贴墙附件与级联删除；
+- 草屑、碎石、落叶等细节笔刷（无碰撞，分块合批渲染）；
 - 营地预制保存、预览和整体投放；
-- 撤销／重做、保存／加载和胶囊试玩。
+- 撤销／重做、保存／加载和胶囊试玩；试玩支持开宝箱、跳跃、破坏岩石与攀爬。
 
 ## 运行环境
 
@@ -33,6 +34,8 @@ Godot引擎不包含在仓库中，请从[Godot官网](https://godotengine.org/d
 
 分层编辑与旧地图迁移：[`STACKED_TERRAIN.md`](STACKED_TERRAIN.md)
 
+场景美术素材包导入记录、重建命令与已知限制：[`docs/art_pipeline_execution.md`](docs/art_pipeline_execution.md)。美术验收地图：`scenes/art_acceptance.tscn`。
+
 视觉与相机规则：[`TERRAIN_VISUAL_RULES.md`](TERRAIN_VISUAL_RULES.md)
 
 ## 其他文档
@@ -52,6 +55,9 @@ $GODOT --headless --path . --script res://tests/test_level_data.gd
 $GODOT --headless --path . --script res://tests/test_v2.gd
 $GODOT --headless --path . --script res://tests/test_terrain_p0.gd
 $GODOT --headless --path . --script res://tests/test_stacked_terrain.gd
+$GODOT --headless --path . --script res://tests/test_art_pipeline.gd
+$GODOT --headless --path . --script res://tests/test_art_level.gd
+$GODOT --headless --path . --script res://tests/test_art_runtime.gd
 $GODOT --headless --path . --script res://tests/test_runtime_camera.gd -- \
   --level=res://data/levels/acceptance_map.tres
 $GODOT --headless --path . --editor -- --test-v2-editor
@@ -60,9 +66,13 @@ $GODOT --headless --path . res://scenes/level_playtest.tscn -- \
 
 # 使用真实图形后端导出分层地形验收图（不可添加 --headless）
 $GODOT --path . --rendering-method mobile --script res://tests/render_stacked_terrain.gd
+# 美术验收地图渲染，输出 /tmp/aberration-art-*.png（不可添加 --headless）
+$GODOT --path . --script res://tests/render_art_acceptance.gd
+# 在真实窗口截取导入页和细节页，输出 /tmp/aberration-panel-*.png
+$GODOT --path . --editor -- --test-v2-editor --capture-art-panels
 ```
 
-编辑器测试包括分层画笔、切片拾取、撤销重做和预览检查；两处无效保存测试会输出预期的 `Cannot save file`。其余脚本/着色器错误应视为失败，即使进程退出码为0。
+编辑器测试包括分层画笔、切片拾取、撤销重做、预览检查，以及导入页图片处理、各导入类型的窄 Dock 宽度和细节页；两处无效保存测试会输出预期的 `Cannot save file`。真实窗口退出时可能出现 Godot 引擎自身的 `Can't use get_node() with absolute paths from outside the active scene tree.`（由恢复的场景选中状态引起，空工程同样出现）。其余脚本/着色器错误应视为失败，即使进程退出码为0。
 
 ## 资料与授权
 

@@ -4,7 +4,7 @@ extends Resource
 
 @export var display_name := "营地"
 @export var fragment: LevelData
-@export var version := 2
+@export var version := 3
 
 static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	if region.size.x <= 0 or region.size.y <= 0 or not source.in_bounds(region.position) or not source.in_bounds(region.end - Vector2i.ONE):
@@ -31,7 +31,10 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	for record in source.objects:
 		var inside := false
 		var outside := false
-		for cell in ObjectRules.covered_cells(source, record):
+		var coverage := ObjectRules.covered_cells(source, record)
+		if str(record.get("anchor_kind", "top")) in ["wall", "object_wall"]:
+			coverage = [record["anchor_cell"]]
+		for cell in coverage:
 			inside = inside or region.has_point(cell)
 			outside = outside or not region.has_point(cell)
 		if inside and outside:
@@ -39,11 +42,25 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 		if not inside:
 			continue
 		var copy := record.duplicate(true)
-		var anchor := source.world_to_cell(record["position"])
+		var anchor: Vector2i = record.get("anchor_cell", source.world_to_cell(record["position"]))
 		copy["position"] = target.world_center(anchor - region.position) + (record["position"] - source.world_center(anchor))
 		copy["anchor_cell"] = anchor - region.position
-		copy["anchor_layer"] = target.top_layer(copy["anchor_cell"])
 		target.objects.append(copy)
+	for record in target.objects:
+		var parent_id := str(record.get("support_id", ""))
+		if not parent_id.is_empty() and ObjectRules.find_record(target, parent_id).is_empty():
+			return {"error": "选区切断物件支撑关系，请完整包含宿主和附件"}
+	for record in source.details:
+		var anchor: Vector2i = record["anchor_cell"]
+		if not region.has_point(anchor):
+			continue
+		var copy := record.duplicate(true)
+		copy["anchor_cell"] = anchor - region.position
+		copy["position"] = target.world_center(copy["anchor_cell"]) + (
+			record["position"] - source.world_center(anchor))
+		if not DetailRules.validate_record(target, copy).is_empty():
+			return {"error": "选区切断贴地细节，请扩大选区或先擦除边缘细节"}
+		target.details.append(copy)
 	# Player spawn is deliberately not captured: each level has exactly one.
 	return {"error": "", "prefab": prefab}
 
@@ -75,7 +92,10 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 				if area.has_point(Vector2i(cell)):
 					return {"error": "预制覆盖已有阶梯，请先删除"}
 		for record in candidate.objects:
-			for cell in ObjectRules.covered_cells(candidate, record):
+			var coverage := ObjectRules.covered_cells(candidate, record)
+			if str(record.get("anchor_kind", "top")) in ["wall", "object_wall"]:
+				coverage = [record["anchor_cell"]]
+			for cell in coverage:
 				if area.has_point(cell):
 					return {"error": "预制覆盖已有物件，请先移动或删除"}
 		for y in fragment.map_size.y:
@@ -95,21 +115,45 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 			copy["direction"] = posmod(int(stair["direction"]) + turns, 4)
 			copy["layer"] = candidate.top_layer(copy["cell"])
 			candidate.stairs.append(copy)
+		for i in range(candidate.details.size() - 1, -1, -1):
+			if area.has_point(candidate.details[i]["anchor_cell"]):
+				candidate.details.remove_at(i)
+		DetailRules.prune_invalid(candidate)
 	var rotation_basis := Basis(Vector3.UP, -posmod(turns, 4) * PI * 0.5)
+	var remapped_ids := {}
+	for record in fragment.objects:
+		remapped_ids[str(record["id"])] = ObjectRules.new_id()
 	for record in fragment.objects:
 		var copy := record.duplicate(true)
-		var old_cell := fragment.world_to_cell(record["position"])
+		var old_cell: Vector2i = record.get("anchor_cell", fragment.world_to_cell(record["position"]))
 		var new_cell := anchor + rotate_cell(old_cell - fragment.map_origin, turns)
 		var offset: Vector3 = record["position"] - fragment.world_center(old_cell)
 		copy["position"] = candidate.world_center(new_cell) + rotation_basis * offset
 		copy["anchor_cell"] = new_cell
-		copy["anchor_layer"] = candidate.top_layer(new_cell)
+		if str(copy.get("anchor_kind", "top")) == "wall":
+			copy["wall_direction"] = posmod(int(copy.get("wall_direction", 0)) + turns, 4)
+			if objects_only:
+				copy["anchor_layer"] = candidate.top_layer(new_cell) - (
+					fragment.top_layer(old_cell) - int(record["anchor_layer"]))
+		elif objects_only:
+			copy["anchor_layer"] = candidate.top_layer(new_cell)
 		copy["yaw"] = float(copy.get("yaw", 0.0)) - posmod(turns, 4) * PI * 0.5
-		copy["id"] = ObjectRules.new_id()
-		var error := ObjectRules.validate_record(candidate, copy)
-		if not error.is_empty():
-			return {"error": error}
+		copy["id"] = remapped_ids[str(record["id"])]
+		if copy.has("support_id"):
+			copy["support_id"] = remapped_ids.get(str(copy["support_id"]), "")
 		candidate.objects.append(copy)
+	ObjectRules.sync_dependents(candidate)
+	for record in fragment.details:
+		var copy := record.duplicate(true)
+		var old_cell: Vector2i = record["anchor_cell"]
+		var new_cell := anchor + rotate_cell(old_cell - fragment.map_origin, turns)
+		copy["id"] = ObjectRules.new_id()
+		copy["anchor_cell"] = new_cell
+		copy["anchor_layer"] = candidate.top_layer(new_cell)
+		copy["position"] = candidate.world_center(new_cell) + rotation_basis * (
+			record["position"] - fragment.world_center(old_cell))
+		copy["yaw"] = float(record.get("yaw", 0.0)) - posmod(turns, 4) * PI * 0.5
+		candidate.details.append(copy)
 	# Validate stairs without requiring a spawn point on a work-in-progress map.
 	var errors := candidate.validate()
 	if not errors.is_empty() and errors[0] == "缺少有效的玩家出生点":

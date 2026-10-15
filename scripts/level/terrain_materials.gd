@@ -6,6 +6,7 @@ static var _top_shader: Shader
 static var _blended_top_shader: Shader
 static var _cliff_shader: Shader
 static var _rim_shader: Shader
+static var _cutout_rim_shader: Shader
 static var _foam_shader: Shader
 static var _overlay_shader: Shader
 
@@ -52,7 +53,9 @@ static func blended_top_material(blend: Dictionary) -> ShaderMaterial:
 	material.set_shader_parameter("terrain_settings", blend["terrain_settings"])
 	return material
 
-static func cliff_material(tile: TileDefinition, tint: Color) -> ShaderMaterial:
+## world_uv maps by world position (u = x + z, v = -y), matching TerrainEdgeBuilder
+## cliff meshes, for primitive boxes such as stair risers.
+static func cliff_material(tile: TileDefinition, tint: Color, world_uv := false) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = _get_cliff_shader()
 	var texture := _texture(tile.cliff_texture_path)
@@ -60,9 +63,15 @@ static func cliff_material(tile: TileDefinition, tint: Color) -> ShaderMaterial:
 	material.set_shader_parameter("base_color", tile.base_color.darkened(0.18))
 	material.set_shader_parameter("terrain_tint", tint)
 	material.set_shader_parameter("has_art", texture != null)
+	# Seamless painted courses repeat; legacy cliffs mirror to hide their seams.
+	material.set_shader_parameter("wrap_repeat", tile.cliff_course_repeat)
+	material.set_shader_parameter("world_uv", world_uv)
+	material.set_shader_parameter("world_span", tile.cliff_texture_span_m)
 	return material
 
 static func rim_material(tile: TileDefinition, tint: Color) -> ShaderMaterial:
+	if tile.rim_cutout:
+		return cutout_rim_material(tile, tint)
 	var material := ShaderMaterial.new()
 	material.shader = _get_rim_shader()
 	var rim := _texture(tile.rim_texture_path)
@@ -88,6 +97,39 @@ static func foam_material(water: TileDefinition) -> ShaderMaterial:
 	material.set_shader_parameter("foam_art", foam)
 	material.set_shader_parameter("has_art", foam != null)
 	return material
+
+## Painted grass fringe: alpha-tested so tufts read above the edge and the band
+## hangs over the wall, with the wall itself visible between the drips.
+static func cutout_rim_material(tile: TileDefinition, tint: Color) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = _get_cutout_rim_shader()
+	material.set_shader_parameter("rim_art", _texture(tile.rim_texture_path))
+	material.set_shader_parameter("terrain_tint", tint)
+	return material
+
+static func _get_cutout_rim_shader() -> Shader:
+	if _cutout_rim_shader != null:
+		return _cutout_rim_shader
+	_cutout_rim_shader = Shader.new()
+	_cutout_rim_shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D rim_art : source_color, filter_linear_mipmap, repeat_disable;
+uniform vec4 terrain_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
+vec3 tint_preserve_value(vec3 color, vec4 tint) {
+	float tint_luma = max(dot(tint.rgb, vec3(0.299, 0.587, 0.114)), 0.05);
+	return mix(color, clamp(color * tint.rgb / tint_luma, vec3(0.0), vec3(1.0)), tint.a);
+}
+void fragment() {
+	vec2 uv = vec2(fract(UV.x), clamp(UV.y, 0.0, 1.0));
+	vec4 pixel = textureGrad(rim_art, uv, dFdx(UV), dFdy(UV));
+	ALBEDO = tint_preserve_value(pixel.rgb, terrain_tint);
+	ALPHA = pixel.a;
+	ALPHA_SCISSOR_THRESHOLD = 0.5;
+	ROUGHNESS = 1.0;
+}
+"""
+	return _cutout_rim_shader
 
 static func overlay_material(tile: TileDefinition, tint: Color,
 		rotation_turns: int, mask: Texture2D = null, mask_turns := 0) -> ShaderMaterial:
@@ -271,6 +313,10 @@ uniform sampler2D cliff_art : source_color, filter_linear_mipmap, repeat_disable
 uniform vec4 base_color : source_color;
 uniform vec4 terrain_tint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
 uniform bool has_art = false;
+uniform bool wrap_repeat = false;
+uniform bool world_uv = false;
+uniform vec2 world_span = vec2(4.0, 2.0);
+varying vec3 world_pos;
 vec2 mirror_uv(vec2 value) {
 	return vec2(1.0) - abs(mod(value, vec2(2.0)) - vec2(1.0));
 }
@@ -278,8 +324,18 @@ vec3 tint_preserve_value(vec3 color, vec4 tint) {
 	float tint_luma = max(dot(tint.rgb, vec3(0.299, 0.587, 0.114)), 0.05);
 	return mix(color, clamp(color * tint.rgb / tint_luma, vec3(0.0), vec3(1.0)), tint.a);
 }
+void vertex() {
+	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
 void fragment() {
-	vec4 pixel = has_art ? texture(cliff_art, mirror_uv(UV)) : base_color;
+	vec2 uv = world_uv ? vec2(world_pos.x + world_pos.z, -world_pos.y)
+		/ max(world_span, vec2(0.001)) : UV;
+	vec4 pixel = base_color;
+	if (has_art) {
+		// Painted courses tile; textureGrad keeps mip selection continuous at each repeat.
+		pixel = wrap_repeat ? textureGrad(cliff_art, fract(uv), dFdx(uv), dFdy(uv))
+			: texture(cliff_art, mirror_uv(uv));
+	}
 	vec3 color = mix(base_color.rgb, pixel.rgb, pixel.a);
 	ALBEDO = tint_preserve_value(color, terrain_tint);
 	ROUGHNESS = 1.0;
