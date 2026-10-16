@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/source_art/ground_tree_pack_01/tree_dead.png" id="1_jxlh2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mmsjj"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_jxlh2")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_tqrpc"]
+_surfaces = [{
+"aabb": AABB(-3.4842124, -0.017166661, -3.216648, 4.8512063, 3.9311628, 4.6131725),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(86, 253, 94, 192, 234, 126, 122, 64, 78, 219, 75, 191, 233, 168, 232, 191, 25, 161, 140, 188, 78, 193, 178, 63, 169, 249, 174, 63, 25, 161, 140, 188, 42, 12, 131, 191, 104, 96, 153, 190, 234, 126, 122, 64, 144, 221, 77, 192)
+}]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_mdc60"]
+height = 2.2
+radius = 0.425
+
+[node name="tree_dead" type="Node3D" unique_id=1066968957]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=2003428570]
+material_override = SubResource("StandardMaterial3D_mmsjj")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_tqrpc")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=1452085064]
+
+[node name="@CollisionShape3D@2" type="CollisionShape3D" parent="ProxyCollision" unique_id=910439552]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("CylinderShape3D_mdc60")

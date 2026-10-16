@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_38whq"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_a0luj"]
+
+[resource]
+script = ExtResource("2_a0luj")
+asset_id = "painted_samllflowers"
+display_name = "红花"
+category = "植被"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/samllflowers.png"
+scene_path = "res://assets/generated/painted_samllflowers/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_samllflowers/thumbnail.png"
+image_size = Vector2(0.7767, 1)
+pivot = Vector2(0.5, 0.99)
+profile = ExtResource("1_38whq")
+generator_version = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": [142.0, 87.0, 381.0, 397.0],
+"version": 1.0
+}

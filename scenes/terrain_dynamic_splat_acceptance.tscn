@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/terrain_builder.gd" id="1_builder"]
+[ext_resource type="Resource" path="res://data/levels/dynamic_splat_acceptance.tres" id="2_level"]
+
+[node name="TerrainDynamicSplatAcceptance" type="Node3D"]
+
+[node name="TerrainBuilder" type="Node3D" parent="."]
+script = ExtResource("1_builder")
+level_data = ExtResource("2_level")

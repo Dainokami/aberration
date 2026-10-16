@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TileDefinition" format=3 uid="uid://uji4e74m8j01"]
+
+[ext_resource type="Resource" path="res://data/terrain_art/painted_grass.tres" id="1_nihba"]
+[ext_resource type="Script" uid="uid://be8j44l5pusbv" path="res://scripts/level/tile_definition.gd" id="2_pvqey"]
+
+[resource]
+script = ExtResource("2_pvqey")
+tile_id = "painted_grass"
+display_name = "手绘草地"
+art_set = ExtResource("1_nihba")
+texture_path = "res://assets/derived_art/scene_pack_20261014/terrain/grass.png"
+base_color = Color(0.57254905, 0.4509804, 0.26666668, 1)
+transition_priority = 50
+world_space_top = true
+top_texture_span_m = Vector2(8, 8)
+cliff_texture_path = "res://assets/derived_art/scene_pack_20261014/terrain/cliff_body.png"
+cliff_texture_span_m = Vector2(6.4453, 1.0078)
+rim_texture_path = "res://assets/derived_art/scene_pack_20261014/terrain/rim_grass.png"
+rim_u_span_m = 6.4453
+rim_drop_m = 0.5
+corner_radius_m = 0.25
+grass_roll_profile = Array[Vector2]([Vector2(0.012, 0.2344), Vector2(0.012, -0.5)])
+rim_cutout = true
+cliff_course_repeat = true

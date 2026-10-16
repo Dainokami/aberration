@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TileDefinition" format=3 uid="uid://b6ojcpn0po2pq"]
+
+[ext_resource type="Resource" path="res://data/terrain_art/painted_earth.tres" id="1_ikm7o"]
+[ext_resource type="Script" uid="uid://be8j44l5pusbv" path="res://scripts/level/tile_definition.gd" id="2_jnnx1"]
+
+[resource]
+script = ExtResource("2_jnnx1")
+tile_id = "painted_earth"
+display_name = "手绘泥土"
+art_set = ExtResource("1_ikm7o")
+texture_path = "res://assets/derived_art/scene_pack_20261014/terrain/earth.png"
+base_color = Color(0.57254905, 0.4509804, 0.26666668, 1)
+transition_priority = 70
+world_space_top = true
+top_texture_span_m = Vector2(8, 8)
+cliff_texture_path = "res://assets/derived_art/scene_pack_20261014/terrain/cliff_body.png"
+cliff_texture_span_m = Vector2(6.4453, 1.0078)
+rim_u_span_m = 4.0
+corner_radius_m = 0.25
+cliff_course_repeat = true

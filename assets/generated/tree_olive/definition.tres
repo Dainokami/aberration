@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_wvspu"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_0s6yp"]
+
+[resource]
+script = ExtResource("2_0s6yp")
+asset_id = "tree_olive"
+display_name = "橄榄树"
+category = "树木"
+source_image = "res://assets/source_art/ground_tree_pack_01/tree_olive.png"
+scene_path = "res://assets/generated/tree_olive/asset.tscn"
+thumbnail_path = "res://assets/generated/tree_olive/thumbnail.png"
+image_size = Vector2(4, 6)
+pivot = Vector2(0.56612545, 0.98372394)
+volume_size = Vector3(4, 6, 0.4)
+collision = 2
+collision_size = Vector3(0.9, 2.4, 0.9)
+profile = ExtResource("1_wvspu")

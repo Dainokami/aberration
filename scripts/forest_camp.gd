@@ -29,15 +29,16 @@ func _ready() -> void:
 
 func environment_setup() -> void:
 	camera = Camera3D.new()
-	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = 24.0
 	add_child(camera)
-	camera.position = Vector3(4, 26, 33)
-	camera.look_at(Vector3(0, 0, 0))
+	var profile := load("res://data/art_profile.tres") as ArtProfile
+	profile.configure(camera, Vector3.ZERO)
 	camera.current = true
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color("#111323")
+	var grade: Resource = load("res://data/color_grade_profile.tres")
+	if grade != null:
+		grade.apply(env)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("#aaa7ce")
 	env.ambient_light_energy = 0.7

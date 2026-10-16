@@ -1,0 +1,131 @@
+[gd_resource type="Resource" script_class="DetailSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/assets/detail_set.gd" id="1_lkgav"]
+
+[resource]
+script = ExtResource("1_lkgav")
+set_id = "painted_flat"
+display_name = "泥斑与落叶"
+atlas_path = "res://assets/derived_art/scene_pack_20261014/flat_atlas.png"
+variants = Array[Dictionary]([{
+"id": "detail_01",
+"name": "01_泥土地块_大",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(8, 8, 512, 231),
+"size": Vector2(2, 0.9005)
+}, {
+"id": "detail_02",
+"name": "02_泥土地块_小",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(536, 8, 309, 240),
+"size": Vector2(1.1758, 0.9132)
+}, {
+"id": "detail_03",
+"name": "03_裂土地块_大",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(861, 8, 491, 323),
+"size": Vector2(1.8867, 1.2412)
+}, {
+"id": "detail_04",
+"name": "04_裂土地块_中",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1368, 8, 343, 242),
+"size": Vector2(1.3086, 0.9233)
+}, {
+"id": "detail_05",
+"name": "05_裂土地块_小",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1727, 8, 282, 220),
+"size": Vector2(1.0703, 0.835)
+}, {
+"id": "detail_06",
+"name": "06_泥土斑块",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(8, 347, 220, 202),
+"size": Vector2(0.8281, 0.7604)
+}, {
+"id": "detail_32",
+"name": "32_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(244, 347, 166, 112),
+"size": Vector2(0.4012, 0.2707)
+}, {
+"id": "detail_33",
+"name": "33_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(426, 347, 177, 103),
+"size": Vector2(0.4291, 0.2497)
+}, {
+"id": "detail_34",
+"name": "34_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(619, 347, 146, 107),
+"size": Vector2(0.3504, 0.2568)
+}, {
+"id": "detail_35",
+"name": "35_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(781, 347, 126, 102),
+"size": Vector2(0.2996, 0.2425)
+}, {
+"id": "detail_36",
+"name": "36_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(923, 347, 157, 112),
+"size": Vector2(0.3783, 0.2699)
+}, {
+"id": "detail_37",
+"name": "37_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1096, 347, 98, 117),
+"size": Vector2(0.2285, 0.2728)
+}, {
+"id": "detail_38",
+"name": "38_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1210, 347, 104, 65),
+"size": Vector2(0.2438, 0.1523)
+}, {
+"id": "detail_39",
+"name": "39_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1330, 347, 114, 69),
+"size": Vector2(0.2691, 0.1629)
+}, {
+"id": "detail_40",
+"name": "40_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1460, 347, 90, 82),
+"size": Vector2(0.2082, 0.1897)
+}, {
+"id": "detail_41",
+"name": "41_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1566, 347, 167, 113),
+"size": Vector2(0.4037, 0.2732)
+}, {
+"id": "detail_42",
+"name": "42_落叶",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(1749, 347, 130, 71),
+"size": Vector2(0.3098, 0.1692)
+}, {
+"id": "detail_43",
+"name": "43_三叶草组合",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(8, 565, 188, 157),
+"size": Vector2(0.457, 0.3817)
+}, {
+"id": "detail_44",
+"name": "44_独立碎渣",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(212, 565, 64, 61),
+"size": Vector2(0.1422, 0.1355)
+}, {
+"id": "detail_45",
+"name": "45_独立碎渣",
+"pivot": Vector2(0.5, 0.5),
+"rect": Rect2i(292, 565, 73, 65),
+"size": Vector2(0.165, 0.147)
+}])
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"

@@ -25,10 +25,23 @@ func _tick() -> void:
 	if _phase == "boot":
 		if _wait < 5:
 			return
-		_player = _level.get_node("Player") as PlayerController
-		_rig = _player.get_node("ArtRoot/PartSockets") as ModularCharacterRig
 		_data = _level.get("data")
-		_player.parts.note.connect(func(message: String) -> void: _note = message)
+		if _player == null:
+			var existing := _level.get_node_or_null("Player")
+			if existing != null and not existing is PlayerController:
+				_level.set("testing", true)
+				_level.set("player", null)
+				existing.free()
+				var spawned := (load("res://scenes/player.tscn") as PackedScene).instantiate() as PlayerController
+				spawned.name = "Player"
+				spawned.position = _data.world_center(_data.spawn_cell) + Vector3(0.0, 0.08, 0.0)
+				_level.add_child(spawned)
+			_player = _level.get_node("Player") as PlayerController
+			_rig = _player.get_node("ArtRoot/PartSockets") as ModularCharacterRig
+			_player.parts.note.connect(func(message: String) -> void: _note = message)
+			return
+		if _wait < 8:
+			return
 		if _data.spawn_cell != Vector2i(8, 13):
 			_fail("loaded the wrong map, spawn %s" % _data.spawn_cell)
 			return
@@ -159,7 +172,7 @@ func _tick() -> void:
 			_fail("map tree has no attackable prop")
 			return
 		var before := tree.health
-		_stand(Vector3(-3 + 1.7, 0.08, -3))
+		_stand(_surface_at(Vector3(-3 + 1.7, 0.0, -3)))
 		_player.parts._attack_cooldown = 0.0
 		_tap("attack")
 		_phase = "tree_hit"
@@ -332,7 +345,7 @@ func _tick() -> void:
 			_fail("map rock is not pushable")
 			return
 		_level.set_meta("rock_start", _rock.global_position)
-		_stand(Vector3(12.5, 2.08, -9))
+		_stand(_rock.global_position + Vector3(0.9, 0.08, 0.0))
 		_tap("part_interact")
 		return
 	if _phase == "rock":
@@ -377,7 +390,7 @@ func _tick() -> void:
 		var before := _hard_health_total()
 		_level.set_meta("hard_before", before)
 		_note = ""
-		_stand(Vector3(6.4, 2.08, -9))
+		_stand(_surface_at(Vector3(6.4, 0.0, -9)))
 		_tap("part_interact")
 		return
 	if _phase == "tent":
@@ -389,7 +402,7 @@ func _tick() -> void:
 		_goto("stair")
 		var low := Vector2i(4, 5)
 		var high := low + Vector2i(0, -1)
-		_level.set_meta("stair_high", _data.elevation(high) * LevelData.ELEVATION_STEP)
+		_level.set_meta("stair_high", _data.world_center(high).y)
 		_stand(_data.world_center(low) + Vector3(0, 0.08, 1.5))
 		_player.velocity = Vector3.ZERO
 		Input.action_press("move_forward")
@@ -491,8 +504,7 @@ func _tick() -> void:
 			_fail("fluid has no soft prop")
 			return
 		_goto("dig_fluid")
-		var cell := _data.world_to_cell(wet.global_position)
-		_stand(Vector3(wet.global_position.x + 0.75, _data.elevation(cell) * LevelData.ELEVATION_STEP + 0.08, wet.global_position.z))
+		_stand(_surface_at(wet.global_position + Vector3(0.75, 0.0, 0.0)))
 		_level.set_meta("wet", wet)
 		_level.set_meta("wet_health", wet.health)
 		_note = ""
@@ -574,14 +586,21 @@ func _free_props() -> void:
 	_props.clear()
 
 
+func _surface_at(point: Vector3) -> Vector3:
+	var cell := _data.world_to_cell(point)
+	if not _data.cell_exists(cell):
+		return point
+	return Vector3(point.x, _data.world_center(cell).y + 0.08, point.z)
+
+
 func _find_prop(point: Vector3) -> AffordanceProp:
 	var best: AffordanceProp = null
-	var best_distance := 0.75
+	var best_distance := 1.25
 	for node in get_nodes_in_group("affordance"):
 		var prop := node as AffordanceProp
 		if prop == null:
 			continue
-		var distance := prop.global_position.distance_to(point)
+		var distance := Vector2(prop.global_position.x, prop.global_position.z).distance_to(Vector2(point.x, point.z))
 		if distance < best_distance:
 			best = prop
 			best_distance = distance
@@ -638,8 +657,7 @@ func _south_zone(tag: String) -> SurfaceZone:
 
 
 func _on_zone(zone: SurfaceZone) -> Vector3:
-	var cell := _data.world_to_cell(zone.global_position)
-	return Vector3(zone.global_position.x, _data.elevation(cell) * LevelData.ELEVATION_STEP + 0.08, zone.global_position.z)
+	return _surface_at(zone.global_position)
 
 
 func _fluid_soft() -> AffordanceProp:
@@ -663,7 +681,14 @@ func _first_cell(terrain_id: int) -> Vector2i:
 			var cell := Vector2i(x, y)
 			if not _data.cell_exists(cell) or _data.stair_at(cell) >= 0:
 				continue
-			if int(_data.get_cell(cell)["terrain"]) == terrain_id:
+			var cell_data := _data.get_cell(cell)
+			var tile_id := str(cell_data.get("tile_id", ""))
+			var matches := int(cell_data.get("terrain", -1)) == terrain_id
+			if terrain_id == LevelData.TERRAIN_ROCK and tile_id == "rock":
+				matches = true
+			if terrain_id == LevelData.TERRAIN_GRASS and (tile_id == "grass" or tile_id == ""):
+				matches = matches or tile_id == "grass"
+			if matches:
 				return cell
 	return Vector2i(-1, -1)
 
@@ -691,9 +716,7 @@ func _soft_stand(soft: AffordanceProp) -> Vector3:
 		if away.length_squared() < 0.01:
 			away = Vector3(0.0, 0.0, 1.0)
 		away = away.normalized()
-	var cell := _data.world_to_cell(soft.global_position)
-	var height := _data.elevation(cell) * LevelData.ELEVATION_STEP + 0.08
-	return Vector3(soft.global_position.x, height, soft.global_position.z) + away * 1.45
+	return _surface_at(soft.global_position + away * 1.45)
 
 
 func _find_cliff() -> Dictionary:
@@ -714,7 +737,7 @@ func _find_cliff() -> Dictionary:
 				var action := actions[direction]
 				return {
 					"at": _data.world_center(cell) + Vector3(0, 0.08, 0),
-					"y": _data.elevation(cell) * LevelData.ELEVATION_STEP,
+					"y": _data.world_center(cell).y,
 					"action": action,
 				}
 	return {}
