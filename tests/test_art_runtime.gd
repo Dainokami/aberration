@@ -58,19 +58,69 @@ func _run() -> void:
 		await physics_frame
 	check(not game.attempt_interact() and not game.climbing, "climbing requires ability")
 	game.climb_enabled = true
-	var target: Vector3 = climb.position + Vector3(0, 2.9, -0.55)
+	var target: Vector3 = game._climb_position(climb)
 	var obstruction := _obstacle(target, Vector3(1.2, 1.5, 1.2))
 	for i in 3:
 		await physics_frame
-	check(not game.attempt_interact() and not game.climbing, "blocked climb landing is rejected")
+	check(not game.attempt_interact() and not game.climbing, "blocked climb attachment is rejected")
 	obstruction.queue_free()
 	for i in 3:
 		await physics_frame
-	check(game.attempt_interact() and game.climbing, "E starts climb on an exposed wall attachment")
-	for i in 100:
+	var climb_up := _add_climb_surface("test_climb_up", climb, Vector3.UP * 2)
+	var climb_right := _add_climb_surface("test_climb_right", climb_up, Vector3.RIGHT * 2)
+	var climb_wrong_face := _add_climb_surface(
+		"test_climb_wrong_face", climb_right, Vector3.UP * 2)
+	climb_wrong_face.rotation.y += PI * 0.5
+	var climb_gap := _add_climb_surface("test_climb_gap", climb_right, Vector3.UP * 4)
+	await process_frame
+	check(game.attempt_interact() and game.climbing, "E attaches to a nearby climbable surface")
+	await _finish_climb_move()
+	check(game.climb_prop == climb and game.player.position.distance_to(target) < 0.04,
+		"attachment snaps to the surface without climbing to the top")
+	game.climb_input_armed = true
+	game.test_climb_input = Vector2.UP
+	await physics_frame
+	game.test_climb_input = Vector2.ZERO
+	check(game.climb_moving and game.climb_next_prop == climb_up,
+		"W input accepts an adjacent upper surface")
+	await _finish_climb_move()
+	check(game.climb_prop == climb_up and game.player.position.distance_to(
+		game._climb_position(climb_up)) < 0.04, "W moves to the upper climbable surface")
+	var move_obstruction := _obstacle(game._climb_position(climb_right), Vector3(1.2, 1.5, 1.2))
+	await physics_frame
+	check(not game.request_climb_move(Vector2i(1, 0)) and game.climb_prop == climb_up,
+		"an obstructed adjacent surface cannot be entered")
+	move_obstruction.queue_free()
+	for i in 3:
 		await physics_frame
-	check(not game.climbing and absf(game.player.position.y - 0.8 - 4) < 0.15,
-		"climb uses collision-aware movement and reaches upper terrain")
+	check(game.request_climb_move(Vector2i(1, 0)), "D accepts an adjacent right surface")
+	await _finish_climb_move()
+	check(game.climb_prop == climb_right, "D moves right across climbable surfaces")
+	var blocked_position: Vector3 = game.player.position
+	check(not game.request_climb_move(Vector2i(0, -1))
+		and game.player.position.is_equal_approx(blocked_position),
+		"movement ignores a rotated surface and cannot skip a missing surface")
+	check(game.request_climb_move(Vector2i(-1, 0)), "A accepts an adjacent left surface")
+	await _finish_climb_move()
+	check(game.climb_prop == climb_up, "A moves left across climbable surfaces")
+	check(game.request_climb_move(Vector2i(0, 1)), "S accepts an adjacent lower surface")
+	await _finish_climb_move()
+	check(game.climb_prop == climb, "S moves down across climbable surfaces")
+	check(game.attempt_interact() and not game.climbing, "E detaches from a climbable surface")
+	game.player.position = climb.position + Vector3(0, 0.82, 0.7)
+	game.player.velocity = Vector3.ZERO
+	for i in 3:
+		await physics_frame
+	check(game.attempt_interact() and game.climbing, "E can attach again after detaching")
+	await _finish_climb_move()
+	game._end_climb(true)
+	check(not game.climbing and game.player.velocity.y > 0,
+		"Space-style detach jumps away from the wall")
+	climb_up.queue_free()
+	climb_right.queue_free()
+	climb_wrong_face.queue_free()
+	climb_gap.queue_free()
+	await process_frame
 	var breakable := _prop("breakable")
 	game.player.position = breakable.position + Vector3(0, 0.82, 1.5)
 	game.player.velocity = Vector3.ZERO
@@ -109,3 +159,18 @@ func _obstacle(position: Vector3, size: Vector3) -> StaticBody3D:
 	game.add_child(node)
 	node.position = position
 	return node
+
+func _add_climb_surface(id: String, source: GameplayProp, offset: Vector3) -> GameplayProp:
+	var prop := AssetFactory.instantiate_asset(source.definition) as GameplayProp
+	prop.instance_id = id
+	prop.position = source.position + offset
+	prop.rotation = source.rotation
+	prop.set_meta("object_id", id)
+	game.builder.generated.add_child(prop)
+	return prop
+
+func _finish_climb_move() -> void:
+	for i in 120:
+		await physics_frame
+		if not game.climb_moving:
+			return

@@ -28,6 +28,8 @@ var _chunk_nodes: Dictionary = {}
 var _build_region := Rect2i()
 var _current_chunk := Vector2i.ZERO
 var _built_bounds := Rect2i()
+var _built_data: LevelData
+var _built_grid_origin := Vector2.ZERO
 var _built_stairs: Array[Dictionary] = []
 var _used_blends: Dictionary = {}
 var _raster_cache: Dictionary = {}
@@ -57,6 +59,8 @@ func rebuild() -> void:
 	_blend_resources.clear()
 	_raster_cache.clear()
 	_built_bounds = level_data.map_bounds()
+	_built_data = level_data
+	_built_grid_origin = level_data.grid_world_origin
 	var chunks := {}
 	for y in range(_built_bounds.position.y, _built_bounds.end.y):
 		for x in range(_built_bounds.position.x, _built_bounds.end.x):
@@ -113,14 +117,44 @@ func _build_chunk(chunk: Vector2i) -> void:
 			_blend_resources.erase(key)
 
 func rebuild_cells(changed: Array[Vector2i]) -> void:
-	if not is_instance_valid(generated) or _built_bounds != level_data.map_bounds():
+	if not is_instance_valid(generated) or level_data != _built_data \
+			or _built_grid_origin != level_data.grid_world_origin:
 		rebuild()
 		return
+	var bounds := level_data.map_bounds()
+	var bounds_changed := bounds != _built_bounds
 	var dirty := {}
 	for cell in changed:
 		for y in range(-1, 2):
 			for x in range(-1, 2):
 				dirty[_chunk_for(cell + Vector2i(x, y))] = true
+	if bounds_changed:
+		# Grid/world coordinates stay fixed when the map grows. Retain interior
+		# chunks and rebuild only changed edge extents (including texture halos).
+		var candidates := {}
+		for chunk: Vector2i in _chunk_nodes:
+			candidates[chunk] = true
+		var first := _chunk_for(bounds.position)
+		var last := _chunk_for(bounds.end - Vector2i.ONE)
+		for y in range(first.y, last.y + 1):
+			for x in range(first.x, last.x + 1):
+				candidates[Vector2i(x, y)] = true
+		for chunk: Vector2i in candidates:
+			var region := Rect2i(chunk * CHUNK_SIZE, Vector2i.ONE * CHUNK_SIZE)
+			if not _chunk_nodes.has(chunk) \
+					or region.intersection(_built_bounds) != region.intersection(bounds):
+				dirty[chunk] = true
+		# A blend's dimensions and world-space origin must match its new halo.
+		# Drop resized textures before partial updates to avoid indexing old images.
+		for key: Vector3i in _blend_resources.keys():
+			var chunk := Vector2i(key.x, key.z)
+			var region := Rect2i(chunk * CHUNK_SIZE, Vector2i.ONE * CHUNK_SIZE)
+			var clipped := region.intersection(bounds)
+			var expected := clipped.grow(2).intersection(bounds) if clipped.has_area() else Rect2i()
+			if _blend_resources[key]["region"] != expected:
+				dirty[chunk] = true
+				_blend_resources.erase(key)
+		_built_bounds = bounds
 	if _built_stairs != level_data.stairs:
 		for stair in _built_stairs + level_data.stairs:
 			dirty[_chunk_for(stair["cell"])] = true
@@ -140,8 +174,11 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 		_build_chunk(chunk)
 	_raster_cache.clear()
 	for node in generated.get_children():
-		if node.has_meta("object_id") or node.name == "SpawnMarker":
+		if node.has_meta("object_id") or node.name == "SpawnMarker" \
+				or (bounds_changed and node.has_meta("terrain_grid")):
 			node.free()
+	if bounds_changed and show_grid:
+		_build_grid()
 	_build_objects()
 	rebuild_details()
 	_build_spawn_marker()
@@ -629,12 +666,14 @@ func _build_grid() -> void:
 	var center := origin + Vector2(total_x, total_z) * 0.5
 	for x in level_data.map_size.x + 1:
 		var world_x := origin.x + x * LevelData.CELL_SIZE
-		_box("Grid", Vector3(world_x, 0.025, center.y),
+		var line := _box("Grid", Vector3(world_x, 0.025, center.y),
 			Vector3(0.018, 0.018, total_z), material, false)
+		line.set_meta("terrain_grid", true)
 	for z in level_data.map_size.y + 1:
 		var world_z := origin.y + z * LevelData.CELL_SIZE
-		_box("Grid", Vector3(center.x, 0.025, world_z),
+		var line := _box("Grid", Vector3(center.x, 0.025, world_z),
 			Vector3(total_x, 0.018, 0.018), material, false)
+		line.set_meta("terrain_grid", true)
 
 func _build_spawn_marker() -> void:
 	if not level_data.in_bounds(level_data.spawn_cell) or not level_data.cell_exists(level_data.spawn_cell):

@@ -144,6 +144,68 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		average = (Time.get_ticks_usec() - started) / 100
 		suite.check(average < 1000, "unchanged preview reuses generated terrain (%dus)" % average)
 		await plugin.get_tree().process_frame
+	# The empty-map benchmark cannot catch a full terrain rebuild on expansion.
+	var populated := LevelData.new()
+	populated.setup_blank(Vector2i(64, 64))
+	for y in 64:
+		for x in 64:
+			populated.set_layer(Vector2i(x, y), 0, {"tile_id": "painted_grass"})
+	plugin.data = populated
+	builder.level_data = populated
+	builder.rebuild()
+	plugin.height_select.selected = 0
+	plugin.brush_select.selected = 1
+	select_tile(plugin, "painted_grass")
+	plugin._make_preview()
+	await plugin.get_tree().process_frame
+	var before_expansion := populated.clone_data()
+	var generated := builder.generated
+	var remote: Array = builder._chunk_nodes[Vector2i(3, 3)].duplicate()
+	plugin._begin_stroke()
+	plugin.touched.clear()
+	plugin.last_stroke_cell = Vector2i(-999, -999)
+	var edge := Vector2i(-1, 20)
+	started = Time.get_ticks_usec()
+	plugin._ensure_ground_bounds(edge)
+	plugin._paint(edge)
+	plugin._commit_stroke("Populated map edge paint")
+	var elapsed := Time.get_ticks_usec() - started
+	var retained := generated == builder.generated
+	for node in remote:
+		retained = retained and is_instance_valid(node) and node.is_inside_tree()
+	suite.check(retained and populated.cell_exists(Vector2i(-2, 20)),
+		"populated 64x64 edge brush preserves distant terrain meshes and collisions")
+	suite.check(elapsed < 250000,
+		"populated 64x64 expansion stroke stays under 250ms (%dus)" % elapsed)
+	var after_expansion := populated.clone_data()
+	var expansion_history := plugin.get_undo_redo().get_history_undo_redo(
+		plugin.get_undo_redo().get_object_history_id(populated))
+	expansion_history.undo()
+	suite.check(populated.clone_data() == before_expansion,
+		"populated expansion undo restores complete terrain and original bounds")
+	expansion_history.redo()
+	suite.check(populated.clone_data() == after_expansion,
+		"populated expansion redo restores complete terrain and expanded bounds")
+	# Exercise the full-map dependency checks that an empty-object fixture misses.
+	for i in 32:
+		var object_cell := Vector2i(4 + (i % 8) * 2, 4 + (i / 8) * 2)
+		var asset := "demo_tree" if i % 2 == 0 else "demo_rock"
+		populated.objects.append(ObjectRules.anchor_record(populated, {
+			"id": "preview_perf_%d" % i,
+			"definition": "res://assets/generated/%s/definition.tres" % asset,
+			"position": populated.world_center(object_cell), "scale": 1.0, "yaw": 0.0}))
+	builder.rebuild()
+	var fixed_bounds := populated.map_bounds()
+	plugin._make_preview()
+	plugin._update_preview(Vector2i(29, 30))
+	started = Time.get_ticks_usec()
+	for i in 8:
+		plugin._update_preview(Vector2i(30 + i, 30))
+	average = (Time.get_ticks_usec() - started) / 8
+	suite.check(average < 16000 and populated.map_bounds() == fixed_bounds,
+		"interior brush preview with 32 objects stays under 16ms without expanding (%dus)" % average)
+	suite.check(ObjectRules.validate_all(populated).is_empty(),
+		"interior brush preview retains valid object support and collision checks")
 	plugin.data = original_data
 	plugin.builder = original_builder
 	plugin.editing_camera = null

@@ -15,6 +15,7 @@ func run() -> void:
 	check_prefab()
 	await check_geometry()
 	check_chunks()
+	check_chunk_expansion()
 	print("STACKED TERRAIN TEST FAILURES: ", failures)
 	quit(0 if failures.is_empty() else 1)
 
@@ -209,6 +210,79 @@ func check_chunks() -> void:
 			blend["rotation_image"].get_data()]
 	check(pixels_match, "incremental chunk halo weights equal full rebuilt textures")
 	builder.free()
+
+func check_chunk_expansion() -> void:
+	var map := LevelData.new()
+	map.setup_blank(Vector2i(32, 32))
+	for y in map.map_size.y:
+		for x in map.map_size.x:
+			map.set_layer(Vector2i(x, y), 0,
+				{"tile_id": "grass" if x % 4 < 2 else "rock"})
+	var builder := TerrainBuilder.new()
+	builder.level_data = map
+	root.add_child(builder)
+	var world_center := map.world_center(Vector2i(12, 12))
+	# Positive/negative origins, partial chunks and a new halo around old borders.
+	for cell in [Vector2i(32, 12), Vector2i(-1, 12), Vector2i(12, -1),
+			Vector2i(12, 32), Vector2i(35, 12)]:
+		var before := map.clone_data()
+		var generated := builder.generated
+		var remote: Array = builder._chunk_nodes[Vector2i(1, 1)].duplicate()
+		map.expand_to_include(Rect2i(cell, Vector2i.ONE))
+		map.set_layer(cell, 0, {"tile_id": "sand"})
+		builder.rebuild_cells([cell])
+		var retained := generated == builder.generated
+		for node in remote:
+			retained = retained and is_instance_valid(node) and node.is_inside_tree()
+		check(retained, "edge paint preserves interior meshes and collision nodes %s" % cell)
+		check(map.world_center(Vector2i(12, 12)) == world_center,
+			"edge growth keeps terrain world coordinates %s" % cell)
+		_check_incremental_matches_full(builder, "expansion %s" % cell)
+		# Bounds contraction must remove outside chunks and shrink their halos/grid.
+		map.restore_data(before)
+		builder.rebuild_cells([cell])
+		_check_incremental_matches_full(builder, "contraction %s" % cell)
+		# Grow again so the next iteration also exercises partial existing chunks.
+		map.expand_to_include(Rect2i(cell, Vector2i.ONE))
+		map.set_layer(cell, 0, {"tile_id": "sand"})
+		builder.rebuild_cells([cell])
+	builder.free()
+
+func _check_incremental_matches_full(builder: TerrainBuilder, label: String) -> void:
+	var geometry := geometry_signature(builder)
+	var collision := _collision_signature(builder)
+	var grid := _grid_signature(builder)
+	var blends := _blend_signature(builder)
+	builder.rebuild()
+	check(geometry_signature(builder) == geometry, label + " geometry equals full rebuild")
+	check(_collision_signature(builder) == collision, label + " collision equals full rebuild")
+	check(_grid_signature(builder) == grid, label + " grid bounds equal full rebuild")
+	check(_blend_signature(builder) == blends, label + " texture halos equal full rebuild")
+
+func _blend_signature(builder: TerrainBuilder) -> Dictionary:
+	var result := {}
+	for key in builder._blend_resources:
+		var blend: Dictionary = builder._blend_resources[key]
+		result[key] = [blend["region"], blend["index_image"].get_data(),
+			blend["weight_image"].get_data(), blend["rotation_image"].get_data()]
+	return result
+
+func _grid_signature(builder: TerrainBuilder) -> Array[String]:
+	var result: Array[String] = []
+	for node in builder.generated.get_children():
+		if node.has_meta("terrain_grid"):
+			result.append("%s|%s" % [node.position, node.mesh.size])
+	result.sort()
+	return result
+
+func _collision_signature(builder: TerrainBuilder) -> Array[String]:
+	var result: Array[String] = []
+	for node in builder.generated.find_children("*", "CollisionShape3D", true, false):
+		var shape: Shape3D = node.shape
+		var geometry: Variant = shape.points if shape is ConvexPolygonShape3D else shape.get_debug_mesh().get_faces()
+		result.append("%s|%s|%s" % [node.global_transform, node.disabled, hash(geometry)])
+	result.sort()
+	return result
 
 func geometry_signature(builder: TerrainBuilder) -> Array[String]:
 	var result: Array[String] = []
