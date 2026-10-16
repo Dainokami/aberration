@@ -15,10 +15,14 @@ func _ready() -> void:
 	collision_mask = 0
 
 
-func setup(size: Vector3, zone_tags: PackedStringArray, tint: Color) -> void:
-	tags = zone_tags
+func bind_volume(size: Vector3) -> void:
 	_box = BoxShape3D.new()
 	_box.size = size
+
+
+func setup(size: Vector3, zone_tags: PackedStringArray, tint: Color) -> void:
+	tags = zone_tags
+	bind_volume(size)
 	_shape_node = CollisionShape3D.new()
 	_shape_node.shape = _box
 	add_child(_shape_node)

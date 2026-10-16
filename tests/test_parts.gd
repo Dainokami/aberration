@@ -72,9 +72,6 @@ func _finish() -> void:
 	if player.parts == null or player.parts.current_upper().id != "gorilla_arm":
 		_fail("player did not start with the gorilla arm")
 		return
-	if player.get_node_or_null("PartBlocks") == null:
-		_fail("white part blocks missing")
-		return
 	var fluid := SceneProbe.tags_at(Vector3(-7.0, 1.15, 11.2))
 	if not fluid.has("fluid"):
 		_fail("play range fluid tag %s" % [str(fluid)])

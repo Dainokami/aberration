@@ -67,6 +67,9 @@ func _bind_affordance(object: Node3D, asset_id: String) -> void:
 		"demo_tree", "demo_fence":
 			kind = "destructible_hard"
 			health = 40
+		"demo_grass":
+			kind = "destructible_soft"
+			health = 16
 		_:
 			return
 	var prop := AffordanceProp.new()
@@ -116,10 +119,12 @@ func _build_cell(cell: Vector2i) -> void:
 	top.set_meta("terrain_cell", cell)
 	if top.get_child_count() > 0:
 		top.get_child(0).set_meta("terrain_cell", cell)
+	_mark_surface(center + Vector3(0.0, 0.45, 0.0), _surface_tags(int(data["terrain"])))
 	for direction in 4:
 		var neighbor: Vector2i = cell + LevelData.DIRS[direction]
+		var neighbor_is_stair := level_data.stair_at(neighbor) >= 0
 		var neighbor_level := LevelData.BASE_Y
-		if level_data.cell_exists(neighbor) and level_data.stair_at(neighbor) < 0:
+		if level_data.cell_exists(neighbor) and not neighbor_is_stair:
 			neighbor_level = level_data.elevation(neighbor) * LevelData.ELEVATION_STEP
 		var top_y := center.y
 		if top_y <= neighbor_level:
@@ -132,6 +137,10 @@ func _build_cell(cell: Vector2i) -> void:
 		if direction % 2 == 1:
 			size = Vector3(0.08, height, LevelData.CELL_SIZE)
 		_box("Side", side_center, size, side_material, true)
+		if height >= LevelData.ELEVATION_STEP and not neighbor_is_stair:
+			var face := side_center
+			face.y = neighbor_level + 1.0
+			_mark_climb(face)
 
 func _box(label: String, position_value: Vector3, size: Vector3,
 		material: Material, collision: bool) -> MeshInstance3D:
@@ -173,6 +182,13 @@ func _build_stair(stair: Dictionary) -> void:
 		if direction % 2 == 1:
 			size = Vector3(LevelData.CELL_SIZE * 2.0 / 10.0, 0.2, LevelData.CELL_SIZE)
 		_box("StairVisual", pos, size, stair_material, false)
+	var span := high_center.y - low_center.y
+	var stair_center := center
+	stair_center.y = low_height + span * 0.5 + 0.45
+	var stair_size := Vector3(LevelData.CELL_SIZE, span + 1.3, LevelData.CELL_SIZE * 2.0)
+	if direction % 2 == 1:
+		stair_size = Vector3(LevelData.CELL_SIZE * 2.0, span + 1.3, LevelData.CELL_SIZE)
+	_mark_surface(stair_center, PackedStringArray(["hard"]), stair_size)
 	if not build_collision:
 		return
 	var body := StaticBody3D.new()
@@ -193,6 +209,25 @@ func _build_stair(stair: Dictionary) -> void:
 	body.position.y = low_height
 	body.rotation.y = -float(direction) * PI * 0.5
 	generated.add_child(body)
+
+func _surface_tags(_terrain_id: int) -> PackedStringArray:
+	return PackedStringArray(["hard"])
+
+
+func _mark_surface(center: Vector3, zone_tags: PackedStringArray, size := Vector3(LevelData.CELL_SIZE, 1.2, LevelData.CELL_SIZE)) -> void:
+	var zone := SurfaceZone.new()
+	zone.tags = zone_tags
+	zone.bind_volume(size)
+	zone.position = center
+	generated.add_child(zone)
+
+
+func _mark_climb(face: Vector3) -> void:
+	var prop := AffordanceProp.new()
+	prop.configure_marker("climbable")
+	prop.position = face
+	generated.add_child(prop)
+
 
 func _build_grid() -> void:
 	var material := StandardMaterial3D.new()

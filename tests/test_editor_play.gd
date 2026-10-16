@@ -390,6 +390,7 @@ func _tick() -> void:
 			return
 		_goto("cliff")
 		_level.set_meta("cliff_y", float(cliff["y"]))
+		_level.set_meta("cliff_at", cliff["at"])
 		_stand(cliff["at"])
 		_player.velocity = Vector3.ZERO
 		Input.action_press(str(cliff["action"]))
@@ -403,6 +404,64 @@ func _tick() -> void:
 		Input.action_release("move_right")
 		if _player.global_position.y > float(_level.get_meta("cliff_y")) + 1.2:
 			_fail("cliff was climbed, foot=%s" % _player.global_position.y)
+			return
+		if not _feet_are_hard():
+			return
+		_goto("climb")
+		_stand(_level.get_meta("cliff_at"))
+		_note = ""
+		_tap("cycle_upper_part")
+		_tap("part_interact")
+		return
+	if _phase == "climb":
+		if _wait < 2:
+			return
+		if _player.parts.current_upper().id != "gibbon_arm" or not _note.contains("抓住"):
+			_fail("gibbon did not grab the cliff, note=%s" % _note)
+			return
+		_goto("climb_up")
+		_level.set_meta("climb_y", _player.global_position.y)
+		Input.action_press("move_forward")
+		return
+	if _phase == "climb_up":
+		var climbed_from := float(_level.get_meta("climb_y"))
+		if _wait < 80 and _player.global_position.y < climbed_from + 1.05:
+			return
+		Input.action_release("move_forward")
+		if _player.global_position.y < climbed_from + 1.0:
+			_fail("gibbon did not climb, foot=%s start=%s" % [_player.global_position.y, climbed_from])
+			return
+		_tap("part_interact")
+		for _step in 6:
+			_tap("cycle_upper_part")
+		var soft := _soft_tuft()
+		if soft == null:
+			_fail("map grass has no soft affordance")
+			return
+		_goto("dig")
+		_stand(_soft_stand(soft))
+		_level.set_meta("soft", soft)
+		_level.set_meta("soft_health", soft.health)
+		_note = ""
+		_tap("part_interact")
+		return
+	if _phase == "dig":
+		if _wait < 3:
+			return
+		var soft: AffordanceProp = _level.get_meta("soft")
+		if _player.parts.current_upper().id != "gerbil_paw" or soft.health != int(_level.get_meta("soft_health")) or not _note.contains("没有"):
+			_fail("gerbil dug hard ground, note=%s health=%s" % [_note, soft.health])
+			return
+		_goto("cut")
+		_player.parts._attack_cooldown = 0.0
+		_tap("attack")
+		return
+	if _phase == "cut":
+		if _wait < 3:
+			return
+		var soft: AffordanceProp = _level.get_meta("soft")
+		if soft.health >= int(_level.get_meta("soft_health")):
+			_fail("attack did not cut the grass, health=%s" % soft.health)
 			return
 		print("EDITOR PLAY: PASS")
 		quit(0)
@@ -472,6 +531,67 @@ func _first_pickup(limb_id: String) -> Node3D:
 		if str(node.get("limb_id")) == limb_id:
 			return node as Node3D
 	return null
+
+
+func _feet_are_hard() -> bool:
+	var feet := _player.global_position
+	if not SceneProbe.tags_at(feet).has("hard") or not _zone_covers(feet):
+		_fail("feet are not on a mapped hard surface")
+		return false
+	var rock := _first_cell(LevelData.TERRAIN_ROCK)
+	if rock.x < 0:
+		_fail("map has no rock cell")
+		return false
+	var rock_point := _data.world_center(rock) + Vector3(0.0, 0.2, 0.0)
+	if not SceneProbe.tags_at(rock_point).has("hard") or not _zone_covers(rock_point):
+		_fail("rock cell is not a hard surface")
+		return false
+	return true
+
+
+func _zone_covers(point: Vector3) -> bool:
+	for node in _level.get_tree().get_nodes_in_group("surface_zone"):
+		var zone := node as SurfaceZone
+		if zone and zone.covers(point):
+			return true
+	return false
+
+
+func _first_cell(terrain_id: int) -> Vector2i:
+	for x in _data.map_size.x:
+		for y in _data.map_size.y:
+			var cell := Vector2i(x, y)
+			if not _data.cell_exists(cell) or _data.stair_at(cell) >= 0:
+				continue
+			if int(_data.get_cell(cell)["terrain"]) == terrain_id:
+				return cell
+	return Vector2i(-1, -1)
+
+
+func _soft_tuft() -> AffordanceProp:
+	var best: AffordanceProp = null
+	var best_gap := -1.0
+	for prop in SceneProbe.each_kind(PackedStringArray(["destructible_soft"])):
+		var hard := SceneProbe.nearest(prop.global_position, 12.0, PackedStringArray(["destructible_hard"]))
+		var gap := 12.0 if hard == null else prop.global_position.distance_to(hard.global_position)
+		if gap > best_gap:
+			best_gap = gap
+			best = prop
+	return best
+
+
+func _soft_stand(soft: AffordanceProp) -> Vector3:
+	var away := Vector3(0.0, 0.0, 1.0)
+	var hard := SceneProbe.nearest(soft.global_position, 12.0, PackedStringArray(["destructible_hard"]))
+	if hard:
+		away = soft.global_position - hard.global_position
+		away.y = 0.0
+		if away.length_squared() < 0.01:
+			away = Vector3(0.0, 0.0, 1.0)
+		away = away.normalized()
+	var cell := _data.world_to_cell(soft.global_position)
+	var height := _data.elevation(cell) * LevelData.ELEVATION_STEP + 0.08
+	return Vector3(soft.global_position.x, height, soft.global_position.z) + away * 1.45
 
 
 func _find_cliff() -> Dictionary:

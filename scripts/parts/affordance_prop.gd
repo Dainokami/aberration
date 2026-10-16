@@ -24,6 +24,13 @@ func configure_host(body: Node3D, kind_name: String, health_value: int) -> void:
 	_plain = true
 
 
+func configure_marker(kind_name: String) -> void:
+	kind = kind_name
+	max_health = 1
+	health = 1
+	_plain = true
+
+
 func _ready() -> void:
 	add_to_group("affordance")
 	health = max_health
