@@ -40,6 +40,7 @@ var _coyote_remaining := 0.0
 var _jump_buffer_remaining := 0.0
 var _was_grounded := false
 var _is_flying := false
+var parts: PartLoadout
 
 
 func _ready() -> void:
@@ -49,8 +50,18 @@ func _ready() -> void:
 	respawn_position = global_position
 	# 场景里的子资源可能被多个实例共享，运行时调整前先复制。
 	collision.shape = collision.shape.duplicate()
+	var limbs := LimbBag.new()
+	limbs.name = "LimbBag"
+	add_child(limbs)
+	parts = PartLoadout.new()
+	parts.name = "PartLoadout"
+	add_child(parts)
 	assembly.loadout_changed.connect(_update_collision_for_loadout)
+	parts.changed_loadout.connect(func() -> void: parts.sync_movement())
+	parts.changed_loadout.connect(_update_collision_for_loadout)
+	parts.changed_loadout.connect(func() -> void: visual_rig.modular_rig.apply_part_appearance())
 	_update_collision_for_loadout()
+	call_deferred("_show_starting_parts")
 
 
 func _physics_process(delta: float) -> void:
@@ -63,6 +74,12 @@ func _physics_process(delta: float) -> void:
 
 	if global_position.y < fall_reset_height:
 		respawn()
+
+
+func _show_starting_parts() -> void:
+	parts.sync_movement()
+	_update_collision_for_loadout()
+	visual_rig.modular_rig.apply_part_appearance()
 
 
 func set_air_action(new_action: AirAction) -> void:
@@ -114,6 +131,14 @@ func _update_horizontal_velocity(delta: float) -> void:
 	var current_horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var motion_amount := maxf(input_vector.length(), current_horizontal.length() / maxf(move_speed, 0.01))
 	assembly.advance_locomotion(delta, motion_amount)
+	if assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
+		_update_snake_crawl(move_direction, delta)
+		return
+	if parts and parts.overrides_horizontal():
+		var planar := parts.horizontal_velocity(move_direction, delta)
+		velocity.x = planar.x
+		velocity.z = planar.z
+		return
 	var target_velocity := move_direction * move_speed * assembly.get_speed_multiplier() * assembly.get_drive_multiplier()
 	var control_multiplier := 1.0 if is_on_floor() else air_control
 	var acceleration := ground_acceleration * assembly.get_acceleration_multiplier() if move_direction.length_squared() > 0.01 else ground_deceleration * assembly.get_deceleration_multiplier()
@@ -122,7 +147,34 @@ func _update_horizontal_velocity(delta: float) -> void:
 	velocity.z = current_horizontal.z
 
 
+func _part_tail_sets_speed() -> bool:
+	if parts == null:
+		return false
+	var bag := get_node_or_null("LimbBag") as LimbBag
+	if bag != null and not bag.equipped_lower.is_empty():
+		return false
+	var lower_id := parts.current_lower().id
+	return lower_id == "water_snake" or lower_id == "fish_tail"
+
+
+func _update_snake_crawl(wish: Vector3, delta: float) -> void:
+	# 上下和左右都直接沿输入走。头尾的朝向在画面里转，避免绕远路才调头。
+	var crawling := wish.length_squared() > 0.01
+	var speed := move_speed * assembly.get_speed_multiplier() * assembly.get_drive_multiplier()
+	if _part_tail_sets_speed():
+		speed = parts.speed_on(SceneProbe.tags_at(global_position))
+	var target_velocity := wish * speed if crawling else Vector3.ZERO
+	var acceleration := ground_acceleration * assembly.get_acceleration_multiplier() if crawling else ground_deceleration * assembly.get_deceleration_multiplier()
+	var current := Vector3(velocity.x, 0.0, velocity.z)
+	current = current.move_toward(target_velocity, acceleration * delta)
+	velocity.x = current.x
+	velocity.z = current.z
+
+
 func _update_vertical_velocity(delta: float) -> void:
+	if parts and parts.controls_vertical():
+		parts.apply_vertical(self, delta)
+		return
 	if air_action == AirAction.JUMP:
 		_update_jump(delta)
 	else:
@@ -152,6 +204,8 @@ func _update_flight(delta: float) -> void:
 			velocity.y -= 18.0 * delta
 		else:
 			velocity.y = 0.0
+			if Input.is_action_just_pressed("air_action") and parts and not parts.controls_vertical():
+				parts.note.emit("这个身体不会跳，也不会飞")
 		return
 
 	if not _is_flying and Input.is_action_just_pressed("air_action") and (is_on_floor() or _coyote_remaining > 0.0):
@@ -183,6 +237,10 @@ func _update_visuals(delta: float) -> void:
 	visual_rig.set_motion_state(horizontal_velocity, is_on_floor(), velocity.y, screen_direction, delta)
 
 
+func camera_planar_axes() -> Array[Vector3]:
+	return _camera_planar_axes()
+
+
 func _camera_planar_axes() -> Array[Vector3]:
 	var camera := get_viewport().get_camera_3d()
 	if camera and camera.get_parent() is FollowCameraRig:
@@ -203,6 +261,8 @@ func _update_collision_for_loadout() -> void:
 	if capsule == null:
 		return
 	var target_height := assembly.get_collision_height()
+	if parts and parts.is_burrowed():
+		target_height = 0.9
 	capsule.height = target_height
 	capsule.radius = minf(0.42, target_height * 0.42)
 	collision.position.y = target_height * 0.5

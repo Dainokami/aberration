@@ -45,8 +45,8 @@ mouse_filter = 2
 layout_mode = 0
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 574.0
-offset_bottom = 218.0
+offset_right = 760.0
+offset_bottom = 360.0
 theme_override_styles/panel = SubResource("StyleBox_info")
 
 [node name="Content" type="VBoxContainer" parent="SafeArea/TopLeft"]
@@ -62,7 +62,7 @@ text = "2.5D 关卡白盒"
 [node name="Controls" type="Label" parent="SafeArea/TopLeft/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92, 0.92, 0.96, 1)
-text = "WASD：移动   C：换肢体   Q：翅膀   J：攻击"
+text = "WASD移动  G捡肢体  Tab属性/培养  右键回收  J攻击"
 
 [node name="Mode" type="Label" parent="SafeArea/TopLeft/Content"]
 layout_mode = 2
@@ -78,6 +78,13 @@ text = "速度 0.0   高度 0.0   地面"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.76, 0.9, 0.7, 1)
 text = "移动：双足行走  |  上肢：2  下肢：双足  翅膀：有"
+
+[node name="Parts" type="Label" parent="SafeArea/TopLeft/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.93, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+text = "部件"
 
 [node name="Conflict" type="Label" parent="SafeArea/TopLeft/Content"]
 custom_minimum_size = Vector2(500, 34)

@@ -34,6 +34,24 @@ Godot引擎不包含在仓库中，请从[Godot官网](https://godotengine.org/d
 
 分层编辑与旧地图迁移：[`STACKED_TERRAIN.md`](STACKED_TERRAIN.md)
 
+## 肢体与场景试玩
+
+试玩场景里的角色仍是编辑器胶囊。肢体规则读的是地形标签：水体是流体，沙地是沙漠，其余实心地面是硬地面。裸崖壁可以给长臂猿爬。出生点东边另有蓝色流体和黄色沙漠色块，用来在没有这些地块的旧地图上试。
+
+- 鱼尾在流体里会游，在硬地上停下。
+- 沙鼠前肢只在流体里按 `G` 挖软块。
+- 章鱼触手在沙漠上吸不住，在硬地面上可以吸附。
+- 长臂猿对裸崖壁按 `G`，再按 `W` 爬上崖顶。
+
+无窗口检查：
+
+```sh
+$GODOT --headless --path . --script res://tests/test_editor_play.gd -- \
+  --level=res://data/levels/objects_acceptance.tres
+```
+
+通过时控制台打印 `EDITOR PLAY: PASS`。
+
 场景美术素材包导入记录、重建命令与已知限制：[`docs/art_pipeline_execution.md`](docs/art_pipeline_execution.md)。美术验收地图：`scenes/art_acceptance.tscn`。
 
 视觉与相机规则：[`TERRAIN_VISUAL_RULES.md`](TERRAIN_VISUAL_RULES.md)
