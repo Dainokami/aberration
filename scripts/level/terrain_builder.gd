@@ -137,10 +137,10 @@ func _build_cell(cell: Vector2i) -> void:
 		if direction % 2 == 1:
 			size = Vector3(0.08, height, LevelData.CELL_SIZE)
 		_box("Side", side_center, size, side_material, true)
-		if height >= LevelData.ELEVATION_STEP and not neighbor_is_stair:
+		if height >= LevelData.ELEVATION_STEP and level_data.cell_exists(neighbor) and not neighbor_is_stair:
 			var face := side_center
 			face.y = neighbor_level + 1.0
-			_mark_climb(face)
+			_mark_climb(face, top_y, Vector3(center.x, top_y + 0.08, center.z))
 
 func _box(label: String, position_value: Vector3, size: Vector3,
 		material: Material, collision: bool) -> MeshInstance3D:
@@ -222,9 +222,11 @@ func _mark_surface(center: Vector3, zone_tags: PackedStringArray, size := Vector
 	generated.add_child(zone)
 
 
-func _mark_climb(face: Vector3) -> void:
+func _mark_climb(face: Vector3, top_y: float, onto: Vector3) -> void:
 	var prop := AffordanceProp.new()
 	prop.configure_marker("climbable")
+	prop.ledge_height = top_y
+	prop.ledge_point = onto
 	prop.position = face
 	generated.add_child(prop)
 

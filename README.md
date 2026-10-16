@@ -35,6 +35,37 @@ Godot 引擎本身不包含在仓库中，请从 [Godot 官网](https://godoteng
 data/levels/objects_acceptance.tres
 ```
 
+## 肢体与场景试玩
+
+按 F5 进入 `scenes/level_playtest.tscn`。默认地图是上面的双营地验收图。角色出生点东边有两块色块：蓝色是流体，黄色是沙漠。
+
+操作：
+
+- `WASD`：移动
+- `Z` / `X`：切换上肢 / 下肢
+- `G`：捡肢体，或对当前肢体做场景交互
+- `J`：攻击最近的可攻击对象
+- `T`：开关突破能力
+- `R`：回到出生点
+- `Tab`：背包
+
+可以逐项试这些交互：
+
+- 鱼尾在蓝块里会游，回到草地或岩地就停。
+- 沙鼠前肢在蓝块里按 `G`，能挖掉池中的软块；在硬地上挖不开。
+- 章鱼触手在黄块上按 `G` 吸不住，在硬地面上可以吸附。
+- 长臂猿靠近裸崖壁按 `G` 抓住，再按 `W` 爬上崖顶。没有这个肢体时，崖壁会挡住去路。
+- 岩石可以推，树和栅栏可以砸，草丛可以砍。
+
+无窗口检查：
+
+```sh
+$GODOT --headless --path . --script res://tests/test_editor_play.gd -- \
+  --level=res://data/levels/objects_acceptance.tres
+```
+
+通过时控制台打印 `EDITOR PLAY: PASS`。
+
 详细说明：
 
 - [`TERRAIN_EDITOR.md`](TERRAIN_EDITOR.md)：第一版地形编辑器

@@ -183,6 +183,14 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 		_coyote = maxf(_coyote - delta, 0.0)
 
 	if _climbing:
+		if _climb_target != null and _climb_target.ledge_height >= 0.0 and player.global_position.y >= _climb_target.ledge_height - 0.2:
+			var landed := _climb_target.ledge_point
+			_climbing = false
+			_climb_target = null
+			player.global_position = landed
+			player.velocity = Vector3.ZERO
+			note.emit("爬上去了")
+			return
 		var climb := Input.get_action_strength("move_forward") - Input.get_action_strength("move_back")
 		player.velocity.y = climb * 3.4
 		return

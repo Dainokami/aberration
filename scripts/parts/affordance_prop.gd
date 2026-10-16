@@ -13,6 +13,8 @@ var ballistic := false
 var throw_velocity := Vector3.ZERO
 var host: Node3D
 var rest_y := 0.0
+var ledge_height := -1.0
+var ledge_point := Vector3.ZERO
 var _plain := false
 
 

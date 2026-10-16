@@ -279,6 +279,24 @@ func _tick() -> void:
 		if _player.global_position.distance_to(start) > 0.35:
 			_fail("fish tail walked on hard ground")
 			return
+		var fluid := _south_zone("fluid")
+		if fluid == null:
+			_fail("playtest has no fluid")
+			return
+		_goto("fish_swim")
+		_stand(_on_zone(fluid))
+		_player.velocity = Vector3.ZERO
+		_level.set_meta("swim_start", _player.global_position)
+		Input.action_press("move_forward")
+		return
+	if _phase == "fish_swim":
+		if _wait < 70:
+			return
+		Input.action_release("move_forward")
+		var swim_start: Vector3 = _level.get_meta("swim_start")
+		if _player.global_position.distance_to(swim_start) < 1.2:
+			_fail("fish did not swim in fluid, moved %s" % _player.global_position.distance_to(swim_start))
+			return
 		for _i in 7:
 			_tap("cycle_upper_part")
 		_tap("cycle_lower_part")
@@ -419,17 +437,22 @@ func _tick() -> void:
 		if _player.parts.current_upper().id != "gibbon_arm" or not _note.contains("抓住"):
 			_fail("gibbon did not grab the cliff, note=%s" % _note)
 			return
+		var target := _player.parts._climb_target
+		if target == null or target.ledge_height < 0.0:
+			_fail("cliff has no ledge")
+			return
+		_level.set_meta("ledge_y", target.ledge_point.y)
 		_goto("climb_up")
-		_level.set_meta("climb_y", _player.global_position.y)
+		_note = ""
 		Input.action_press("move_forward")
 		return
 	if _phase == "climb_up":
-		var climbed_from := float(_level.get_meta("climb_y"))
-		if _wait < 80 and _player.global_position.y < climbed_from + 1.05:
+		if _wait < 160 and not _note.contains("爬上去了"):
 			return
 		Input.action_release("move_forward")
-		if _player.global_position.y < climbed_from + 1.0:
-			_fail("gibbon did not climb, foot=%s start=%s" % [_player.global_position.y, climbed_from])
+		var ledge_y := float(_level.get_meta("ledge_y"))
+		if not _note.contains("爬上去了") or absf(_player.global_position.y - ledge_y) > 0.45:
+			_fail("gibbon did not reach the top, foot=%s ledge=%s note=%s" % [_player.global_position.y, ledge_y, _note])
 			return
 		_tap("part_interact")
 		for _step in 6:
@@ -463,6 +486,54 @@ func _tick() -> void:
 		if soft.health >= int(_level.get_meta("soft_health")):
 			_fail("attack did not cut the grass, health=%s" % soft.health)
 			return
+		var wet := _fluid_soft()
+		if wet == null:
+			_fail("fluid has no soft prop")
+			return
+		_goto("dig_fluid")
+		var cell := _data.world_to_cell(wet.global_position)
+		_stand(Vector3(wet.global_position.x + 0.75, _data.elevation(cell) * LevelData.ELEVATION_STEP + 0.08, wet.global_position.z))
+		_level.set_meta("wet", wet)
+		_level.set_meta("wet_health", wet.health)
+		_note = ""
+		_tap("part_interact")
+		return
+	if _phase == "dig_fluid":
+		if _wait < 3:
+			return
+		var wet: AffordanceProp = _level.get_meta("wet")
+		if wet.health >= int(_level.get_meta("wet_health")) or not _note.contains("挖"):
+			_fail("gerbil did not dig in fluid, note=%s health=%s" % [_note, wet.health])
+			return
+		for _i in 4:
+			_tap("cycle_upper_part")
+		var desert := _zone_tagged("desert")
+		if desert == null:
+			_fail("playtest has no desert")
+			return
+		_goto("desert")
+		_stand(_on_zone(desert))
+		_note = ""
+		_tap("part_interact")
+		return
+	if _phase == "desert":
+		if _wait < 3:
+			return
+		if _player.parts.current_upper().id != "octopus_arm" or not _note.contains("吸不住"):
+			_fail("octopus stuck to desert, note=%s" % _note)
+			return
+		_goto("stick")
+		_stand(_data.world_center(_data.spawn_cell) + Vector3(0.0, 0.08, 0.0))
+		_note = ""
+		_tap("part_interact")
+		return
+	if _phase == "stick":
+		if _wait < 3:
+			return
+		if not _note.contains("吸附"):
+			_fail("octopus did not stick to hard ground, note=%s" % _note)
+			return
+		_tap("part_interact")
 		print("EDITOR PLAY: PASS")
 		quit(0)
 
@@ -549,6 +620,35 @@ func _feet_are_hard() -> bool:
 	return true
 
 
+func _zone_tagged(tag: String) -> SurfaceZone:
+	return _south_zone(tag)
+
+
+func _south_zone(tag: String) -> SurfaceZone:
+	var best: SurfaceZone = null
+	for node in _level.get_tree().get_nodes_in_group("surface_zone"):
+		var zone := node as SurfaceZone
+		if zone == null or not zone.tags.has(tag):
+			continue
+		if tag == "fluid" and zone.tags.has("hard"):
+			continue
+		if best == null or zone.global_position.z > best.global_position.z:
+			best = zone
+	return best
+
+
+func _on_zone(zone: SurfaceZone) -> Vector3:
+	var cell := _data.world_to_cell(zone.global_position)
+	return Vector3(zone.global_position.x, _data.elevation(cell) * LevelData.ELEVATION_STEP + 0.08, zone.global_position.z)
+
+
+func _fluid_soft() -> AffordanceProp:
+	for prop in SceneProbe.each_kind(PackedStringArray(["destructible_soft"])):
+		if SceneProbe.tags_at(prop.global_position).has("fluid"):
+			return prop
+	return null
+
+
 func _zone_covers(point: Vector3) -> bool:
 	for node in _level.get_tree().get_nodes_in_group("surface_zone"):
 		var zone := node as SurfaceZone
@@ -572,6 +672,8 @@ func _soft_tuft() -> AffordanceProp:
 	var best: AffordanceProp = null
 	var best_gap := -1.0
 	for prop in SceneProbe.each_kind(PackedStringArray(["destructible_soft"])):
+		if SceneProbe.tags_at(prop.global_position).has("fluid"):
+			continue
 		var hard := SceneProbe.nearest(prop.global_position, 12.0, PackedStringArray(["destructible_hard"]))
 		var gap := 12.0 if hard == null else prop.global_position.distance_to(hard.global_position)
 		if gap > best_gap:
