@@ -59,6 +59,15 @@ func run() -> void:
 	var hidden_wall := data.fork_for_edit()
 	hidden_wall.set_layer(cliff + Vector2i(0, 1), 1, {"tile_id": "grass"})
 	check(not ObjectRules.validate_all(hidden_wall).is_empty(), "buried wall cannot pass terrain validation")
+	var invalid := data.fork_for_edit()
+	invalid.objects.append(invalid.objects[0].duplicate(true))
+	invalid.objects[1]["definition"] = "res://missing_object_definition.tres"
+	var invalid_errors := ObjectRules.validate_all(invalid)
+	check(invalid_errors.has("物件 ID 为空或重复")
+		and invalid_errors.has("物件 upper：物件定义缺失"),
+		"batch validation still reports duplicate IDs and missing definitions")
+	check(ObjectRules.validate_all(data).is_empty(),
+		"validation does not retain errors from another map")
 
 	var center := data.world_center(Vector2i(7, 2))
 	var scattered := DetailRules.scatter(data, DETAILS, center, 1.4, 20, 314, "stroke")

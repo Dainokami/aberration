@@ -19,9 +19,16 @@ var feedback_until := 0
 var climbing := false
 var climb_target := Vector3.ZERO
 var climb_prop: GameplayProp
-var climb_stage := 0
+var climb_next_prop: GameplayProp
+var climb_moving := false
+var climb_attached := false
+var climb_input_armed := true
+var test_climb_input := Vector2.ZERO
 const PLAYER_HALF_HEIGHT := 0.8
 const INTERACTION_REACH := 1.7
+const CLIMB_WALL_OFFSET := 0.38
+const CLIMB_MOVE_SPEED := 3.0
+const CLIMB_LINK_TOLERANCE := 0.35
 ## Set before entering the tree to bypass the editor's playtest request file.
 var level_override := ""
 
@@ -123,7 +130,7 @@ func _setup_ui(path: String) -> void:
 	var label := Label.new()
 	label.position = Vector2(18, 18)
 	label.text = "地形编辑器试玩 · " + path.get_file().get_basename() \
-		+ "\nWASD / 方向键移动　Space 跳跃　E 交互　J 破坏　R 回到出生点"
+		+ "\nWASD / 方向键移动　Space 跳跃　E 交互 / 脱离　J 破坏　R 回到出生点"
 	label.add_theme_font_override("font", runtime_font())
 	label.add_theme_font_size_override("font_size", 18)
 	layer.add_child(label)
@@ -156,11 +163,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	match event.physical_keycode:
 		KEY_SPACE:
-			jump_requested = true
+			if climbing:
+				_end_climb(true)
+			else:
+				jump_requested = true
 		KEY_E:
 			attempt_interact()
 		KEY_J:
 			attempt_damage()
+		KEY_R:
+			reset_player()
 		KEY_C:
 			climb_enabled = not climb_enabled
 			for child in get_children():
@@ -219,7 +231,8 @@ static func _interaction_shape(prop: Node) -> CollisionShape3D:
 
 func attempt_interact() -> bool:
 	if climbing:
-		return false
+		_end_climb(false)
+		return true
 	focused_prop = _nearest_prop()
 	if focused_prop == null:
 		return false
@@ -243,33 +256,78 @@ func begin_climb(prop: GameplayProp) -> bool:
 	var normal := prop.global_basis.z.normalized()
 	if (player.global_position - prop.global_position).dot(normal) < 0:
 		return false
-	var top_y: float
-	if record.get("anchor_kind") == "wall":
-		# Internal ledges cannot be entered; only the exposed column top is valid.
-		if int(record["anchor_layer"]) != data.top_layer(record["anchor_cell"]):
-			_feedback("抓点上方仍有地形，需要通向外露顶面的攀爬路线")
-			return false
-		top_y = data.world_center(record["anchor_cell"]).y
-	else:
-		var parent := ObjectRules.find_record(data, str(record.get("support_id", "")))
-		var definition := ObjectRules.definition(parent)
-		if definition == null:
-			return false
-		top_y = (ObjectRules.transform_of(parent) * (definition.collision_offset
-			+ Vector3.UP * definition.collision_size.y)).y
-	if top_y - (player.position.y - PLAYER_HALF_HEIGHT) > LevelData.ELEVATION_STEP + 0.2:
-		_feedback("抓点太高，请先靠近可起攀的位置")
-		return false
-	climb_target = Vector3(prop.global_position.x, top_y + PLAYER_HALF_HEIGHT + 0.06,
-		prop.global_position.z) - normal * 0.55
+	climb_target = _climb_position(prop)
 	if not _player_space_clear(climb_target):
-		_feedback("顶部没有足够的落脚空间")
+		_feedback("攀爬面前没有足够空间")
 		return false
 	climbing = true
 	climb_prop = prop
-	climb_stage = 0
+	climb_next_prop = null
+	climb_moving = true
+	climb_attached = false
+	climb_input_armed = false
+	jump_requested = false
 	player.velocity = Vector3.ZERO
+	_feedback("已附着攀爬面；WASD 移动，E 脱离，Space 跳离")
 	return true
+
+func request_climb_move(direction: Vector2i) -> bool:
+	if not climbing or not climb_attached or climb_moving or not is_instance_valid(climb_prop):
+		return false
+	var next: GameplayProp = _adjacent_climb_surface(climb_prop, direction)
+	if next == null:
+		_feedback("该方向没有可攀爬面")
+		return false
+	var target: Vector3 = _climb_position(next)
+	if not _player_space_clear(target):
+		_feedback("目标攀爬面前没有足够空间")
+		return false
+	climb_next_prop = next
+	climb_target = target
+	climb_moving = true
+	return true
+
+func _adjacent_climb_surface(current: GameplayProp, direction: Vector2i) -> GameplayProp:
+	var normal: Vector3 = current.global_basis.z.normalized()
+	var tangent: Vector3 = current.global_basis.x.normalized()
+	var current_center: Vector3 = _climb_surface_center(current)
+	var nearest: GameplayProp
+	var nearest_error: float = INF
+	for node in get_tree().get_nodes_in_group("climb_surfaces"):
+		if not node is GameplayProp or node == current or node.state == "broken" \
+				or not builder.is_ancestor_of(node):
+			continue
+		var candidate_normal: Vector3 = node.global_basis.z.normalized()
+		if normal.dot(candidate_normal) < 0.99:
+			continue
+		var delta: Vector3 = _climb_surface_center(node) - current_center
+		if absf(delta.dot(normal)) > 0.12:
+			continue
+		var lateral: float = delta.dot(tangent)
+		var vertical: float = delta.y
+		var forward_distance: float
+		var cross_distance: float
+		if direction.x != 0:
+			forward_distance = lateral * direction.x
+			cross_distance = absf(vertical)
+		else:
+			forward_distance = vertical * -direction.y
+			cross_distance = absf(lateral)
+		if absf(forward_distance - LevelData.CELL_SIZE) > CLIMB_LINK_TOLERANCE \
+				or cross_distance > CLIMB_LINK_TOLERANCE:
+			continue
+		var error: float = absf(forward_distance - LevelData.CELL_SIZE) + cross_distance
+		if error < nearest_error:
+			nearest_error = error
+			nearest = node
+	return nearest
+
+static func _climb_surface_center(prop: GameplayProp) -> Vector3:
+	var shape: CollisionShape3D = _interaction_shape(prop)
+	return shape.global_position if shape != null else prop.global_position
+
+static func _climb_position(prop: GameplayProp) -> Vector3:
+	return _climb_surface_center(prop) + prop.global_basis.z.normalized() * CLIMB_WALL_OFFSET
 
 func _player_space_clear(point: Vector3) -> bool:
 	var query := PhysicsShapeQueryParameters3D.new()
@@ -282,23 +340,66 @@ func _player_space_clear(point: Vector3) -> bool:
 
 func _step_climb(delta: float) -> void:
 	if not is_instance_valid(climb_prop) or climb_prop.state == "broken" or not climb_enabled:
-		climbing = false
+		_end_climb(false)
 		return
-	var target := climb_target
-	if climb_stage == 0:
-		target.x = player.position.x
-		target.z = player.position.z
-	var motion := (target - player.position).limit_length(3.0 * delta)
-	var collision := player.move_and_collide(motion)
-	if collision != null:
-		climbing = false
-		_feedback("攀爬路线受阻")
-	elif player.position.distance_to(target) < 0.025:
-		if climb_stage == 0:
-			climb_stage = 1
-		else:
-			climbing = false
-			_feedback("攀爬完成")
+	if climb_moving and climb_next_prop != null and (
+			not is_instance_valid(climb_next_prop) or climb_next_prop.state == "broken"):
+		_end_climb(false)
+		return
+	player.velocity = Vector3.ZERO
+	if interaction_label != null:
+		interaction_label.text = "WASD / 方向键攀爬　E 脱离　Space 跳离"
+	if climb_moving:
+		var motion: Vector3 = (climb_target - player.position).limit_length(CLIMB_MOVE_SPEED * delta)
+		var collision: KinematicCollision3D = player.move_and_collide(motion)
+		if collision != null:
+			climb_moving = false
+			if climb_attached and is_instance_valid(climb_prop):
+				player.position = _climb_position(climb_prop)
+				climb_next_prop = null
+			else:
+				_end_climb(false)
+			_feedback("攀爬路线受阻")
+		elif player.position.distance_to(climb_target) < 0.025:
+			player.position = climb_target
+			climb_moving = false
+			climb_attached = true
+			if is_instance_valid(climb_next_prop):
+				climb_prop = climb_next_prop
+			climb_next_prop = null
+		return
+	var axis: Vector2 = test_climb_input if testing else Input.get_vector(
+		"move_left", "move_right", "move_up", "move_down")
+	if axis.length() < 0.25:
+		climb_input_armed = true
+		return
+	if not climb_input_armed:
+		return
+	climb_input_armed = false
+	var direction := Vector2i.ZERO
+	if absf(axis.x) > absf(axis.y):
+		direction.x = 1 if axis.x > 0 else -1
+	else:
+		direction.y = 1 if axis.y > 0 else -1
+	request_climb_move(direction)
+
+func _end_climb(jump_away: bool) -> void:
+	if not climbing:
+		return
+	var normal := climb_prop.global_basis.z.normalized() if is_instance_valid(climb_prop) else Vector3.ZERO
+	climbing = false
+	climb_moving = false
+	climb_attached = false
+	climb_input_armed = true
+	climb_prop = null
+	climb_next_prop = null
+	jump_requested = false
+	player.velocity = normal * (3.2 if jump_away else 0.8)
+	if jump_away:
+		player.velocity.y = 6.0
+		_feedback("已跳离攀爬面")
+	else:
+		_feedback("已脱离攀爬面")
 
 func _prop_broken(prop: Node3D) -> void:
 	var before := {}
@@ -359,7 +460,7 @@ func _physics_process(delta: float) -> void:
 		player.velocity.y -= 20.0 * delta
 	jump_requested = false
 	player.move_and_slide()
-	if player.position.y < -4.0 or Input.is_physical_key_pressed(KEY_R):
+	if player.position.y < -4.0:
 		reset_player()
 	if not testing:
 		focused_prop = _nearest_prop()
@@ -372,6 +473,11 @@ func _physics_process(delta: float) -> void:
 
 func reset_player() -> void:
 	climbing = false
+	climb_moving = false
+	climb_attached = false
+	climb_input_armed = true
+	climb_prop = null
+	climb_next_prop = null
 	jump_requested = false
 	player.position = spawn_position
 	player.velocity = Vector3.ZERO

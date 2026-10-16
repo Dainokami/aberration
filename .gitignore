@@ -15,6 +15,10 @@ assets/fonts/ArialUnicode.ttf.import
 # Derived art and its manifest are committed; tools/prepare_scene_art.py rebuilds both.
 assets/source_art/scene_pack_20261014/
 
+# Debug/benchmark scratch files
+.dbg/
+debug-*.md
+
 # Exported builds
 builds/
 exports/

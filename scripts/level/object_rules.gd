@@ -285,6 +285,14 @@ static func validate_record(data: LevelData, record: Dictionary, ignore_id := ""
 static func validate_all(data: LevelData) -> PackedStringArray:
 	var errors := PackedStringArray()
 	var ids := {}
+	# ResourceLoader's cache is weak. Generated scenes embed their own definitions,
+	# so repeatedly loading a definition during pairwise checks can reparse its
+	# .tres file each time. Retain each definition for this validation pass only.
+	var definitions := {}
+	for record in data.objects:
+		var path := str(record.get("definition", ""))
+		if not definitions.has(path):
+			definitions[path] = definition(record)
 	for record in data.objects:
 		var id: String = record.get("id", "")
 		if id.is_empty() or ids.has(id):
