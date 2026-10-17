@@ -53,6 +53,7 @@ func _ready() -> void:
 	var limbs := LimbBag.new()
 	limbs.name = "LimbBag"
 	add_child(limbs)
+	limbs.stock_spares()
 	parts = PartLoadout.new()
 	parts.name = "PartLoadout"
 	add_child(parts)
@@ -152,9 +153,6 @@ func _update_horizontal_velocity(delta: float) -> void:
 
 func _part_tail_sets_speed() -> bool:
 	if parts == null:
-		return false
-	var bag := get_node_or_null("LimbBag") as LimbBag
-	if bag != null and not bag.equipped_lower.is_empty():
 		return false
 	var lower_id := parts.current_lower().id
 	return lower_id == "water_snake" or lower_id == "fish_tail"

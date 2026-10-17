@@ -67,6 +67,7 @@ func _ready() -> void:
 	_setup_player()
 	_setup_camera()
 	_setup_ui(requested)
+	_setup_bag()
 	if testing:
 		run_physics_checks.call_deferred()
 
@@ -130,7 +131,7 @@ func _setup_ui(path: String) -> void:
 	label.position = Vector2(18, 18)
 	label.text = "地形编辑器试玩 · " + path.get_file().get_basename() \
 		+ "\nWASD 移动　Space 跳跃 / 起飞　E 开宝箱或攀爬　G 推、砸、挖　J 攻击　R 回到出生点" \
-		+ "\nZ 切换上肢　X 切换下肢　T 开关突破"
+		+ "\nZ 切换上肢　X 切换下肢　T 开关突破　Tab 打开背包，拖到骨框上替换"
 	label.add_theme_font_override("font", runtime_font())
 	label.add_theme_font_size_override("font_size", 18)
 	layer.add_child(label)
@@ -153,6 +154,12 @@ func _setup_ui(path: String) -> void:
 	feedback_label.position = Vector2(18, 182)
 	feedback_label.add_theme_font_override("font", runtime_font())
 	layer.add_child(feedback_label)
+
+func _setup_bag() -> void:
+	var menu := (load("res://scenes/stitch_menu.tscn") as PackedScene).instantiate()
+	menu.name = "StitchMenu"
+	add_child(menu)
+
 
 func _connect_props() -> void:
 	for node in builder.generated.get_children():
@@ -208,16 +215,16 @@ func _nearest_prop(for_damage := false) -> GameplayProp:
 		var distance := player.global_position.distance_to(point)
 		if distance >= closest:
 			continue
-		# A nearby chest behind a solid wall cannot be used through that wall.
-		var query := PhysicsRayQueryParameters3D.create(player.global_position,
-			point, 1, [player.get_rid()])
+		# 从躯干射向交互体中心。贴地的最近点会先打到地块顶面，宝箱和岩石就永远够不着。
+		var origin := player.global_position + Vector3.UP * 0.85
+		var center := area.global_position
+		var query := PhysicsRayQueryParameters3D.create(origin, center, 1, [player.get_rid()])
 		var hit := get_world_3d().direct_space_state.intersect_ray(query)
 		if not hit.is_empty() and not node.is_ancestor_of(hit["collider"]):
-			# Wall attachments use their host's collision.
-			var normal: Vector3 = node.global_basis.z.normalized()
-			if node.definition.carrier != PlaceableDefinition.Carrier.WALL \
-					or Vector3(hit["position"]).distance_to(point) > 0.12 \
-					or (player.global_position - node.global_position).dot(normal) < 0:
+			var hit_position := Vector3(hit["position"])
+			var remaining := hit_position.distance_to(center)
+			# 抓点没有自己的实体碰撞，射线会停在它所贴的侧壁上。
+			if remaining > 0.25:
 				continue
 		closest = distance
 		nearest = node

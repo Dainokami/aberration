@@ -570,35 +570,46 @@ func aim_attack(world_offset: Vector3) -> void:
 		return
 	flat = flat.normalized()
 	var axes := _planar_axes()
-	_attack_aim = atan2(axes[1].dot(flat), axes[0].dot(flat))
+	var side := axes[0].dot(flat)
+	var depth := axes[1].dot(flat)
+	# 画面上方为 0，向右为正、向左为负。目标在身后时不要用 180°，否则左手边的挥击会打反。
+	var aim := atan2(side, depth)
+	if absf(aim) > PI * 0.5:
+		aim = clampf(side, -1.0, 1.0) * PI * 0.5
+	_attack_aim = aim
 
 
 func _animate_attack() -> void:
 	if _attack_time <= 0.0:
 		return
-	var progress := 1.0 - (_attack_time / 0.32)
-	var strike := sin(clampf(progress, 0.0, 1.0) * PI)
-	var swing := deg_to_rad(-78.0) * strike + _attack_aim * 0.45 * strike
+	var progress := clampf(1.0 - (_attack_time / 0.32), 0.0, 1.0)
+	var strike := sin(progress * PI)
+	# 峰值跟着目标方向，并始终带一段下劈，正前方也不会停着不动。
+	var aim_term := _attack_aim * strike
+	var chop := deg_to_rad(42.0) * strike
+	var sweep := aim_term - chop
 	match _attack_channel:
 		&"head":
-			_offset_bone_position("head", Vector3(0.0, 0.0, 0.22 * strike))
+			_offset_bone_position("head", Vector3(aim_term * 0.15, 0.0, 0.18 * strike))
 		&"anim_arm":
-			_set_bone_rotation("anim_arm_upper", swing)
-			_offset_bone_rotation("anim_arm_fore", swing * 0.55)
+			_set_bone_rotation("anim_arm_upper", sweep)
+			_offset_bone_rotation("anim_arm_fore", strike * 0.5)
 		&"hop_arm":
-			_set_bone_rotation("hop_arm", swing)
+			_set_bone_rotation("hop_arm", sweep)
 		&"crawl":
-			_set_bone_rotation("crawl_left", swing)
-			_set_bone_rotation("crawl_right", -swing)
+			# 两只触手一起偏向目标，再向外张开，不要把目标方向左右抵消。
+			_set_bone_rotation("crawl_left", aim_term - chop * 0.85)
+			_set_bone_rotation("crawl_right", aim_term + chop * 0.85)
 		&"wings":
-			_set_bone_rotation("left_wing", -swing)
-			_set_bone_rotation("right_wing", swing)
+			_set_bone_rotation("left_wing", aim_term * 0.65 - chop)
+			_set_bone_rotation("right_wing", aim_term * 0.65 + chop)
 		&"scythe":
-			_set_bone_rotation("anim_scythe_grip", swing)
+			_set_bone_rotation("anim_scythe_grip", sweep)
+			_offset_bone_rotation("anim_scythe_blade", strike * 0.35)
 		&"left_arm":
-			_set_bone_rotation("left_arm", deg_to_rad(-85.0) * strike)
+			_set_bone_rotation("left_arm", sweep)
 		_:
-			_set_bone_rotation("right_arm", deg_to_rad(85.0) * strike)
+			_set_bone_rotation("right_arm", sweep)
 
 
 func _carrying_scythe() -> bool:

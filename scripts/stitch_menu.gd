@@ -239,8 +239,8 @@ func _refresh_items() -> void:
 		_show_bag_slot(slot)
 	for slot in _equip_slots:
 		var slot_name := str(slot.get_meta("equip_slot"))
-		var limb_id := _bag.equipped_upper if slot_name == "upper" else _bag.equipped_lower
-		_show_limb(slot, limb_id, {"kind": "equip", "slot": slot_name, "id": limb_id})
+		var equipped := _bag.equipped_upper if slot_name == "upper" else _bag.equipped_lower
+		_show_limb(slot, _worn_id(slot_name), {"kind": "equip", "slot": slot_name, "id": equipped})
 	for index in _bag.DISH_COUNT:
 		var dish: Dictionary = _bag.dishes[index]
 		_show_limb(_dish_sides[index * 2], str(dish["a"]), {"kind": "dish", "dish": index, "side": "a", "id": dish["a"]})
@@ -249,9 +249,20 @@ func _refresh_items() -> void:
 
 
 func _attribute_text() -> String:
-	return "上肢  %s\n下肢  %s\n\n把背包里的肢体拖到骨框上装配。\n右键可以回收。" % [
-		_limb_line(_bag.equipped_upper), _limb_line(_bag.equipped_lower)
+	return "上肢  %s\n下肢  %s\n\n把背包里的肢体拖到骨框上替换。\nZ / X 仍可直接切换。右键回收背包里装上的肢体。" % [
+		_limb_line(_worn_id("upper")), _limb_line(_worn_id("lower"))
 	]
+
+
+func _worn_id(slot_name: String) -> String:
+	var equipped := _bag.equipped_upper if slot_name == "upper" else _bag.equipped_lower
+	if not equipped.is_empty():
+		return equipped
+	var player := get_parent().get_node_or_null("Player") as PlayerController
+	if player == null or player.parts == null:
+		return ""
+	var part := player.parts.current_upper() if slot_name == "upper" else player.parts.current_lower()
+	return part.id if part != null else ""
 
 
 func _limb_line(limb_id: String) -> String:

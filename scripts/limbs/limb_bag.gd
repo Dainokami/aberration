@@ -74,6 +74,24 @@ func report(message: String) -> void:
 	note.emit(message)
 
 
+func stock_spares() -> void:
+	# 身上默认穿着猩猩臂和狼腿。恶魔犬腿仍用 X 切换。留下空格，培养和拾取才放得进去。
+	var skip := PackedStringArray(["gorilla_arm", "wolf_leg", "demon_dog_leg"])
+	for part in PartCatalog.uppers():
+		_stock_one(part.id, skip)
+	for part in PartCatalog.lowers():
+		_stock_one(part.id, skip)
+
+
+func _stock_one(limb_id: String, skip: PackedStringArray) -> void:
+	if skip.has(limb_id) or slots.has(limb_id):
+		return
+	var index := _first_empty()
+	if index < 0:
+		return
+	slots[index] = limb_id
+
+
 func try_add(limb_id: String) -> bool:
 	var index := _first_empty()
 	if index < 0:

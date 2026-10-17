@@ -345,10 +345,12 @@ func try_attack() -> void:
 	_attack_cooldown = PartDefinition.cooldown_for(upper.attack_rate)
 	_swing = 0.24
 	var target := _lock_attack_target(player)
+	var rig := player.get_node_or_null("ArtRoot/PartSockets") as ModularCharacterRig
 	if target == null:
+		if rig:
+			rig.aim_attack(Vector3.ZERO)
 		note.emit("附近没有可攻击的对象")
 	else:
-		var rig := player.get_node_or_null("ArtRoot/PartSockets") as ModularCharacterRig
 		if rig:
 			rig.aim_attack(target.global_position - player.global_position)
 		target.take_hit(power)
