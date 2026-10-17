@@ -22,6 +22,18 @@ static func tags_at(point: Vector3) -> PackedStringArray:
 		found.append("hard")
 	return found
 
+static func water_surface_y(point: Vector3) -> float:
+	var tree := Engine.get_main_loop() as SceneTree
+	var highest := -INF
+	if tree == null:
+		return highest
+	for zone in tree.get_nodes_in_group("surface_zone"):
+		if zone is SurfaceZone and zone.tags.has("water_surface"):
+			var sample := Vector3(point.x, zone.global_position.y, point.z)
+			if zone.covers(sample):
+				highest = maxf(highest, zone.global_position.y)
+	return highest
+
 
 static func nearest(origin: Vector3, radius: float, kinds: PackedStringArray) -> AffordanceProp:
 	var best: AffordanceProp = null

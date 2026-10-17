@@ -1,0 +1,109 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_di24j"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_cmwyg"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_55yes"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x1.png" id="4_jlwe2"]
+
+[sub_resource type="Resource" id="Resource_s2uop"]
+script = ExtResource("3_55yes")
+asset_id = "scene1016_bubbles_1x1"
+display_name = "浮升气泡柱·海洋·1x1"
+category = "浮升气泡柱"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x1.png"
+scene_path = "res://assets/generated/scene1016_bubbles_1x1/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_bubbles_1x1/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("2_cmwyg")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "浮升气泡柱",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "浮升气泡柱·海洋·1x1",
+"ecosystems": ["ocean"],
+"id": "scene1016_bubbles_1x1",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x1.png",
+"image_size_m": [2.0, 2.0],
+"kind": "bubbles",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_1x1.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+},
+"pivot": [0.5, 0.9921875],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "fushengqipaozhu_1x1.png",
+"source_sha256": "a8082fee58bfe4ca3a947a27d73645c8cbf471cee4989f6d52cfb6e9fc4f10c7",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 17.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "bubbles"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true
+mechanism_parameters = {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l5bbn"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_jlwe2")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_8chda"]
+_surfaces = [{
+"aabb": AABB(-1, -0.014487248, -0.7433599, 2, 1.8543677, 0.74921316),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 52, 129, 235, 63, 214, 76, 62, 191, 0, 0, 128, 191, 236, 91, 109, 188, 111, 204, 191, 59, 0, 0, 128, 63, 236, 91, 109, 188, 111, 204, 191, 59, 0, 0, 128, 63, 52, 129, 235, 63, 214, 76, 62, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wn021"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8sdbx"]
+size = Vector3(2, 2, 2)
+
+[node name="scene1016_bubbles_1x1" type="Node3D" unique_id=315283436]
+script = ExtResource("1_di24j")
+definition = SubResource("Resource_s2uop")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1202524548]
+material_override = SubResource("StandardMaterial3D_l5bbn")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_8chda")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=1565437742]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=1236659789]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_wn021")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1307780946]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1694229190]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_8sdbx")

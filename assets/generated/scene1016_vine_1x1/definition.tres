@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_j3xbd"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_pl5vp"]
+
+[resource]
+script = ExtResource("2_pl5vp")
+asset_id = "scene1016_vine_1x1"
+display_name = "悬崖垂藤·草原/岩石·1x1"
+category = "悬崖垂藤"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_vine_1x1.png"
+scene_path = "res://assets/generated/scene1016_vine_1x1/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_vine_1x1/thumbnail.png"
+carrier = 5
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.99609375)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 0.16)
+fade_when_occluding = false
+profile = ExtResource("1_j3xbd")
+generator_version = 4
+behaviour = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "悬崖垂藤",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "悬崖垂藤·草原/岩石·1x1",
+"ecosystems": ["grass", "rock"],
+"id": "scene1016_vine_1x1",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_vine_1x1.png",
+"image_size_m": [2.0, 2.0],
+"kind": "vine",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_vine_1x1.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.99609375],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "xuanyachuiteng_1x1.png",
+"source_sha256": "cc63f34648e3209ef7ca59f92cf6a5a52a39c3392a8c6aed479bd5adee67567e",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 13.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "vine"
+ecosystems = PackedStringArray("grass", "rock")

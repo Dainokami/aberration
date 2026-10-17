@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_cr5tk"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_jhxtx"]
+
+[resource]
+script = ExtResource("2_jhxtx")
+asset_id = "scene1016_chest_1541"
+display_name = "遗落宝箱·海洋·1541"
+category = "遗落宝箱"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1541.png"
+scene_path = "res://assets/generated/scene1016_chest_1541/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_chest_1541/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.90234375)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("1_cr5tk")
+generator_version = 4
+behaviour = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "遗落宝箱",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "遗落宝箱·海洋·1541",
+"ecosystems": ["ocean"],
+"id": "scene1016_chest_1541",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1541.png",
+"image_size_m": [2.0, 2.0],
+"kind": "chest",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_chest_1541.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.90234375],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220912_1541_21.png",
+"source_sha256": "889fb7059b41031b71f2a3511181ce42195723b735702e9411f5419569b5ec10",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 21.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "chest"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true

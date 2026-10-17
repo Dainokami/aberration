@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_tuxo2"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_omgl6"]
+
+[resource]
+script = ExtResource("2_omgl6")
+asset_id = "scene1016_remains_1544"
+display_name = "散落遗骸·岩石·1544"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1544.png"
+scene_path = "res://assets/generated/scene1016_remains_1544/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1544/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.68359375)
+volume_size = Vector3(4, 2, 4)
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("1_tuxo2")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·岩石·1544",
+"ecosystems": ["rock"],
+"id": "scene1016_remains_1544",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1544.png",
+"image_size_m": [4.0, 4.0],
+"kind": "remains",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1544.png",
+"original_pixels": [512.0, 512.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.68359375],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220959_1544_21.png",
+"source_sha256": "60185750a29d6c6b09d4624e7c41ab5031b3a0fc94c410536a6bd0f81c989ad9",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0], [2.0, 0.0, 2.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(0, 0, 2), Vector3(2, 0, 2)])
+mechanism = "remains"
+ecosystems = PackedStringArray("rock")

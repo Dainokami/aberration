@@ -9,6 +9,7 @@ var camera: Camera3D
 var spawn_position: Vector3
 var testing := false
 var test_direction := Vector3.ZERO
+var lower_part_id := "demon_dog_leg"
 static var _runtime_font_cache: Font
 var climb_enabled := false
 var jump_requested := false
@@ -144,6 +145,17 @@ func _setup_ui(path: String) -> void:
 	ability.toggled.connect(func(enabled: bool): climb_enabled = enabled)
 	layer.add_child(ability)
 	ability.set_meta("climb_toggle", true)
+	var lower_choice := OptionButton.new()
+	lower_choice.position = Vector2(210, 80)
+	lower_choice.add_theme_font_override("font", runtime_font())
+	for lower in PartCatalog.lowers():
+		lower_choice.add_item(lower.display_name)
+		lower_choice.set_item_metadata(lower_choice.item_count - 1, lower.id)
+		if lower.id == lower_part_id:
+			lower_choice.select(lower_choice.item_count - 1)
+	lower_choice.item_selected.connect(func(index: int):
+		lower_part_id = str(lower_choice.get_item_metadata(index)))
+	layer.add_child(lower_choice)
 	interaction_label = Label.new()
 	interaction_label.position = Vector2(18, 122)
 	interaction_label.add_theme_font_override("font", runtime_font())
@@ -454,14 +466,41 @@ func _physics_process(delta: float) -> void:
 	var direction := (right.normalized() * axis.x + forward.normalized() * axis.y).limit_length()
 	if testing:
 		direction = test_direction
-	player.velocity.x = direction.x * 4.2
-	player.velocity.z = direction.z * 4.2
+	var feet := player.global_position - Vector3.UP * PLAYER_HALF_HEIGHT
+	var block := data.world_to_block(feet + Vector3.UP * 0.04)
+	var cell := Vector2i(block.x, block.z)
+	var water_layer := block.y
+	if not data.is_water_layer(cell, water_layer) and data.is_water_layer(cell, water_layer - 1) \
+			and absf(feet.y - data.surface_y(water_layer - 1)) < 0.2:
+		water_layer -= 1
+	var wet := data.is_water_layer(cell, water_layer)
+	var ecosystem := "ocean" if wet else ObjectRules.ecosystem_at(data, cell, block.y - 1)
+	var underwater := wet and not data.is_surface_exposed(cell, water_layer) \
+		or wet and feet.y < data.surface_y(water_layer) - 0.15
+	var effects := SceneMechanism.effects_at(player.global_position)
+	var speed := TerrainMovementRules.speed(lower_part_id, ecosystem, underwater)
+	if testing and not wet:
+		speed = 4.2
+	player.velocity.x = direction.x * speed * float(effects.speed_multiplier) + effects.drift.x
+	player.velocity.z = direction.z * speed * float(effects.speed_multiplier) + effects.drift.z
 	if player.is_on_floor():
 		player.velocity.y = 10.2 if jump_requested else -0.1
 	else:
 		player.velocity.y -= 20.0 * delta
+	if wet and lower_part_id == "goose_foot":
+		var surface := SceneProbe.water_surface_y(feet)
+		if surface > -INF:
+			player.velocity.y = clampf((surface + PLAYER_HALF_HEIGHT - player.position.y) * 12, -3, 5)
+	elif wet and lower_part_id in ["fish_tail", "water_snake", "octopus_leg"]:
+		player.velocity.y = ((1.0 if Input.is_physical_key_pressed(KEY_SPACE) else 0.0) \
+			- (1.0 if Input.is_physical_key_pressed(KEY_CTRL) else 0.0)) * speed + effects.drift.y
+		player.set_meta("scene_oxygen", minf(100.0, float(player.get_meta(
+			"scene_oxygen", 100.0)) + effects.oxygen * delta))
 	jump_requested = false
 	player.move_and_slide()
+	if player.has_meta("scene_feedback"):
+		_feedback(str(player.get_meta("scene_feedback")))
+		player.remove_meta("scene_feedback")
 	if player.position.y < -4.0:
 		reset_player()
 	if not testing:

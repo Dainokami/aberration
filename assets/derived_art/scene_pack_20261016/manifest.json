@@ -1,0 +1,1816 @@
+{
+  "pack": "scene_pack_20261016",
+  "spec": "畸变_场景机制设计.xlsx",
+  "grid_m": 2,
+  "pixels_per_grid": 256,
+  "entries": [
+    {
+      "id": "scene1016_remains_1534",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220444_1534_21.png",
+      "source_sha256": "11c3fed4dc8bac7f59cb4a10f170cc1c6be6a95843d0004d7d82a233143b12ab",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1534.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1534.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.86328125
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "散落遗骸·海洋·1534",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1535",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220505_1535_21.png",
+      "source_sha256": "142741ca9f62f943df286e224051a28eac39c74cb15e9d028eb598f0a79df8f5",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1535.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1535.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.8125
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "desert"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "散落遗骸·沙漠·1535",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1536",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220526_1536_21.png",
+      "source_sha256": "b68fee38f19f2f467e008ba4f7b3b3e8b0f31a56cfbf1d18a154c83d20ccebf5",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1536.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1536.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.859375
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "散落遗骸·草原·1536",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1537",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220540_1537_21.png",
+      "source_sha256": "6f5070d82d3f2f4e5c8ead47eb90c27f0d24aa6cac0f0ce89c032518ad2e6b4a",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1537.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1537.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.86328125
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "rock"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "散落遗骸·岩石·1537",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_chest_1538",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220600_1538_21.png",
+      "source_sha256": "21c1c70d1ffef5a291fc200bfb1fb93d7dc7c7da24005620bbb320bc4e6e28f2",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_chest_1538.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1538.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.93359375
+      ],
+      "kind": "chest",
+      "category": "遗落宝箱",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "遗落宝箱·草原·1538",
+      "spec_row": 21,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_chest_1539",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220615_1539_21.png",
+      "source_sha256": "2f4071eeba2459806de770a58e3699adcb890a48405464f0a469abbf87aecd2a",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_chest_1539.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1539.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.89453125
+      ],
+      "kind": "chest",
+      "category": "遗落宝箱",
+      "ecosystems": [
+        "desert"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "遗落宝箱·沙漠·1539",
+      "spec_row": 21,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_chest_1540",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220853_1540_21.png",
+      "source_sha256": "2e188df52b36605edb9043427fa2d137800f535b3361b8416fb1cda7d698a44b",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_chest_1540.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1540.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.8984375
+      ],
+      "kind": "chest",
+      "category": "遗落宝箱",
+      "ecosystems": [
+        "rock"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "遗落宝箱·岩石·1540",
+      "spec_row": 21,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_chest_1541",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220912_1541_21.png",
+      "source_sha256": "889fb7059b41031b71f2a3511181ce42195723b735702e9411f5419569b5ec10",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_chest_1541.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1541.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.90234375
+      ],
+      "kind": "chest",
+      "category": "遗落宝箱",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "遗落宝箱·海洋·1541",
+      "spec_row": 21,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1542",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220928_1542_21.png",
+      "source_sha256": "a1a3db580c80be61c6ed7addabbf89f9f217b16638163d78b8f381662f87c87d",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1542.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1542.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.67578125
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "desert"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "散落遗骸·沙漠·1542",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1543",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220943_1543_21.png",
+      "source_sha256": "cd556c7e1a4f54e5d3be117162ef481064da719ba81acf70300314fa0189a4f9",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1543.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1543.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.62890625
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "散落遗骸·草原·1543",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1544",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016220959_1544_21.png",
+      "source_sha256": "60185750a29d6c6b09d4624e7c41ab5031b3a0fc94c410536a6bd0f81c989ad9",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1544.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1544.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.68359375
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "rock"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "散落遗骸·岩石·1544",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1545",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221017_1545_21.png",
+      "source_sha256": "dbba25b6f5a25b87d48d1d75f337c420049dd510419cde43dee39ebc9ede756f",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1545.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1545.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.771484375
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "散落遗骸·海洋·1545",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1546",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221035_1546_21.png",
+      "source_sha256": "e658df2cfe1432c76dbccc6bbb5bf3942e30bb91787b6b2a0a63abd23414341d",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1546.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1546.png",
+      "original_pixels": [
+        512,
+        256
+      ],
+      "output_pixels": [
+        512,
+        256
+      ],
+      "image_size_m": [
+        4.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.9296875
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "rock"
+      ],
+      "layout": [
+        2,
+        1
+      ],
+      "display_name": "散落遗骸·岩石·1546",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1547",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221048_1547_21.png",
+      "source_sha256": "09bc524fdfb8c9243a535caf47f25742a7399a7a267542211b13f64c0a3da999",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1547.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1547.png",
+      "original_pixels": [
+        512,
+        256
+      ],
+      "output_pixels": [
+        512,
+        256
+      ],
+      "image_size_m": [
+        4.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.9609375
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        2,
+        1
+      ],
+      "display_name": "散落遗骸·海洋·1547",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1548",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221100_1548_21.png",
+      "source_sha256": "9d27be44291ddc2f9b585345271d37e71428100fadef610e8b5a5a179925eaa8",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1548.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1548.png",
+      "original_pixels": [
+        512,
+        256
+      ],
+      "output_pixels": [
+        512,
+        256
+      ],
+      "image_size_m": [
+        4.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.94921875
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "desert"
+      ],
+      "layout": [
+        2,
+        1
+      ],
+      "display_name": "散落遗骸·沙漠·1548",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_remains_1549",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221113_1549_21.png",
+      "source_sha256": "202065a3a7961abedd6ed1a09e097cf09ba120267318828f1fc05db0b614bb54",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1549.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1549.png",
+      "original_pixels": [
+        512,
+        256
+      ],
+      "output_pixels": [
+        512,
+        256
+      ],
+      "image_size_m": [
+        4.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.94140625
+      ],
+      "kind": "remains",
+      "category": "散落遗骸",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        2,
+        1
+      ],
+      "display_name": "散落遗骸·草原·1549",
+      "spec_row": 18,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_thorns_1550",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221126_1550_21.png",
+      "source_sha256": "a9e68a5e834aa873482fbd8f4e1d16de4ec5136c03dd194e9e220c624ce3aa99",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_thorns_1550.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1550.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.94140625
+      ],
+      "kind": "thorns",
+      "category": "刺棘丛",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "刺棘丛·草原·1550",
+      "spec_row": 11,
+      "view": "用户图三",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {
+        "speed_multiplier": 0.5,
+        "damage_per_second": 1.0
+      }
+    },
+    {
+      "id": "scene1016_thorns_1551",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221138_1551_21.png",
+      "source_sha256": "c03563df9e5c425426bde9749faad7a66f54580c459e89aea761b04677ea4ce3",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_thorns_1551.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1551.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.94140625
+      ],
+      "kind": "thorns",
+      "category": "刺棘丛",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "刺棘丛·草原·1551",
+      "spec_row": 11,
+      "view": "用户图一",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {
+        "speed_multiplier": 0.5,
+        "damage_per_second": 1.0
+      }
+    },
+    {
+      "id": "scene1016_thorns_1552",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221152_1552_21.png",
+      "source_sha256": "e4633e8357b11b29ca6ab6e03a04281058b0227e134e6ead4c7da96008f81138",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_thorns_1552.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1552.png",
+      "original_pixels": [
+        768,
+        256
+      ],
+      "output_pixels": [
+        768,
+        256
+      ],
+      "image_size_m": [
+        6.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.9453125
+      ],
+      "kind": "thorns",
+      "category": "刺棘丛",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        3,
+        1
+      ],
+      "display_name": "刺棘丛·草原·1552",
+      "spec_row": 11,
+      "view": "用户图二",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {
+        "speed_multiplier": 0.5,
+        "damage_per_second": 1.0
+      }
+    },
+    {
+      "id": "scene1016_fruit_tree_1553",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221206_1553_21.png",
+      "source_sha256": "0ac64b6bf12cc74a583db7c3144bb7aff5d1f9483a7ccb471c96fc6b27bb56c8",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_fruit_tree_1553.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1553.png",
+      "original_pixels": [
+        384,
+        384
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.857421875
+      ],
+      "kind": "fruit_tree",
+      "category": "垂蔓果树",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "垂蔓果树·草原·1553",
+      "spec_row": 12,
+      "view": "用户图四，4格视图",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": true,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_fruit_tree_1554",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221219_1554_21.png",
+      "source_sha256": "a7d90bf6ea21ffbaa3ddc46459128b08372e53c0f29de0fac03ab8e7092f9359",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_fruit_tree_1554.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1554.png",
+      "original_pixels": [
+        384,
+        384
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.966796875
+      ],
+      "kind": "fruit_tree",
+      "category": "垂蔓果树",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "垂蔓果树·草原·1554",
+      "spec_row": 12,
+      "view": "用户图六，3格视图",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": true,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_fruit_tree_1555",
+      "source_directory": "场景素材",
+      "source_file": "微信图片_20261016221234_1555_21.png",
+      "source_sha256": "93526c579fff9c8a9f997837cfe3f9a43a2fbbc1b031c0e14ee69e6f0f6f2239",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_fruit_tree_1555.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1555.png",
+      "original_pixels": [
+        384,
+        384
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.93359375
+      ],
+      "kind": "fruit_tree",
+      "category": "垂蔓果树",
+      "ecosystems": [
+        "grass"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "垂蔓果树·草原·1555",
+      "spec_row": 12,
+      "view": "用户图五，4格视图",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": true,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_bubbles_1x1",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "fushengqipaozhu_1x1.png",
+      "source_sha256": "a8082fee58bfe4ca3a947a27d73645c8cbf471cee4989f6d52cfb6e9fc4f10c7",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_1x1.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x1.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.9921875
+      ],
+      "kind": "bubbles",
+      "category": "浮升气泡柱",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "浮升气泡柱·海洋·1x1",
+      "spec_row": 17,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2.0,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {
+        "rise_speed_mps": 1.5,
+        "oxygen_per_second": 10.0
+      }
+    },
+    {
+      "id": "scene1016_bubbles_1x3",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "fushengqipaozhu_1x3.png",
+      "source_sha256": "c10719d72b3405dea83f27fcea001bf989b6a2549ccfd831a4554e1a9a1a65cf",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_1x3.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x3.png",
+      "original_pixels": [
+        256,
+        768
+      ],
+      "output_pixels": [
+        256,
+        768
+      ],
+      "image_size_m": [
+        2.0,
+        6.0
+      ],
+      "pivot": [
+        0.5,
+        0.9986979166666666
+      ],
+      "kind": "bubbles",
+      "category": "浮升气泡柱",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        1,
+        3
+      ],
+      "display_name": "浮升气泡柱·海洋·1x3",
+      "spec_row": 17,
+      "view": "竖向画布；地面布局1×3",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          4
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        6.0,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {
+        "rise_speed_mps": 1.5,
+        "oxygen_per_second": 10.0
+      }
+    },
+    {
+      "id": "scene1016_bubbles_2x2",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "fushengqipaozhu_2x2.png",
+      "source_sha256": "4e88c8c758028e39dbf327cd88ea202dc1acb00935984c8c9d7f2b88d24ec83a",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_2x2.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_2x2.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "kind": "bubbles",
+      "category": "浮升气泡柱",
+      "ecosystems": [
+        "ocean"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "浮升气泡柱·海洋·2x2",
+      "spec_row": 17,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        4.0,
+        2
+      ],
+      "requires_seabed": true,
+      "solid_collision": false,
+      "parameters": {
+        "rise_speed_mps": 1.5,
+        "oxygen_per_second": 10.0
+      }
+    },
+    {
+      "id": "scene1016_quicksand_1x1",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "juanxiliusha_1x1.png",
+      "source_sha256": "d41937fda2faa181e06b2aa64d7c53781da2bc881097d7b536b1d1aa8824574b",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_quicksand_1x1.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_1x1.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "kind": "quicksand",
+      "category": "卷吸流沙",
+      "ecosystems": [
+        "desert"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "卷吸流沙·沙漠·1x1",
+      "spec_row": 10,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {
+        "pull_speed_mps": 1.0
+      }
+    },
+    {
+      "id": "scene1016_quicksand_2x2",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "juanxiliusha_2x2.png",
+      "source_sha256": "eb7412e01725e62fcf6158cfe548783f064dcc918b024f4341dfa92a6e0e7e1e",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_quicksand_2x2.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_2x2.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.982421875
+      ],
+      "kind": "quicksand",
+      "category": "卷吸流沙",
+      "ecosystems": [
+        "desert"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "卷吸流沙·沙漠·2x2",
+      "spec_row": 10,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {
+        "pull_speed_mps": 1.0
+      }
+    },
+    {
+      "id": "scene1016_vine_1x1",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "xuanyachuiteng_1x1.png",
+      "source_sha256": "cc63f34648e3209ef7ca59f92cf6a5a52a39c3392a8c6aed479bd5adee67567e",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_vine_1x1.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_vine_1x1.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.99609375
+      ],
+      "kind": "vine",
+      "category": "悬崖垂藤",
+      "ecosystems": [
+        "grass",
+        "rock"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "悬崖垂藤·草原/岩石·1x1",
+      "spec_row": 13,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_resource_1x1",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "ziranziyuancu_1x1.png",
+      "source_sha256": "d1a4de1a0d43ec62c8342335ca30d7190436e1d4b23e3ce82e4af609d7c66052",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_resource_1x1.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_resource_1x1.png",
+      "original_pixels": [
+        256,
+        256
+      ],
+      "output_pixels": [
+        256,
+        256
+      ],
+      "image_size_m": [
+        2.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "kind": "resource",
+      "category": "自然资源簇",
+      "ecosystems": [
+        "rock",
+        "ocean"
+      ],
+      "layout": [
+        1,
+        1
+      ],
+      "display_name": "自然资源簇·岩石/海洋·1x1",
+      "spec_row": 19,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_resource_1x3",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "ziranziyuancu_1x3.png",
+      "source_sha256": "ac8db60fb5146aa44b2f6ea7e1e4a15f924395cfa0e13a1422cc317d5f39d919",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_resource_1x3.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_resource_1x3.png",
+      "original_pixels": [
+        768,
+        256
+      ],
+      "output_pixels": [
+        768,
+        256
+      ],
+      "image_size_m": [
+        6.0,
+        2.0
+      ],
+      "pivot": [
+        0.5,
+        0.85546875
+      ],
+      "kind": "resource",
+      "category": "自然资源簇",
+      "ecosystems": [
+        "rock",
+        "ocean"
+      ],
+      "layout": [
+        1,
+        3
+      ],
+      "display_name": "自然资源簇·岩石/海洋·1x3",
+      "spec_row": 19,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          4
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    },
+    {
+      "id": "scene1016_resource_2x2",
+      "source_directory": "场景物件美术资产_叶子",
+      "source_file": "ziranziyuancu_2x2.png",
+      "source_sha256": "2287dfb9088ca50212e853fb1ed9d7291099c04812aaf3d57af85de449f1cb31",
+      "original": "res://assets/source_art/scene_pack_20261016/scene1016_resource_2x2.png",
+      "image": "res://assets/derived_art/scene_pack_20261016/scene1016_resource_2x2.png",
+      "original_pixels": [
+        512,
+        512
+      ],
+      "output_pixels": [
+        512,
+        512
+      ],
+      "image_size_m": [
+        4.0,
+        4.0
+      ],
+      "pivot": [
+        0.5,
+        0.984375
+      ],
+      "kind": "resource",
+      "category": "自然资源簇",
+      "ecosystems": [
+        "rock",
+        "ocean"
+      ],
+      "layout": [
+        2,
+        2
+      ],
+      "display_name": "自然资源簇·岩石/海洋·2x2",
+      "spec_row": 19,
+      "view": "",
+      "spatial_cells_m": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "cell_size_m": [
+        2,
+        2,
+        2
+      ],
+      "requires_seabed": false,
+      "solid_collision": false,
+      "parameters": {}
+    }
+  ],
+  "parameter_note": "减速、伤害、吸附、氧气恢复数值在原表未量化，使用可调默认值。"
+}

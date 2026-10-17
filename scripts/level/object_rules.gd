@@ -101,19 +101,32 @@ static func support_error(data: LevelData, record: Dictionary) -> String:
 	var kind := str(record.get("anchor_kind", "top"))
 	var cell: Vector2i = record.get("anchor_cell", data.world_to_cell(position))
 	var layer := int(record.get("anchor_layer", data.top_layer(cell)))
+	if d == null:
+		return "物件定义缺失"
+	if not d.ecosystems.is_empty():
+		var ecosystem := ecosystem_at(data, cell, layer)
+		if ecosystem not in d.ecosystems:
+			return "此物件仅适用于：" + "、".join(d.ecosystems)
+	if d.requires_seabed and (not data.is_solid_layer(cell, layer) \
+			or not data.is_water_layer(cell, layer + 1)):
+		return "此物件必须放在海洋中的真实海底地形上"
 	if d.carrier == PlaceableDefinition.Carrier.WALL and kind not in ["wall", "object_wall"]:
 		return "墙面附件必须放在外露侧壁"
 	if d.carrier != PlaceableDefinition.Carrier.WALL and kind in ["wall", "object_wall"]:
 		return "此物件需要顶面支撑"
 	if kind == "top":
-		if cell != data.world_to_cell(position) or not data.layer_exists(cell, layer) \
+		if cell != data.world_to_cell(position) or not data.is_solid_layer(cell, layer) \
 				or data.stair_at(cell, layer) >= 0:
 			return "物件落地点必须是普通地块"
 		if absf(position.y - data.surface_y(layer)) > 0.02:
 			return "物件悬空或埋入地面，请移动到有效地块"
 		for covered in covered_cells(data, record):
-			if not data.layer_exists(covered, layer) or data.stair_at(covered, layer) >= 0:
+			if not data.is_solid_layer(covered, layer) or data.stair_at(covered, layer) >= 0:
 				return "碰撞占地越界、跨高差、跨阶梯或缺少地面支撑"
+			if not d.ecosystems.is_empty() and ecosystem_at(data, covered, layer) not in d.ecosystems:
+				return "物件占地跨越不适用的生态"
+			if d.requires_seabed and not data.is_water_layer(covered, layer + 1):
+				return "气泡占地必须全部位于海洋内"
 	elif kind == "wall":
 		var direction := int(record.get("wall_direction", -1))
 		if direction < 0 or direction > 3 or not data.layer_exists(cell, layer):
@@ -265,6 +278,26 @@ static func bounds(data: LevelData, record: Dictionary) -> Rect2:
 	return Rect2(origin - size * 0.5, size)
 
 static func covered_cells(data: LevelData, record: Dictionary) -> Array[Vector2i]:
+	var d := definition(record)
+	if d != null and not d.spatial_cells.is_empty():
+		var result: Array[Vector2i] = []
+		var transform := transform_of(record)
+		for offset in d.spatial_cells:
+			var corners: Array[Vector3] = []
+			for x in [-0.499, 0.499]:
+				for z in [-0.499, 0.499]:
+					corners.append(transform * (offset + Vector3(x * d.cell_size.x, 0, z * d.cell_size.z)))
+			var first := Vector2i(999999, 999999)
+			var last := Vector2i(-999999, -999999)
+			for corner in corners:
+				first = first.min(data.world_to_cell(corner))
+				last = last.max(data.world_to_cell(corner))
+			for y in range(first.y, last.y + 1):
+				for x in range(first.x, last.x + 1):
+					var cell := Vector2i(x, y)
+					if cell not in result:
+						result.append(cell)
+		return result
 	var rect := bounds(data, record)
 	var first := data.world_to_cell(Vector3(rect.position.x + 0.001, 0, rect.position.y + 0.001))
 	var last := data.world_to_cell(Vector3(rect.end.x - 0.001, 0, rect.end.y - 0.001))
@@ -272,6 +305,34 @@ static func covered_cells(data: LevelData, record: Dictionary) -> Array[Vector2i
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			result.append(Vector2i(x, y))
+	return result
+
+static func ecosystem_at(data: LevelData, cell: Vector2i, layer: int) -> String:
+	if data.is_water_layer(cell, layer) or data.is_water_layer(cell, layer + 1):
+		return "ocean"
+	var id := data.tile_id(cell, layer)
+	if id == "sand":
+		return "desert"
+	if id in ["rock", "ground_stone"] or "rock" in id:
+		return "rock"
+	return "grass"
+
+static func collision_regions(data: LevelData, record: Dictionary) -> Array[Rect2]:
+	var d := definition(record)
+	var result: Array[Rect2] = []
+	if d == null:
+		return result
+	if d.spatial_cells.is_empty():
+		result.append(bounds(data, record))
+		return result
+	var transform := transform_of(record)
+	var yaw := float(record.get("yaw", 0.0))
+	var scale_value := float(record.get("scale", 1.0))
+	var size := Vector2(absf(cos(yaw)) * d.cell_size.x + absf(sin(yaw)) * d.cell_size.z,
+		absf(sin(yaw)) * d.cell_size.x + absf(cos(yaw)) * d.cell_size.z) * scale_value
+	for offset in d.spatial_cells:
+		var center := transform * offset
+		result.append(Rect2(Vector2(center.x, center.z) - size * 0.5, size))
 	return result
 
 static func validate_record(data: LevelData, record: Dictionary, ignore_id := "",
@@ -303,8 +364,10 @@ static func validate_record(data: LevelData, record: Dictionary, ignore_id := ""
 		var top := bottom + d.collision_size.y * scale_value
 		if data.in_bounds(data.spawn_cell):
 			var spawn := data.world_center(data.spawn_cell, data.spawn_layer)
-			if bottom < spawn.y + 1.7 and top > spawn.y and rect.grow(0.35).has_point(Vector2(spawn.x, spawn.z)):
-				return "阻挡物压住玩家出生点"
+			for region in collision_regions(data, record):
+				if bottom < spawn.y + 1.7 and top > spawn.y \
+						and region.grow(0.35).has_point(Vector2(spawn.x, spawn.z)):
+					return "阻挡物压住玩家出生点"
 		for other in data.objects:
 			if str(other.get("id", "")) == ignore_id:
 				continue
@@ -317,8 +380,14 @@ static func validate_record(data: LevelData, record: Dictionary, ignore_id := ""
 			var other_scale := float(other.get("scale", 1.0))
 			var other_bottom := other_pos.y + other_d.collision_offset.y * other_scale
 			var other_top := other_bottom + other_d.collision_size.y * other_scale
-			if bottom < other_top - 0.01 and top > other_bottom + 0.01 and rect.intersects(bounds(data, other)):
-				return "与已有阻挡物的保守包围框重叠"
+			if bottom < other_top - 0.01 and top > other_bottom + 0.01 \
+					and rect.intersects(bounds(data, other)):
+				if d.spatial_cells.is_empty() and other_d.spatial_cells.is_empty():
+					return "与已有阻挡物的保守包围框重叠"
+				for region in collision_regions(data, record):
+					for other_region in collision_regions(data, other):
+						if region.intersects(other_region):
+							return "与已有阻挡物的保守包围框重叠"
 	return ""
 
 static func validate_all(data: LevelData, check_assets := true) -> PackedStringArray:

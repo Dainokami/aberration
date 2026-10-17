@@ -1,0 +1,136 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_ufsdf"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_3hfyx"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_v1fy1"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_remains_1544.png" id="4_drkmo"]
+
+[sub_resource type="Resource" id="Resource_yjrf1"]
+script = ExtResource("3_v1fy1")
+asset_id = "scene1016_remains_1544"
+display_name = "散落遗骸·岩石·1544"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1544.png"
+scene_path = "res://assets/generated/scene1016_remains_1544/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1544/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.68359375)
+volume_size = Vector3(4, 2, 4)
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("2_3hfyx")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·岩石·1544",
+"ecosystems": ["rock"],
+"id": "scene1016_remains_1544",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1544.png",
+"image_size_m": [4.0, 4.0],
+"kind": "remains",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1544.png",
+"original_pixels": [512.0, 512.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.68359375],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220959_1544_21.png",
+"source_sha256": "60185750a29d6c6b09d4624e7c41ab5031b3a0fc94c410536a6bd0f81c989ad9",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0], [2.0, 0.0, 2.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(0, 0, 2), Vector3(2, 0, 2)])
+mechanism = "remains"
+ecosystems = PackedStringArray("rock")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3tk4l"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_drkmo")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_5rb6m"]
+_surfaces = [{
+"aabb": AABB(-2, -1.173467, -1.0243149, 4, 3.7087355, 1.4984263),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 0, 192, 214, 65, 34, 64, 192, 28, 131, 191, 0, 0, 0, 192, 43, 52, 150, 191, 188, 190, 242, 62, 0, 0, 0, 64, 43, 52, 150, 191, 188, 190, 242, 62, 0, 0, 0, 64, 214, 65, 34, 64, 192, 28, 131, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nb0be"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_u501k"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3385c"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_anawb"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y72di"]
+size = Vector3(4, 2, 4)
+
+[node name="scene1016_remains_1544" type="Node3D" unique_id=944136521]
+script = ExtResource("1_ufsdf")
+definition = SubResource("Resource_yjrf1")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=423491649]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1)
+material_override = SubResource("StandardMaterial3D_3tk4l")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_5rb6m")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=885417734]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=1912220241]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_nb0be")
+
+[node name="SpatialCell_1" type="Area3D" parent="." unique_id=2121059532]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_1" unique_id=1507126670]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+shape = SubResource("BoxShape3D_u501k")
+
+[node name="SpatialCell_2" type="Area3D" parent="." unique_id=1613704453]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_2" unique_id=244310300]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 2)
+shape = SubResource("BoxShape3D_3385c")
+
+[node name="SpatialCell_3" type="Area3D" parent="." unique_id=747999256]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_3" unique_id=1437667787]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 2)
+shape = SubResource("BoxShape3D_anawb")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1733267422]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1116803229]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1)
+shape = SubResource("BoxShape3D_y72di")

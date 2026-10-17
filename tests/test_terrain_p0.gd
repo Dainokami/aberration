@@ -16,6 +16,7 @@ func _run() -> void:
 	var style := load("res://data/terrain_style_profile.tres") as TerrainStyleProfile
 	check(style != null, "style profile loads")
 	_check_topology(style)
+	_check_all_transition_shapes(style)
 	_check_resources()
 	_check_tint_roundtrip()
 	_check_multi_blend(style)
@@ -30,19 +31,101 @@ func _check_topology(style: TerrainStyleProfile) -> void:
 	for bits in 256:
 		canonical[TerrainTopology.normalize_bits(bits)] = true
 	check(canonical.size() == 47, "256 neighbor states normalize to 47 masks")
+	check(not DirAccess.dir_exists_absolute(
+		"res://assets/source_art/terrain_handoff_v02/masks/regular"),
+		"removed mask directory is absent")
+	var cell := Vector2i(7, 11)
 	for bits: int in canonical:
-		check(ResourceLoader.exists(style.regular_mask_path(bits)),
-			"regular mask exists %03d" % bits)
+		var info := TerrainTopology.mask_info(bits, cell, style)
+		var image := TerrainTopology.mask_image(info)
+		var sources_valid := true
+		for part: Dictionary in info["parts"]:
+			sources_valid = sources_valid and str(part["path"]).begins_with(
+				style.irregular_mask_directory + "/") and ResourceLoader.exists(part["path"])
+		check(image != null and image.get_pixel(128, 128).r > 0.99
+			and sources_valid and (bits == 255 or not info["parts"].is_empty()),
+			"irregular sources cover topology %03d and retain its center" % bits)
+		# Connected sides retain coverage; missing sides cut into the cell.
+		var side_centers := [Vector2i(128, 3), Vector2i(252, 128),
+			Vector2i(128, 252), Vector2i(3, 128)]
+		var edges_valid := true
+		for direction in 4:
+			var point: Vector2i = side_centers[direction]
+			var expected := 1.0 if (bits & (1 << direction)) != 0 else 0.0
+			edges_valid = edges_valid and absf(image.get_pixelv(point).r - expected) < 0.01
+		check(edges_valid, "mask respects all four neighbor sides %03d" % bits)
+		check(TerrainTopology.mask_texture(info) == TerrainTopology.mask_texture(info)
+			and TerrainTopology.mask_image(info) == image,
+			"cached masks are reused %03d" % bits)
 	for canonical_bits in [110, 76, 239]:
 		for turns in 4:
 			var rotated := TerrainTopology.rotate_bits_clockwise(canonical_bits, turns)
-			var info := TerrainTopology.mask_info(rotated, Vector2i(7, 11), style, true)
-			check(not info["fallback"] and ResourceLoader.exists(info["path"]),
-				"irregular topology %03d rotation %d" % [canonical_bits, turns])
-	var first := TerrainTopology.mask_info(110, Vector2i(3, 5), style, true)
-	var second := TerrainTopology.mask_info(110, Vector2i(3, 5), style, true)
-	check(first["variant"] == second["variant"] and first["path"] == second["path"],
+			var info := TerrainTopology.mask_info(rotated, cell, style)
+			var source := (load(info["path"]) as Texture2D).get_image()
+			if source.is_compressed():
+				source.decompress()
+			source.clear_mipmaps()
+			source.convert(Image.FORMAT_R8)
+			for turn in turns:
+				source.rotate_90(CLOCKWISE)
+			check(TerrainTopology.mask_image(info).get_data() == source.get_data(),
+				"painted canonical shape is preserved at rotation %03d/%d" % [canonical_bits, turns])
+	var first := TerrainTopology.mask_info(0, Vector2i(3, 5), style)
+	var second := TerrainTopology.mask_info(0, Vector2i(3, 5), style)
+	check(first["variant"] == second["variant"] and first["key"] == second["key"],
 		"irregular variant is stable")
+	check(TerrainTopology.full_texture().get_image().get_pixel(0, 0).r == 1.0,
+		"ordinary tops and slice caps use generated white coverage")
+	var variant_cells := {}
+	for x in 12:
+		var candidate := Vector2i(x, 5)
+		variant_cells[TerrainTopology.stable_variant(candidate, style.irregular_seed)] = candidate
+	var variants := {}
+	for variant: int in variant_cells:
+		var info := TerrainTopology.mask_info(0, variant_cells[variant], style)
+		variants[TerrainTopology.mask_image(info).get_data().hex_encode().sha256_text()] = true
+	check(variants.size() == 3, "composite masks preserve three distinct painted variants")
+
+func _check_all_transition_shapes(style: TerrainStyleProfile) -> void:
+	var shapes := {}
+	for bits in 256:
+		shapes[TerrainTopology.normalize_bits(bits)] = true
+	var changed_cell := Vector2i(1, 1)
+	for bits: int in shapes:
+		var data := LevelData.new()
+		data.setup_blank(Vector2i(3, 3))
+		for y in 3:
+			for x in 3:
+				data.set_layer(Vector2i(x, y), 0, {"tile_id": "sand"})
+		data.set_layer(changed_cell, 0, {"tile_id": "grass"})
+		for i in TerrainTopology.BITS.size():
+			if (bits & TerrainTopology.BITS[i]) != 0:
+				data.set_layer(changed_cell + TerrainTopology.VECTORS[i], 0, {"tile_id": "grass"})
+		var blend := TerrainBlendMapClass.build(data, 0, style)
+		var weights: Image = blend["weight_image"]
+		var indices: Image = blend["index_image"]
+		var grass_page: int = blend["page_by_id"]["grass"]
+		var has_both := false
+		var normalized := true
+		var retains_center := false
+		var size: int = blend["pixels_per_cell"]
+		for y in size:
+			for x in size:
+				var w := weights.get_pixel(size + x, size + y)
+				var pages := indices.get_pixel(size + x, size + y)
+				normalized = normalized and absf(w.r + w.g + w.b + w.a - 1.0) < 0.015
+				has_both = has_both or (w.r > 0.01 and w.g > 0.01)
+				if x == size / 2 and y == size / 2:
+					retains_center = roundi(pages.r * 255) == grass_page and w.r > 0.99
+		check(normalized and retains_center and (has_both or bits == 255),
+			"actual blend has irregular transition and normalized weights %03d" % bits)
+		var dirty: Array[Vector2i] = [changed_cell]
+		data.set_layer(changed_cell, 0, {"tile_id": "sand"})
+		TerrainBlendMapClass.update(blend, data, 0, style, dirty)
+		var rebuilt := TerrainBlendMapClass.build(data, 0, style)
+		check(weights.get_data() == (rebuilt["weight_image"] as Image).get_data()
+			and indices.get_data() == (rebuilt["index_image"] as Image).get_data(),
+			"incremental transition matches rebuild %03d" % bits)
 
 func _check_resources() -> void:
 	for tile_id in ["grass", "rock", "sand", "water"]:

@@ -1,0 +1,101 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_h6vwh"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_5eews"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_yfmmm"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_remains_1537.png" id="4_5hgtj"]
+
+[sub_resource type="Resource" id="Resource_3ftxi"]
+script = ExtResource("3_yfmmm")
+asset_id = "scene1016_remains_1537"
+display_name = "散落遗骸·岩石·1537"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1537.png"
+scene_path = "res://assets/generated/scene1016_remains_1537/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1537/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.86328125)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("2_5eews")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·岩石·1537",
+"ecosystems": ["rock"],
+"id": "scene1016_remains_1537",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1537.png",
+"image_size_m": [2.0, 2.0],
+"kind": "remains",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1537.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.86328125],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220540_1537_21.png",
+"source_sha256": "6f5070d82d3f2f4e5c8ead47eb90c27f0d24aa6cac0f0ce89c032518ad2e6b4a",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "remains"
+ecosystems = PackedStringArray("rock")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_61ry2"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_5hgtj")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_54dks"]
+_surfaces = [{
+"aabb": AABB(-1, -0.25352684, -0.6467817, 2, 1.8543677, 0.74921316),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 91, 232, 204, 63, 124, 147, 37, 191, 0, 0, 128, 191, 69, 206, 129, 190, 153, 199, 209, 61, 0, 0, 128, 63, 69, 206, 129, 190, 153, 199, 209, 61, 0, 0, 128, 63, 91, 232, 204, 63, 124, 147, 37, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l4v8c"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pfn72"]
+size = Vector3(2, 2, 2)
+
+[node name="scene1016_remains_1537" type="Node3D" unique_id=711901156]
+script = ExtResource("1_h6vwh")
+definition = SubResource("Resource_3ftxi")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=260982997]
+material_override = SubResource("StandardMaterial3D_61ry2")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_54dks")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=1367725293]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=1322609652]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_l4v8c")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=502022742]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1096941511]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_pfn72")

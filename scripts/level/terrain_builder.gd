@@ -113,8 +113,11 @@ func _build_chunk(chunk: Vector2i) -> void:
 		for x in range(_build_region.position.x, _build_region.end.x):
 			var cell := Vector2i(x, y)
 			if level_data.cell_exists(cell):
+				for water_layer in level_data.layer_count(cell):
+					if level_data.is_water_layer(cell, water_layer):
+						_build_water(cell, water_layer)
 				for layer in level_data.exposed_layers(cell):
-					if level_data.stair_at(cell, layer) < 0:
+					if level_data.is_solid_layer(cell, layer) and level_data.stair_at(cell, layer) < 0:
 						_build_cell(cell, _surface(layer))
 				_build_bottoms(cell)
 				if build_collision:
@@ -229,11 +232,19 @@ func _build_objects() -> void:
 			(_affordance_nodes[id] as Node).free()
 		_affordance_nodes.erase(id)
 		var object := AssetFactory.instantiate_asset(definition)
+		if object is SceneMechanism:
+			object.level_data = level_data
 		if definition.fade_when_occluding and object.get_script() == null:
 			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
 		object.position = record.get("position", Vector3.ZERO)
 		object.rotation.y = float(record.get("yaw", 0.0))
 		object.scale = Vector3.ONE * float(record.get("scale", 1.0))
+		if object is SceneMechanism and definition.mechanism == "bubbles":
+			var water_cell: Vector2i = record.get("anchor_cell")
+			var water_layer := int(record.get("anchor_layer", 0)) + 1
+			while level_data.is_water_layer(water_cell, water_layer + 1):
+				water_layer += 1
+			object.clip_bubbles(level_data.surface_y(water_layer))
 		object.set_meta("object_id", record.get("id", ""))
 		object.set_meta("support_id", record.get("support_id", ""))
 		object.set_meta("anchor_kind", record.get("anchor_kind", "top"))
@@ -276,6 +287,17 @@ func _bind_affordance(object: Node3D, asset_id: String) -> void:
 		return
 	var kind := ""
 	var health := 1
+	if object is SceneMechanism and object.definition.mechanism == "vine":
+		var marker := AffordanceProp.new()
+		marker.configure_host(object, "climbable", 1)
+		marker.position = object.position
+		marker.rotation = object.rotation
+		marker.ledge_height = object.position.y + object.definition.image_size.y
+		marker.ledge_point = object.position + Vector3.UP * (object.definition.image_size.y + 0.08) \
+			- object.basis.z * 0.6
+		generated.add_child(marker)
+		_affordance_nodes[str(object.get_meta("object_id", ""))] = marker
+		return
 	match asset_id:
 		"demo_rock":
 			kind = "pushable"
@@ -324,7 +346,7 @@ func _prepare_multi_blend_levels() -> void:
 		for x in range(sample_region.position.x, sample_region.end.x):
 			var cell := Vector2i(x, y)
 			for elevation in level_data.exposed_layers(cell):
-				if level_data.stair_at(cell, elevation) >= 0:
+				if not level_data.is_solid_layer(cell, elevation) or level_data.stair_at(cell, elevation) >= 0:
 					continue
 				if not terrain_by_level.has(elevation):
 					terrain_by_level[elevation] = {}
@@ -356,14 +378,14 @@ func _build_cell(cell: Vector2i, surface: LevelData) -> void:
 		var transition_mask_info := {}
 		if lower != null:
 			transition_mask_info = TerrainTopology.mask_info(
-				int(transition["bits"]), cell, style_profile, true)
+				int(transition["bits"]), cell, style_profile)
 			transition_turns = int(transition_mask_info["uv_turns"])
 		var rotation_turns := int(cell_data.get("rotation", 0))
-		var mask_path: String = transition_mask_info.get("path", "")
+		var mask_key: String = transition_mask_info.get("key", "")
 		var lower_id := lower.tile_id if lower != null else ""
 		var key := "%s|%d|%d|%s|%s|%d" % [
 			tile.tile_id, elevation, rotation_turns,
-			lower_id, mask_path, transition_turns]
+			lower_id, mask_key, transition_turns]
 		if not _top_groups.has(key):
 			_top_groups[key] = {
 				"tile": tile,
@@ -390,10 +412,10 @@ func _build_cell(cell: Vector2i, surface: LevelData) -> void:
 			if surface.top_layer(neighbor) == elevation \
 					and surface.overlay_tile_id(neighbor) == overlay_id:
 				bits |= TerrainTopology.BITS[i]
-		var mask := TerrainTopology.mask_info(bits, cell, style_profile, true)
+		var mask := TerrainTopology.mask_info(bits, cell, style_profile)
 		var overlay_key := "%s|%d|%d|%s|%d" % [
 			overlay_id, elevation, int(overlay_record.get("rotation", 0)),
-			mask["path"], int(mask["uv_turns"])]
+			mask["key"], int(mask["uv_turns"])]
 		if not _overlay_groups.has(overlay_key):
 			_overlay_groups[overlay_key] = {
 				"tile": TileRegistry.find(overlay_id),
@@ -407,16 +429,94 @@ func _build_cell(cell: Vector2i, surface: LevelData) -> void:
 	if build_collision:
 		_add_top_collision(top)
 
+func _build_water(cell: Vector2i, layer: int) -> void:
+	var tile := TileRegistry.find(level_data.tile_id(cell, layer))
+	var center := level_data.world_layer_center(cell, layer)
+	var volume := Node3D.new()
+	volume.name = "Ocean_%d_%d_%d" % [cell.x, layer, cell.y]
+	volume.position = center
+	volume.set_meta("terrain_cell", cell)
+	volume.set_meta("terrain_layer", layer)
+	volume.set_meta("water_volume", true)
+	generated.add_child(volume)
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(tile.base_color, 0.22)
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.render_priority = 1
+	var faces := [
+		[Vector3(-1,-1,-1), Vector3(-1,1,-1), Vector3(1,1,-1), Vector3(1,-1,-1)],
+		[Vector3(1,-1,-1), Vector3(1,1,-1), Vector3(1,1,1), Vector3(1,-1,1)],
+		[Vector3(1,-1,1), Vector3(1,1,1), Vector3(-1,1,1), Vector3(-1,-1,1)],
+		[Vector3(-1,-1,1), Vector3(-1,1,1), Vector3(-1,1,-1), Vector3(-1,-1,-1)],
+		[Vector3(-1,-1,1), Vector3(-1,-1,-1), Vector3(1,-1,-1), Vector3(1,-1,1)],
+	]
+	for direction in 5:
+		var neighbor: Vector2i = cell + LevelData.DIRS[direction] if direction < 4 else cell
+		var neighbor_layer := layer if direction < 4 else layer - 1
+		if level_data.layer_exists(neighbor, neighbor_layer):
+			continue
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array(faces[direction])
+		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array([0,1,2,0,2,3])
+		var mesh := ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var visual := MeshInstance3D.new()
+		visual.name = "Underwater_%d" % direction
+		visual.mesh = mesh
+		visual.material_override = material
+		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		volume.add_child(visual)
+	if level_data.is_surface_exposed(cell, layer):
+		var surface := MeshInstance3D.new()
+		surface.name = "WaterSurface"
+		var plane := PlaneMesh.new()
+		plane.size = Vector2.ONE * LevelData.CELL_SIZE
+		surface.mesh = plane
+		surface.position.y = LevelData.ELEVATION_STEP * 0.5 + 0.015
+		var top_material := ShaderMaterial.new()
+		var shader := Shader.new()
+		shader.code = """shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_never;
+uniform sampler2D water_art : source_color, repeat_enable;
+uniform vec2 world_origin;
+uniform vec4 water_tint : source_color;
+varying vec3 world_point;
+void vertex() { world_point = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec4 pixel = texture(water_art, (world_point.xz - world_origin) / 8.0);
+	ALBEDO = mix(pixel.rgb, water_tint.rgb, water_tint.a);
+	ALPHA = 0.42;
+}
+"""
+		top_material.shader = shader
+		top_material.render_priority = 2
+		top_material.set_shader_parameter("water_art", load(tile.texture_path))
+		top_material.set_shader_parameter("world_origin", level_data.grid_world_origin)
+		top_material.set_shader_parameter("water_tint", level_data.terrain_tint(tile.tile_id))
+		surface.material_override = top_material
+		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		volume.add_child(surface)
+	if build_collision and not Engine.is_editor_hint():
+		_mark_surface(center, PackedStringArray(["fluid", "ocean"]),
+			Vector3.ONE * LevelData.CELL_SIZE, layer)
+		if level_data.is_surface_exposed(cell, layer):
+			_mark_surface(level_data.world_center(cell, layer),
+				PackedStringArray(["fluid", "ocean", "water_surface"]),
+				Vector3(LevelData.CELL_SIZE, 0.25, LevelData.CELL_SIZE), layer)
+
 func _build_top_groups() -> void:
 	_build_blended_top_groups()
-	var full_mask := _load_mask(style_profile.regular_mask_path(255))
+	var full_mask := TerrainTopology.full_texture()
 	for group: Dictionary in _top_groups.values():
 		var tile: TileDefinition = group["tile"]
 		var lower: TileDefinition = group["lower"]
 		var mask_info: Dictionary = group["mask_info"]
 		var transition_texture: Texture2D = null
 		if lower != null:
-			transition_texture = _load_mask(mask_info["path"])
+			transition_texture = TerrainTopology.mask_texture(mask_info)
 		var material := TerrainMaterials.top_material(
 			tile,
 			lower,
@@ -494,7 +594,7 @@ func _build_overlays() -> void:
 			tile,
 			level_data.terrain_tint(tile.tile_id),
 			int(group["rotation_turns"]),
-			_load_mask(group["mask"]["path"]), int(group["mask"]["uv_turns"]))
+			TerrainTopology.mask_texture(group["mask"]), int(group["mask"]["uv_turns"]))
 		overlay.set_meta("terrain_cells", group["cells"])
 		overlay.set_meta("terrain_tile", tile.tile_id)
 		overlay.set_meta("terrain_overlay", true)
@@ -659,11 +759,6 @@ func _build_shore_foam() -> void:
 			foam.set_meta("terrain_layer", int(group["water_level"]))
 			generated.add_child(foam)
 
-func _load_mask(path: String) -> Texture2D:
-	if not path.is_empty() and ResourceLoader.exists(path):
-		return load(path) as Texture2D
-	return TerrainTransition.ensure_default_mask()
-
 func _build_stair(stair: Dictionary) -> void:
 	var low: Vector2i = stair["cell"]
 	var direction: int = int(stair["direction"]) % 4
@@ -792,7 +887,7 @@ func _mark_limb_surfaces(bounds: Rect2i) -> void:
 		for x in range(bounds.position.x, bounds.end.x):
 			var cell := Vector2i(x, y)
 			for layer in level_data.exposed_layers(cell):
-				if level_data.stair_at(cell, layer) >= 0:
+				if not level_data.is_solid_layer(cell, layer) or level_data.stair_at(cell, layer) >= 0:
 					continue
 				var center := level_data.world_center(cell, layer)
 				_mark_surface(center + Vector3(0.0, 0.45, 0.0), _surface_tags_for_cell(cell, layer),
@@ -822,7 +917,8 @@ func _surface_tags_for_cell(cell: Vector2i, layer: int) -> PackedStringArray:
 		return PackedStringArray(["fluid"])
 	if surface.tile_id(cell) == TileRegistry.BUILTIN_SAND:
 		return PackedStringArray(["desert", "hard"])
-	return PackedStringArray(["hard"])
+	return PackedStringArray(["hard", "rock"]) if surface.tile_id(cell) == "rock" \
+		else PackedStringArray(["hard", "grass"])
 
 
 func _mark_surface(center: Vector3, zone_tags: PackedStringArray,
@@ -917,7 +1013,7 @@ func _apply_slice_visibility() -> void:
 	for y in level_data.map_size.y:
 		for x in level_data.map_size.x:
 			var cell := level_data.map_origin + Vector2i(x, y)
-			if not level_data.layer_exists(cell, slice_layer_limit):
+			if not level_data.is_solid_layer(cell, slice_layer_limit):
 				continue
 			var stair := level_data.stair_at(cell, slice_layer_limit)
 			var cut_stair := stair >= 0 and int(level_data.stairs[stair].get(
@@ -954,7 +1050,7 @@ func _apply_slice_visibility() -> void:
 			null,
 			null,
 			0,
-			_load_mask(style_profile.regular_mask_path(255)),
+			TerrainTopology.full_texture(),
 			level_data.terrain_tint(tile_id),
 			tile.tint_default(),
 			int(group["turns"]))

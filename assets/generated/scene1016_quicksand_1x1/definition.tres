@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_b8mng"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_8ible"]
+
+[resource]
+script = ExtResource("2_8ible")
+asset_id = "scene1016_quicksand_1x1"
+display_name = "卷吸流沙·沙漠·1x1"
+category = "卷吸流沙"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_1x1.png"
+scene_path = "res://assets/generated/scene1016_quicksand_1x1/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_quicksand_1x1/thumbnail.png"
+carrier = 1
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.5)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("1_b8mng")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "卷吸流沙",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "卷吸流沙·沙漠·1x1",
+"ecosystems": ["desert"],
+"id": "scene1016_quicksand_1x1",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_1x1.png",
+"image_size_m": [2.0, 2.0],
+"kind": "quicksand",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_quicksand_1x1.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {
+"pull_speed_mps": 1.0
+},
+"pivot": [0.5, 1.0],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "juanxiliusha_1x1.png",
+"source_sha256": "d41937fda2faa181e06b2aa64d7c53781da2bc881097d7b536b1d1aa8824574b",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 10.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "quicksand"
+ecosystems = PackedStringArray("desert")
+mechanism_parameters = {
+"pull_speed_mps": 1.0
+}

@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_bfujd"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_ye5we"]
+
+[resource]
+script = ExtResource("2_ye5we")
+asset_id = "scene1016_resource_2x2"
+display_name = "自然资源簇·岩石/海洋·2x2"
+category = "自然资源簇"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_resource_2x2.png"
+scene_path = "res://assets/generated/scene1016_resource_2x2/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_resource_2x2/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.984375)
+volume_size = Vector3(4, 2, 4)
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("1_bfujd")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "自然资源簇",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "自然资源簇·岩石/海洋·2x2",
+"ecosystems": ["rock", "ocean"],
+"id": "scene1016_resource_2x2",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_resource_2x2.png",
+"image_size_m": [4.0, 4.0],
+"kind": "resource",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_resource_2x2.png",
+"original_pixels": [512.0, 512.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.984375],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "ziranziyuancu_2x2.png",
+"source_sha256": "2287dfb9088ca50212e853fb1ed9d7291099c04812aaf3d57af85de449f1cb31",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0], [2.0, 0.0, 2.0]],
+"spec_row": 19.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(0, 0, 2), Vector3(2, 0, 2)])
+mechanism = "resource"
+ecosystems = PackedStringArray("rock", "ocean")

@@ -132,6 +132,13 @@ func _enter_tree() -> void:
 	get_tree().root.gui_focus_changed.connect(_view_focus_changed)
 	if "--test-v2-editor" in OS.get_cmdline_user_args():
 		_run_editor_checks.call_deferred()
+	elif "--test-scene-placement" in OS.get_cmdline_user_args():
+		_run_scene_placement_checks.call_deferred()
+
+func _run_scene_placement_checks() -> void:
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
+	await load("res://tests/editor_scene_mechanism_placement.gd").new().run(self)
 
 func _run_editor_checks() -> void:
 	# Wait for startup imports before tests create/delete temporary resources.
@@ -636,7 +643,7 @@ func _on_tile_selected(index: int) -> void:
 		return
 	var t := tiles[index]
 	tile_name_label.text = "名称：%s（ID: %s）" % [t.display_name, t.tile_id]
-	tile_height_label.text = "固定厚度：2m；贴面逐块堆叠" if t.is_solid() else "附着在指向的外露顶面"
+	tile_height_label.text = "固定厚度：2m；贴面逐块堆叠" if t.is_block() else "附着在指向的外露顶面"
 	_sync_tint_controls()
 	_refresh_brush_preview()
 
@@ -1748,7 +1755,7 @@ func _prepare_ground_blocks(pending: Array[Vector3i]) -> Dictionary:
 		if candidate.stair_at(cell, layer) >= 0:
 			return {"error": "请先移除阶梯，再替换其地块"}
 		# Occupied brush cells remain intact while a stroke extends the empty plane.
-		if (tile == null or tile.is_solid()) and candidate.layer_exists(cell, layer):
+		if (tile == null or tile.is_block()) and candidate.layer_exists(cell, layer):
 			continue
 		var error := candidate.set_layer(cell, layer, {
 			"tile_id": tile_id,
@@ -1879,7 +1886,7 @@ func _update_terrain_target(camera: Camera3D, mouse: Vector2, erase: bool) -> vo
 		hover_point = point
 	else:
 		var tile := selected_tile()
-		var solid := tile == null or tile.is_solid()
+		var solid := tile == null or tile.is_block()
 		var hit := BlockPicker.raycast(data, origin, ray, builder.slice_layer_limit)
 		if not hit.is_empty():
 			hover_block = hit["block"]
@@ -1961,12 +1968,12 @@ func _update_preview(cell: Vector2i) -> void:
 			error_text = "该位置已有地块；右键可擦除"
 		for block in targets:
 			var local := Vector2i(block.x, block.z) - region.position
-			var support_id := id if tile == null or tile.is_solid() else "grass"
-			if valid and tile != null and not tile.is_solid():
+			var support_id := id if tile == null or tile.is_block() else "grass"
+			if valid and tile != null and not tile.is_block():
 				support_id = (check["candidate"] as LevelData).solid_tile_id(
 					Vector2i(block.x, block.z), block.y)
 			fragment.set_layer(local, block.y, {"tile_id": support_id, "rotation": tile_turns})
-			if tile != null and not tile.is_solid():
+			if tile != null and not tile.is_block():
 				fragment.set_layer(local, block.y, {"tile_id": id, "rotation": tile_turns})
 		var display := TerrainBuilder.new()
 		display.level_data = fragment

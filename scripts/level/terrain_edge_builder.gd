@@ -105,9 +105,12 @@ static func _top_polygon(data: LevelData, cell: Vector2i,
 	# Any overlapping neighbor needs a flush join throughout that run.
 	var first := data.top_layer(cell) if layer < 0 else layer
 	var last := first
-	while data.layer_exists(cell, first - 1):
+	if tile != null and tile.is_water():
+		return PackedVector2Array([Vector2(-half,-half), Vector2(half,-half),
+			Vector2(half,half), Vector2(-half,half)])
+	while data.is_solid_layer(cell, first - 1):
 		first -= 1
-	while data.layer_exists(cell, last + 1):
+	while data.is_solid_layer(cell, last + 1):
 		last += 1
 	var solid := TileRegistry.find(data.solid_tile_id(cell, last))
 	var outline := solid if solid != null else tile
@@ -229,8 +232,7 @@ static func foam_groups(data: LevelData, region := Rect2i()) -> Array[Dictionary
 			for water_level in data.exposed_layers(cell):
 				if data.stair_at(cell, water_level) >= 0:
 					continue
-				var water := TileRegistry.find(str(
-					data.get_attachment(cell, "liquid", water_level).get("tile_id", "")))
+				var water := TileRegistry.find(data.tile_id(cell, water_level))
 				if water == null or not water.is_water():
 					continue
 				for direction in 4:
