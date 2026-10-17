@@ -1,0 +1,132 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_84okk"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_r2mc5"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_s7dqo"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1552.png" id="4_4pgvd"]
+
+[sub_resource type="Resource" id="Resource_qcu7i"]
+script = ExtResource("3_s7dqo")
+asset_id = "scene1016_thorns_1552"
+display_name = "刺棘丛·草原·1552"
+category = "刺棘丛"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1552.png"
+scene_path = "res://assets/generated/scene1016_thorns_1552/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_thorns_1552/thumbnail.png"
+image_size = Vector2(6, 2)
+pivot = Vector2(0.5, 0.9453125)
+volume_size = Vector3(6, 2, 2)
+collision_size = Vector3(6, 2, 2)
+collision_offset = Vector3(2, 0, 0)
+profile = ExtResource("2_r2mc5")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "刺棘丛",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "刺棘丛·草原·1552",
+"ecosystems": ["grass"],
+"id": "scene1016_thorns_1552",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1552.png",
+"image_size_m": [6.0, 2.0],
+"kind": "thorns",
+"layout": [3.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_thorns_1552.png",
+"original_pixels": [768.0, 256.0],
+"output_pixels": [768.0, 256.0],
+"parameters": {
+"damage_per_second": 1.0,
+"speed_multiplier": 0.5
+},
+"pivot": [0.5, 0.9453125],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016221152_1552_21.png",
+"source_sha256": "e4633e8357b11b29ca6ab6e03a04281058b0227e134e6ead4c7da96008f81138",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [4.0, 0.0, 0.0]],
+"spec_row": 11.0,
+"view": "用户图二"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(4, 0, 0)])
+mechanism = "thorns"
+ecosystems = PackedStringArray("grass")
+mechanism_parameters = {
+"damage_per_second": 1.0,
+"speed_multiplier": 0.5
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xr8pi"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_4pgvd")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_bk14w"]
+_surfaces = [{
+"aabb": AABB(-3, -0.10141073, -0.70824057, 6, 1.8543677, 0.74921316),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 64, 192, 229, 96, 224, 63, 65, 79, 53, 191, 0, 0, 64, 192, 110, 176, 207, 189, 225, 210, 39, 61, 0, 0, 64, 64, 110, 176, 207, 189, 225, 210, 39, 61, 0, 0, 64, 64, 229, 96, 224, 63, 65, 79, 53, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r1p43"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5wt8b"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_peob2"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_laejp"]
+size = Vector3(6, 2, 2)
+
+[node name="scene1016_thorns_1552" type="Node3D" unique_id=153085666]
+script = ExtResource("1_84okk")
+definition = SubResource("Resource_qcu7i")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=271260211]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+material_override = SubResource("StandardMaterial3D_xr8pi")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_bk14w")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=243332664]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=744927759]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_r1p43")
+
+[node name="SpatialCell_1" type="Area3D" parent="." unique_id=973500669]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_1" unique_id=366793227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+shape = SubResource("BoxShape3D_5wt8b")
+
+[node name="SpatialCell_2" type="Area3D" parent="." unique_id=1233255137]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_2" unique_id=238270912]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
+shape = SubResource("BoxShape3D_peob2")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1255664584]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1471226818]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+shape = SubResource("BoxShape3D_laejp")

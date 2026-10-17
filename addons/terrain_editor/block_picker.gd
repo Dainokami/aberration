@@ -4,7 +4,7 @@ extends RefCounted
 ## Logical voxel picking does not depend on rounded art, collision updates, or
 ## decorative objects. Coordinates and normals are local to TerrainBuilder.
 static func raycast(data: LevelData, origin: Vector3, direction: Vector3,
-		slice_limit := -1) -> Dictionary:
+		slice_limit := -1, skip_water := false) -> Dictionary:
 	var highest := LevelData.MAX_LAYERS - 1 if slice_limit < 0 else slice_limit
 	var corner := data.map_world_origin()
 	var minimum := Vector3(corner.x, 0, corner.y)
@@ -52,7 +52,7 @@ static func raycast(data: LevelData, origin: Vector3, direction: Vector3,
 		var cell := Vector2i(block.x, block.z)
 		if not data.in_bounds(cell) or block.y < 0 or block.y > highest or entry > exit:
 			break
-		if data.layer_exists(cell, block.y):
+		if data.layer_exists(cell, block.y) and (not skip_water or not data.is_water_layer(cell, block.y)):
 			return {"cell": cell, "layer": block.y, "block": block,
 				"normal": normal, "position": origin + direction * entry}
 		var axis := next.min_axis_index()

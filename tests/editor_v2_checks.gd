@@ -178,6 +178,7 @@ func run(plugin: EditorPlugin) -> void:
 	var import_checks = load("res://tests/editor_import_checks.gd").new()
 	import_checks.run(plugin, self)
 	await load("res://tests/editor_scene_import_checks.gd").new().run(plugin, self)
+	load("res://tests/editor_ocean_scene_checks.gd").new().run(plugin, self)
 	if "--capture-import-panel" in OS.get_cmdline_user_args():
 		await import_checks.capture_panel(plugin)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_path))

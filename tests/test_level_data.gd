@@ -92,8 +92,9 @@ func _init() -> void:
 		"tile_id": "water", "rotation": 1}).is_empty()
 		and stacked.layer_count(stack_cell) == 3
 		and stacked.tile_id(stack_cell) == "water"
-		and stacked.solid_tile_id(stack_cell) == "sand",
-		"liquid attaches without consuming a solid layer")
+		and not stacked.has_terrain_volume(stack_cell, 2),
+		"water replaces its selected slot without inventing solid collision")
+	stacked.set_layer(stack_cell, 2, {"tile_id":"sand"})
 	check(stacked.set_layer(stack_cell, 2, {
 		"tile_id": "decal_corruption", "rotation": 3}).is_empty()
 		and stacked.layer_count(stack_cell) == 3

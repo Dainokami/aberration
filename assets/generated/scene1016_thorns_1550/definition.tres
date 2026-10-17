@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_2pwsq"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_i2esu"]
+
+[resource]
+script = ExtResource("2_i2esu")
+asset_id = "scene1016_thorns_1550"
+display_name = "刺棘丛·草原·1550"
+category = "刺棘丛"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1550.png"
+scene_path = "res://assets/generated/scene1016_thorns_1550/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_thorns_1550/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.94140625)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("1_2pwsq")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "刺棘丛",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "刺棘丛·草原·1550",
+"ecosystems": ["grass"],
+"id": "scene1016_thorns_1550",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1550.png",
+"image_size_m": [2.0, 2.0],
+"kind": "thorns",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_thorns_1550.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {
+"damage_per_second": 1.0,
+"speed_multiplier": 0.5
+},
+"pivot": [0.5, 0.94140625],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016221126_1550_21.png",
+"source_sha256": "a9e68a5e834aa873482fbd8f4e1d16de4ec5136c03dd194e9e220c624ce3aa99",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 11.0,
+"view": "用户图三"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "thorns"
+ecosystems = PackedStringArray("grass")
+mechanism_parameters = {
+"damage_per_second": 1.0,
+"speed_multiplier": 0.5
+}

@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_edg7s"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_ow0mj"]
+
+[resource]
+script = ExtResource("2_ow0mj")
+asset_id = "scene1016_bubbles_1x1"
+display_name = "浮升气泡柱·海洋·1x1"
+category = "浮升气泡柱"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x1.png"
+scene_path = "res://assets/generated/scene1016_bubbles_1x1/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_bubbles_1x1/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("1_edg7s")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "浮升气泡柱",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "浮升气泡柱·海洋·1x1",
+"ecosystems": ["ocean"],
+"id": "scene1016_bubbles_1x1",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x1.png",
+"image_size_m": [2.0, 2.0],
+"kind": "bubbles",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_1x1.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+},
+"pivot": [0.5, 0.9921875],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "fushengqipaozhu_1x1.png",
+"source_sha256": "a8082fee58bfe4ca3a947a27d73645c8cbf471cee4989f6d52cfb6e9fc4f10c7",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 17.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "bubbles"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true
+mechanism_parameters = {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+}

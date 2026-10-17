@@ -161,8 +161,13 @@ func _update_snake_crawl(wish: Vector3, delta: float) -> void:
 	# 上下和左右都直接沿输入走。头尾的朝向在画面里转，避免绕远路才调头。
 	var crawling := wish.length_squared() > 0.01
 	var speed := move_speed * assembly.get_speed_multiplier() * assembly.get_drive_multiplier()
-	if _part_tail_sets_speed():
-		speed = parts.speed_on(SceneProbe.tags_at(global_position))
+	if parts != null:
+		var terrain_speed := TerrainMovementRules.speed_for_tags(
+			parts.current_lower().id, SceneProbe.tags_at(global_position))
+		if terrain_speed >= 0:
+			speed = terrain_speed
+		elif _part_tail_sets_speed():
+			speed = parts.speed_on(SceneProbe.tags_at(global_position))
 	var target_velocity := wish * speed if crawling else Vector3.ZERO
 	var acceleration := ground_acceleration * assembly.get_acceleration_multiplier() if crawling else ground_deceleration * assembly.get_deceleration_multiplier()
 	var current := Vector3(velocity.x, 0.0, velocity.z)

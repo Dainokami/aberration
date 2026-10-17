@@ -37,6 +37,13 @@ enum Behaviour { DECORATION, ROCK, BREAKABLE, CHEST, CLIMBABLE }
 @export var source_manifest := ""
 ## Recipes keep source quads/masks editable instead of baking away provenance.
 @export var preparation: Dictionary = {}
+## Explicit cells in metres: size and offset, independent of the painted canvas.
+@export var spatial_cells: Array[Vector3] = []
+@export var cell_size := Vector3(2, 2, 2)
+@export var mechanism := ""
+@export var ecosystems: PackedStringArray = []
+@export var requires_seabed := false
+@export var mechanism_parameters: Dictionary = {}
 
 func validate_asset() -> PackedStringArray:
 	var errors := PackedStringArray()
@@ -69,7 +76,7 @@ func validate_asset() -> PackedStringArray:
 		var value: Vector2 = state_pivots[state]
 		if not value.is_finite() or value.x < 0 or value.x > 1 or value.y < 0 or value.y > 1:
 			errors.append("状态接地点无效：" + str(state))
-	if behaviour == Behaviour.CHEST and (not state_images.has("closed") or
+	if behaviour == Behaviour.CHEST and mechanism != "chest" and (not state_images.has("closed") or
 			not state_images.has("open")):
 		errors.append("宝箱需要关闭和开启两张状态图")
 	if supports_objects and collision != Collision.BOX:
@@ -83,6 +90,16 @@ func behaviour_label() -> String:
 
 func footprint(scale_value: float, yaw: float) -> Vector2:
 	var size := Vector2(collision_size.x, collision_size.z)
+	if not spatial_cells.is_empty():
+		var first := Vector2(INF, INF)
+		var last := Vector2(-INF, -INF)
+		for point in spatial_cells:
+			var offset := Basis(Vector3.UP, yaw) * point
+			var half := Vector2(absf(cos(yaw)) * cell_size.x + absf(sin(yaw)) * cell_size.z,
+				absf(sin(yaw)) * cell_size.x + absf(cos(yaw)) * cell_size.z) * 0.5
+			first = first.min(Vector2(offset.x, offset.z) - half)
+			last = last.max(Vector2(offset.x, offset.z) + half)
+		return (last - first) * scale_value
 	if collision == Collision.CYLINDER:
 		size = Vector2.ONE * maxf(collision_size.x, collision_size.z)
 		return size * scale_value

@@ -1,0 +1,108 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_0i1o4"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_npaet"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_3c2il"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_1x1.png" id="4_at37g"]
+
+[sub_resource type="Resource" id="Resource_jgoci"]
+script = ExtResource("3_3c2il")
+asset_id = "scene1016_quicksand_1x1"
+display_name = "卷吸流沙·沙漠·1x1"
+category = "卷吸流沙"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_1x1.png"
+scene_path = "res://assets/generated/scene1016_quicksand_1x1/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_quicksand_1x1/thumbnail.png"
+carrier = 1
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.5)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("2_npaet")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "卷吸流沙",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "卷吸流沙·沙漠·1x1",
+"ecosystems": ["desert"],
+"id": "scene1016_quicksand_1x1",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_quicksand_1x1.png",
+"image_size_m": [2.0, 2.0],
+"kind": "quicksand",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_quicksand_1x1.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {
+"pull_speed_mps": 1.0
+},
+"pivot": [0.5, 1.0],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "juanxiliusha_1x1.png",
+"source_sha256": "d41937fda2faa181e06b2aa64d7c53781da2bc881097d7b536b1d1aa8824574b",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 10.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "quicksand"
+ecosystems = PackedStringArray("desert")
+mechanism_parameters = {
+"pull_speed_mps": 1.0
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p4wb3"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_at37g")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_hcfy5"]
+_surfaces = [{
+"aabb": AABB(-1, 0.035, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 41, 92, 15, 61, 0, 0, 128, 191, 0, 0, 128, 191, 41, 92, 15, 61, 0, 0, 128, 63, 0, 0, 128, 63, 41, 92, 15, 61, 0, 0, 128, 63, 0, 0, 128, 63, 41, 92, 15, 61, 0, 0, 128, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dstq8"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vf2mg"]
+size = Vector3(2, 2, 2)
+
+[node name="scene1016_quicksand_1x1" type="Node3D" unique_id=729190839]
+script = ExtResource("1_0i1o4")
+definition = SubResource("Resource_jgoci")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=2062166486]
+material_override = SubResource("StandardMaterial3D_p4wb3")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_hcfy5")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=1932404909]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=12285094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_dstq8")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=578697961]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=11652495]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_vf2mg")

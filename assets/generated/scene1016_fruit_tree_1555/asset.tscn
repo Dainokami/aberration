@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_1y804"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_npg7e"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_04ptx"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1555.png" id="4_63cdu"]
+
+[sub_resource type="Resource" id="Resource_dg343"]
+script = ExtResource("3_04ptx")
+asset_id = "scene1016_fruit_tree_1555"
+display_name = "垂蔓果树·草原·1555"
+category = "垂蔓果树"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1555.png"
+scene_path = "res://assets/generated/scene1016_fruit_tree_1555/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_fruit_tree_1555/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.93359375)
+volume_size = Vector3(4, 2, 4)
+collision = 1
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("2_npg7e")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "垂蔓果树",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "垂蔓果树·草原·1555",
+"ecosystems": ["grass"],
+"id": "scene1016_fruit_tree_1555",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1555.png",
+"image_size_m": [4.0, 4.0],
+"kind": "fruit_tree",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_fruit_tree_1555.png",
+"original_pixels": [384.0, 384.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.93359375],
+"requires_seabed": false,
+"solid_collision": true,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016221234_1555_21.png",
+"source_sha256": "93526c579fff9c8a9f997837cfe3f9a43a2fbbc1b031c0e14ee69e6f0f6f2239",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [2.0, 0.0, 2.0]],
+"spec_row": 12.0,
+"view": "用户图五，4格视图"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(2, 0, 2)])
+mechanism = "fruit_tree"
+ecosystems = PackedStringArray("grass")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5lelv"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_63cdu")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_bi1ks"]
+_surfaces = [{
+"aabb": AABB(-2, -0.24628322, -1.3989215, 4, 3.7087355, 1.4984263),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 0, 192, 209, 152, 93, 64, 220, 15, 179, 191, 0, 0, 0, 192, 171, 49, 124, 190, 54, 201, 203, 61, 0, 0, 0, 64, 171, 49, 124, 190, 54, 201, 203, 61, 0, 0, 0, 64, 209, 152, 93, 64, 220, 15, 179, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2mpqf"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3gweh"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5yk6u"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hh8qe"]
+size = Vector3(4, 2, 4)
+
+[node name="scene1016_fruit_tree_1555" type="Node3D" unique_id=72690028]
+script = ExtResource("1_1y804")
+definition = SubResource("Resource_dg343")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=673951711]
+material_override = SubResource("StandardMaterial3D_5lelv")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_bi1ks")
+
+[node name="SpatialCell_0" type="StaticBody3D" parent="." unique_id=1255857964]
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=1168606597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_2mpqf")
+
+[node name="SpatialCell_1" type="StaticBody3D" parent="." unique_id=110529313]
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_1" unique_id=849688219]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+shape = SubResource("BoxShape3D_3gweh")
+
+[node name="SpatialCell_2" type="StaticBody3D" parent="." unique_id=945589517]
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_2" unique_id=365700853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 2)
+shape = SubResource("BoxShape3D_5yk6u")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1883579445]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=934312028]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1)
+shape = SubResource("BoxShape3D_hh8qe")

@@ -1,0 +1,102 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_tyonm"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_48pm3"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_hr1tq"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_remains_1534.png" id="4_pg340"]
+
+[sub_resource type="Resource" id="Resource_023d2"]
+script = ExtResource("3_hr1tq")
+asset_id = "scene1016_remains_1534"
+display_name = "散落遗骸·海洋·1534"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1534.png"
+scene_path = "res://assets/generated/scene1016_remains_1534/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1534/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.86328125)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("2_48pm3")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·海洋·1534",
+"ecosystems": ["ocean"],
+"id": "scene1016_remains_1534",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1534.png",
+"image_size_m": [2.0, 2.0],
+"kind": "remains",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1534.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.86328125],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220444_1534_21.png",
+"source_sha256": "11c3fed4dc8bac7f59cb4a10f170cc1c6be6a95843d0004d7d82a233143b12ab",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "remains"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qkfci"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_pg340")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_0gfct"]
+_surfaces = [{
+"aabb": AABB(-1, -0.25352684, -0.6467817, 2, 1.8543677, 0.74921316),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 91, 232, 204, 63, 124, 147, 37, 191, 0, 0, 128, 191, 69, 206, 129, 190, 153, 199, 209, 61, 0, 0, 128, 63, 69, 206, 129, 190, 153, 199, 209, 61, 0, 0, 128, 63, 91, 232, 204, 63, 124, 147, 37, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5mltd"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_o5kd8"]
+size = Vector3(2, 2, 2)
+
+[node name="scene1016_remains_1534" type="Node3D" unique_id=1828687516]
+script = ExtResource("1_tyonm")
+definition = SubResource("Resource_023d2")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=558930933]
+material_override = SubResource("StandardMaterial3D_qkfci")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_0gfct")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=209662291]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=206199376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_5mltd")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1718061007]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=824151529]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_o5kd8")

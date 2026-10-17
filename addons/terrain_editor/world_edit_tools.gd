@@ -315,6 +315,11 @@ func _show_object_info(index: int) -> void:
 	var placement := "点击外露侧壁放置" if d.carrier == PlaceableDefinition.Carrier.WALL \
 		else "可放地面或承托物件的顶面"
 	object_info.text = "%s · %s\n%s" % [d.display_name, d.behaviour_label(), placement]
+	if not d.mechanism.is_empty():
+		object_info.text += "\n%s · %d 格交互区域" % [d.category, d.spatial_cells.size()]
+		object_info.text += "\n生态：" + " / ".join(d.ecosystems)
+		if d.requires_seabed:
+			object_info.text += " · 须在海底实体地形上"
 	if d.supports_objects:
 		object_info.text += "\n可承托其他物件"
 	if d.behaviour == PlaceableDefinition.Behaviour.BREAKABLE:
@@ -451,7 +456,7 @@ func _pick_object(camera: Camera3D, mouse: Vector2) -> String:
 	var ray := camera.project_ray_normal(mouse)
 	var inverse_builder: Transform3D = host.builder.global_transform.affine_inverse()
 	var terrain: Dictionary = host.BlockPicker.raycast(host.data, inverse_builder * origin,
-		inverse_builder.basis * ray, host.builder.slice_layer_limit)
+		inverse_builder.basis * ray, host.builder.slice_layer_limit, true)
 	var best := INF
 	if not terrain.is_empty():
 		best = origin.distance_to(host.builder.global_transform * terrain["position"]) + 0.02

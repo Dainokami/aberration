@@ -1,0 +1,129 @@
+{
+	"assets": [
+		{
+			"id": "scene1016_remains_1534",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1535",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1536",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1537",
+			"passed": true
+		},
+		{
+			"id": "scene1016_chest_1538",
+			"passed": true
+		},
+		{
+			"id": "scene1016_chest_1539",
+			"passed": true
+		},
+		{
+			"id": "scene1016_chest_1540",
+			"passed": true
+		},
+		{
+			"id": "scene1016_chest_1541",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1542",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1543",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1544",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1545",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1546",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1547",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1548",
+			"passed": true
+		},
+		{
+			"id": "scene1016_remains_1549",
+			"passed": true
+		},
+		{
+			"id": "scene1016_thorns_1550",
+			"passed": true
+		},
+		{
+			"id": "scene1016_thorns_1551",
+			"passed": true
+		},
+		{
+			"id": "scene1016_thorns_1552",
+			"passed": true
+		},
+		{
+			"id": "scene1016_fruit_tree_1553",
+			"passed": true
+		},
+		{
+			"id": "scene1016_fruit_tree_1554",
+			"passed": true
+		},
+		{
+			"id": "scene1016_fruit_tree_1555",
+			"passed": true
+		},
+		{
+			"id": "scene1016_bubbles_1x1",
+			"passed": true
+		},
+		{
+			"id": "scene1016_bubbles_1x3",
+			"passed": true
+		},
+		{
+			"id": "scene1016_bubbles_2x2",
+			"passed": true
+		},
+		{
+			"id": "scene1016_quicksand_1x1",
+			"passed": true
+		},
+		{
+			"id": "scene1016_quicksand_2x2",
+			"passed": true
+		},
+		{
+			"id": "scene1016_vine_1x1",
+			"passed": true
+		},
+		{
+			"id": "scene1016_resource_1x1",
+			"passed": true
+		},
+		{
+			"id": "scene1016_resource_1x3",
+			"passed": true
+		},
+		{
+			"id": "scene1016_resource_2x2",
+			"passed": true
+		}
+	],
+	"failures": []
+}

@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_nxj72"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_7b6m3"]
+
+[resource]
+script = ExtResource("2_7b6m3")
+asset_id = "scene1016_remains_1543"
+display_name = "散落遗骸·草原·1543"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1543.png"
+scene_path = "res://assets/generated/scene1016_remains_1543/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1543/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.62890625)
+volume_size = Vector3(4, 2, 4)
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("1_nxj72")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·草原·1543",
+"ecosystems": ["grass"],
+"id": "scene1016_remains_1543",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1543.png",
+"image_size_m": [4.0, 4.0],
+"kind": "remains",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1543.png",
+"original_pixels": [512.0, 512.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.62890625],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220943_1543_21.png",
+"source_sha256": "cd556c7e1a4f54e5d3be117162ef481064da719ba81acf70300314fa0189a4f9",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0], [2.0, 0.0, 2.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(0, 0, 2), Vector3(2, 0, 2)])
+mechanism = "remains"
+ecosystems = PackedStringArray("grass")

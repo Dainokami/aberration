@@ -1,0 +1,134 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_tbv17"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_ac512"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_yqph8"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x3.png" id="4_f1imb"]
+
+[sub_resource type="Resource" id="Resource_uy3i0"]
+script = ExtResource("3_yqph8")
+asset_id = "scene1016_bubbles_1x3"
+display_name = "浮升气泡柱·海洋·1x3"
+category = "浮升气泡柱"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x3.png"
+scene_path = "res://assets/generated/scene1016_bubbles_1x3/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_bubbles_1x3/thumbnail.png"
+image_size = Vector2(2, 6)
+pivot = Vector2(0.5, 0.99869794)
+volume_size = Vector3(2, 6, 6)
+collision_size = Vector3(2, 6, 6)
+collision_offset = Vector3(0, 0, 2)
+profile = ExtResource("2_ac512")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "浮升气泡柱",
+"cell_size_m": [2.0, 6.0, 2.0],
+"display_name": "浮升气泡柱·海洋·1x3",
+"ecosystems": ["ocean"],
+"id": "scene1016_bubbles_1x3",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x3.png",
+"image_size_m": [2.0, 6.0],
+"kind": "bubbles",
+"layout": [1.0, 3.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_1x3.png",
+"original_pixels": [256.0, 768.0],
+"output_pixels": [256.0, 768.0],
+"parameters": {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+},
+"pivot": [0.5, 0.9986979166666666],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "fushengqipaozhu_1x3.png",
+"source_sha256": "c10719d72b3405dea83f27fcea001bf989b6a2549ccfd831a4554e1a9a1a65cf",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [0.0, 0.0, 2.0], [0.0, 0.0, 4.0]],
+"spec_row": 17.0,
+"view": "竖向画布；地面布局1×3"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(0, 0, 2), Vector3(0, 0, 4)])
+cell_size = Vector3(2, 6, 2)
+mechanism = "bubbles"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true
+mechanism_parameters = {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qtu5g"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_f1imb")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4sqn5"]
+_surfaces = [{
+"aabb": AABB(-1, -0.0072435136, -2.2447128, 2, 5.563103, 2.2476394),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 154, 201, 177, 64, 96, 169, 15, 192, 0, 0, 128, 191, 255, 90, 237, 187, 175, 203, 63, 59, 0, 0, 128, 63, 255, 90, 237, 187, 175, 203, 63, 59, 0, 0, 128, 63, 154, 201, 177, 64, 96, 169, 15, 192)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n087x"]
+size = Vector3(2, 6, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_58w8o"]
+size = Vector3(2, 6, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nv52f"]
+size = Vector3(2, 6, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fmv51"]
+size = Vector3(2, 6, 6)
+
+[node name="scene1016_bubbles_1x3" type="Node3D" unique_id=1344078534]
+script = ExtResource("1_tbv17")
+definition = SubResource("Resource_uy3i0")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=2023825085]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+material_override = SubResource("StandardMaterial3D_qtu5g")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_4sqn5")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=421246735]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=802148519]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+shape = SubResource("BoxShape3D_n087x")
+
+[node name="SpatialCell_1" type="Area3D" parent="." unique_id=941981588]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_1" unique_id=2000991407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 2)
+shape = SubResource("BoxShape3D_58w8o")
+
+[node name="SpatialCell_2" type="Area3D" parent="." unique_id=101034427]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_2" unique_id=1898089911]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 4)
+shape = SubResource("BoxShape3D_nv52f")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1218431349]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=523425377]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 2)
+shape = SubResource("BoxShape3D_fmv51")

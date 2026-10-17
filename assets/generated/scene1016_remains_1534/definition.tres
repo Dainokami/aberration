@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_pmhqn"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_8en2e"]
+
+[resource]
+script = ExtResource("2_8en2e")
+asset_id = "scene1016_remains_1534"
+display_name = "散落遗骸·海洋·1534"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1534.png"
+scene_path = "res://assets/generated/scene1016_remains_1534/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1534/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.86328125)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("1_pmhqn")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·海洋·1534",
+"ecosystems": ["ocean"],
+"id": "scene1016_remains_1534",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1534.png",
+"image_size_m": [2.0, 2.0],
+"kind": "remains",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1534.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.86328125],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220444_1534_21.png",
+"source_sha256": "11c3fed4dc8bac7f59cb4a10f170cc1c6be6a95843d0004d7d82a233143b12ab",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "remains"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true

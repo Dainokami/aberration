@@ -265,6 +265,7 @@ static func _lower_neighbors(data: LevelData, cell: Vector2i,
 static func _belongs_to_level(data: LevelData, cell: Vector2i,
 		elevation: int) -> bool:
 	return data.in_bounds(cell) and data.cell_exists(cell) \
+		and data.is_solid_layer(cell, elevation) \
 		and data.stair_at(cell) < 0 and data.elevation(cell) == elevation
 
 static func _fill_cell(index_image: Image, weight_image: Image,
