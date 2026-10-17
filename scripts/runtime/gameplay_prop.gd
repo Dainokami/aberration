@@ -1,3 +1,4 @@
+@tool
 class_name GameplayProp
 extends Node3D
 

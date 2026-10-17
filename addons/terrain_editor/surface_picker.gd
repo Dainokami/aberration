@@ -1,11 +1,30 @@
 @tool
 extends RefCounted
 
+const BlockPicker := preload("res://addons/terrain_editor/block_picker.gd")
+
 static func pick(builder: TerrainBuilder, camera: Camera3D, mouse: Vector2,
-		ignore_id := "") -> Dictionary:
+		ignore_id := "", target_definition: PlaceableDefinition = null) -> Dictionary:
 	if builder.get_world_3d() == null:
 		return {}
 	var origin := camera.project_ray_origin(mouse)
+	if target_definition != null and target_definition.requires_seabed:
+		var inverse := builder.global_transform.affine_inverse()
+		var hit := BlockPicker.raycast(builder.level_data, inverse * origin,
+			inverse.basis * camera.project_ray_normal(mouse), builder.slice_layer_limit)
+		if not hit.is_empty() and builder.level_data.is_water_layer(hit.cell, hit.layer):
+			var data := builder.level_data
+			var cell: Vector2i = hit.cell
+			var layer := int(hit.layer)
+			while data.is_water_layer(cell, layer):
+				layer -= 1
+			if not data.is_solid_layer(cell, layer) or not data.is_surface_exposed(cell, layer) \
+					or data.stair_at(cell, layer) >= 0:
+				return {"error": "水块下方没有海底实体地形；请先在水底放置草原、岩石或沙漠地块"}
+			var point: Vector3 = hit.position
+			point.y = data.surface_y(layer)
+			return {"kind": "terrain", "cell": cell, "layer": layer,
+				"position": point, "normal": Vector3.UP, "through_water": true}
 	var end := origin + camera.project_ray_normal(mouse) * 1000.0
 	var excluded: Array[RID] = []
 	for attempt in 64:

@@ -319,7 +319,7 @@ func _show_object_info(index: int) -> void:
 		object_info.text += "\n%s · %d 格交互区域" % [d.category, d.spatial_cells.size()]
 		object_info.text += "\n生态：" + " / ".join(d.ecosystems)
 		if d.requires_seabed:
-			object_info.text += " · 须在海底实体地形上"
+			object_info.text += "\n点击水块自动贴到海底；水下须有实体地形"
 	if d.supports_objects:
 		object_info.text += "\n可承托其他物件"
 	if d.behaviour == PlaceableDefinition.Behaviour.BREAKABLE:
@@ -523,7 +523,7 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 		if event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS
 		if tabs.current_tab == 1:
-			var surface := Picker.pick(host.builder, camera, event.position, selected_id if dragging else "")
+			var surface := _pick_placement_surface(camera, event.position, selected_id if dragging else "")
 			if dragging:
 				_move_selected_surface(surface, snap.button_pressed and not event.shift_pressed)
 				return EditorPlugin.AFTER_GUI_INPUT_STOP
@@ -539,7 +539,7 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if tabs.current_tab == 1:
 			if object_mode.selected == 0 and event.pressed:
-				var surface := Picker.pick(host.builder, camera, event.position)
+				var surface := _pick_placement_surface(camera, event.position)
 				place_object(_surface_candidate(surface, snap.button_pressed and not event.shift_pressed))
 				if surface.has("error"):
 					host._set_status(surface["error"])
@@ -571,6 +571,18 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 # ============================================================
 # Object preview / place / move / delete
 # ============================================================
+func _pick_placement_surface(camera: Camera3D, mouse: Vector2, ignore_id := "") -> Dictionary:
+	var definition: PlaceableDefinition
+	if dragging:
+		var index := _selected_index()
+		if index >= 0:
+			definition = ObjectRules.definition(host.data.objects[index])
+	else:
+		var selected := library.get_selected_items()
+		if not selected.is_empty() and selected[0] < paths.size():
+			definition = load(paths[selected[0]]) as PlaceableDefinition
+	return Picker.pick(host.builder, camera, mouse, ignore_id, definition)
+
 func _surface_candidate(surface: Dictionary, snapped: bool) -> Dictionary:
 	return Picker.placement(host.data, _candidate(Vector3.ZERO), surface, snapped)
 

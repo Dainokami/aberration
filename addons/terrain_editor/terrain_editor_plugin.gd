@@ -132,6 +132,13 @@ func _enter_tree() -> void:
 	get_tree().root.gui_focus_changed.connect(_view_focus_changed)
 	if "--test-v2-editor" in OS.get_cmdline_user_args():
 		_run_editor_checks.call_deferred()
+	elif "--test-scene-placement" in OS.get_cmdline_user_args():
+		_run_scene_placement_checks.call_deferred()
+
+func _run_scene_placement_checks() -> void:
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
+	await load("res://tests/editor_scene_mechanism_placement.gd").new().run(self)
 
 func _run_editor_checks() -> void:
 	# Wait for startup imports before tests create/delete temporary resources.

@@ -189,4 +189,7 @@ func run(plugin: EditorPlugin) -> void:
 	host.queue_free()
 	await tree.process_frame
 	print("EDITOR V2 TEST FAILURES: ", failures)
-	tree.quit(0 if failures.is_empty() else 1)
+	if failures.is_empty():
+		await load("res://tests/editor_scene_mechanism_placement.gd").new().run(plugin)
+	else:
+		tree.quit(1)

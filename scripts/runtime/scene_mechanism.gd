@@ -1,3 +1,4 @@
+@tool
 class_name SceneMechanism
 extends GameplayProp
 
@@ -7,6 +8,10 @@ var _damage_clock := 0.0
 var _fruit_ready := true
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		set_process(false)
+		set_physics_process(false)
+		return
 	super._ready()
 	add_to_group("scene_mechanisms")
 	if definition.mechanism == "vine":
@@ -27,7 +32,7 @@ func interaction_text() -> String:
 	return ""
 
 func interact(actor: Node3D) -> bool:
-	if collected or actor == null:
+	if Engine.is_editor_hint() or collected or actor == null:
 		return false
 	match definition.mechanism:
 		"remains", "resource":
@@ -200,7 +205,7 @@ static func effects_at(point: Vector3) -> Dictionary:
 	return result
 
 func _physics_process(delta: float) -> void:
-	if definition.mechanism != "thorns":
+	if Engine.is_editor_hint() or definition == null or definition.mechanism != "thorns":
 		return
 	_damage_clock += delta
 	if _damage_clock < 1.0:
