@@ -8,8 +8,8 @@ const BASE_Y := 0.0
 const TERRAIN_GRASS := 0
 const TERRAIN_ROCK := 1
 const DIRS := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
-const FORMAT_VERSION := 7
-const MAX_MAP_SIZE := Vector2i(128, 128)
+const FORMAT_VERSION := 8
+const MAX_MAP_SIZE := Vector2i(600, 600)
 const MAX_LAYERS := 32
 const DEFAULT_SOLID_TILE := "grass"
 
@@ -19,8 +19,8 @@ const DEFAULT_SOLID_TILE := "grass"
 ## World-space corner of logical cell (0, 0), independent from map bounds.
 @export var grid_world_origin := Vector2.ZERO
 @export var has_grid_world_origin := false
-## v6 source of truth. Each entry contains continuous solid `layers` plus
-## optional `liquid` and `overlay` records attached to the highest solid layer.
+## Stable height slots: an empty dictionary is air, never a missing support to fill.
+## Each solid layer owns its optional liquid/overlay surface records.
 @export var columns: Array[Dictionary] = []
 ## Legacy v5 payload. It is consumed and cleared by ensure_layout().
 @export var cells: Array[Dictionary] = []
@@ -35,6 +35,8 @@ const DEFAULT_SOLID_TILE := "grass"
 @export var terrain_tints: Dictionary = {}
 
 var _ensuring_layout := false
+## Read-only surface views share the source columns for terrain art generation.
+var _surface_layer := -1
 
 func setup_blank(size := Vector2i(16, 16)) -> void:
 	map_size = size
@@ -87,24 +89,18 @@ func ensure_layout() -> void:
 func tile_id(cell: Vector2i, layer := -1) -> String:
 	if layer >= 0:
 		return str(get_layer(cell, layer).get("tile_id", DEFAULT_SOLID_TILE))
-	var column := get_column(cell)
-	if column.is_empty():
-		return DEFAULT_SOLID_TILE
-	var liquid: Dictionary = column.get("liquid", {})
+	var target := top_layer(cell)
+	var liquid := get_attachment(cell, "liquid", target)
 	if not liquid.is_empty():
 		return str(liquid.get("tile_id", "water"))
-	var layers: Array = column.get("layers", [])
-	if layers.is_empty():
-		return DEFAULT_SOLID_TILE
-	return str((layers[layers.size() - 1] as Dictionary).get(
-		"tile_id", DEFAULT_SOLID_TILE))
+	return str(get_layer(cell, target).get("tile_id", DEFAULT_SOLID_TILE))
 
 func solid_tile_id(cell: Vector2i, layer := -1) -> String:
 	var target := top_layer(cell) if layer < 0 else layer
 	return str(get_layer(cell, target).get("tile_id", DEFAULT_SOLID_TILE))
 
-func overlay_tile_id(cell: Vector2i) -> String:
-	var overlay := get_attachment(cell, "overlay")
+func overlay_tile_id(cell: Vector2i, layer := -1) -> String:
+	var overlay := get_attachment(cell, "overlay", layer)
 	return str(overlay.get("tile_id", ""))
 
 func in_bounds(cell: Vector2i) -> bool:
@@ -139,28 +135,38 @@ func expand_to_include(region: Rect2i, padding := 2) -> String:
 	var error := expansion_error(region, padding)
 	if not error.is_empty():
 		return error
+	resize_bounds(_expanded_bounds(region, padding))
+	return ""
+
+## Reindex existing column references without cloning the entire terrain.
+## Used by expansion undo as well as growth; world coordinates remain fixed.
+func resize_bounds(bounds: Rect2i) -> void:
+	ensure_layout()
+	if bounds == map_bounds():
+		return
 	var old_origin := map_origin
 	var old_size := map_size
 	var old_columns := columns
-	var expanded_bounds := _expanded_bounds(region, padding)
+	var expanded_bounds := bounds
 	var expanded_columns: Array[Dictionary] = []
 	expanded_columns.resize(expanded_bounds.size.x * expanded_bounds.size.y)
 	for i in expanded_columns.size():
 		expanded_columns[i] = _blank_column()
-	for local_y in old_size.y:
-		for local_x in old_size.x:
-			var logical := old_origin + Vector2i(local_x, local_y)
+	var retained := Rect2i(old_origin, old_size).intersection(bounds)
+	for y in range(retained.position.y, retained.end.y):
+		for x in range(retained.position.x, retained.end.x):
+			var logical := Vector2i(x, y)
 			var expanded_local := logical - expanded_bounds.position
 			var expanded_index := expanded_local.y * expanded_bounds.size.x \
 				+ expanded_local.x
+			var old_local := logical - old_origin
 			expanded_columns[expanded_index] = old_columns[
-				local_y * old_size.x + local_x]
+				old_local.y * old_size.x + old_local.x]
 	map_origin = expanded_bounds.position
 	map_size = expanded_bounds.size
 	columns = expanded_columns
 	format_version = FORMAT_VERSION
 	emit_changed()
-	return ""
 
 func get_column(cell: Vector2i) -> Dictionary:
 	if not in_bounds(cell):
@@ -200,10 +206,32 @@ func layer_count(cell: Vector2i) -> int:
 	return int((column.get("layers", []) as Array).size()) if not column.is_empty() else 0
 
 func top_layer(cell: Vector2i) -> int:
+	if _surface_layer >= 0:
+		return _surface_layer if is_surface_exposed(cell, _surface_layer) else -1
 	return layer_count(cell) - 1
 
 func layer_exists(cell: Vector2i, layer: int) -> bool:
-	return layer >= 0 and layer < layer_count(cell)
+	return not get_layer(cell, layer).is_empty()
+
+func is_surface_exposed(cell: Vector2i, layer: int) -> bool:
+	return layer_exists(cell, layer) and not layer_exists(cell, layer + 1)
+
+func exposed_layers(cell: Vector2i) -> Array[int]:
+	var result: Array[int] = []
+	var layers: Array = get_column(cell).get("layers", [])
+	for layer in layers.size():
+		if not (layers[layer] as Dictionary).is_empty() \
+				and (layer + 1 == layers.size() or (layers[layer + 1] as Dictionary).is_empty()):
+			result.append(layer)
+	return result
+
+## A surface hit specifies the height; never silently snap to the highest block.
+func layer_at_surface(position: Vector3) -> int:
+	return roundi(position.y / ELEVATION_STEP) - 1
+
+func world_to_block(position: Vector3) -> Vector3i:
+	var cell := world_to_cell(position)
+	return Vector3i(cell.x, floori(position.y / ELEVATION_STEP), cell.y)
 
 func get_layer(cell: Vector2i, layer: int) -> Dictionary:
 	var column := get_column(cell)
@@ -231,21 +259,18 @@ func set_layer(cell: Vector2i, layer: int, value: Dictionary,
 		return set_attachment(cell, "overlay", record, layer, support_tile_id)
 	var column := column_snapshot(cell)
 	var layers: Array = column["layers"]
-	var support_id := support_tile_id
-	if support_id.is_empty():
-		support_id = str(record.get("tile_id", DEFAULT_SOLID_TILE))
 	while layers.size() <= layer:
-		layers.append(_solid_record(support_id, 0))
-	layers[layer] = _solid_record(
-		str(record.get("tile_id", DEFAULT_SOLID_TILE)),
-		int(record.get("rotation", 0)))
+		layers.append({})
+	var replacement := (layers[layer] as Dictionary).duplicate(true)
+	replacement.merge(_solid_record(str(record["tile_id"]), int(record["rotation"])), true)
+	layers[layer] = replacement
 	column["layers"] = layers
 	columns[index(cell)] = column
 	_normalize_anchors()
 	emit_changed()
 	return ""
 
-func set_layers(values: Dictionary, layer: int, support_tile_id := "") -> String:
+func set_layers(values: Dictionary, layer: int, _support_tile_id := "") -> String:
 	if layer < 0 or layer >= MAX_LAYERS:
 		return "地块层级必须在 0～%d" % (MAX_LAYERS - 1)
 	for cell: Vector2i in values:
@@ -261,14 +286,12 @@ func set_layers(values: Dictionary, layer: int, support_tile_id := "") -> String
 		var column := column_snapshot(cell)
 		var layers: Array = column["layers"]
 		var record: Dictionary = values[cell]
-		var support_id := support_tile_id
-		if support_id.is_empty():
-			support_id = str(record.get("tile_id", DEFAULT_SOLID_TILE))
 		while layers.size() <= layer:
-			layers.append(_solid_record(support_id, 0))
-		layers[layer] = _solid_record(
-			str(record.get("tile_id", DEFAULT_SOLID_TILE)),
-			int(record.get("rotation", 0)))
+			layers.append({})
+		var replacement := (layers[layer] as Dictionary).duplicate(true)
+		replacement.merge(_solid_record(str(record.get("tile_id", DEFAULT_SOLID_TILE)),
+			int(record.get("rotation", 0))), true)
+		layers[layer] = replacement
 		column["layers"] = layers
 		columns[index(cell)] = column
 	_normalize_anchors()
@@ -278,14 +301,12 @@ func set_layers(values: Dictionary, layer: int, support_tile_id := "") -> String
 func remove_layer(cell: Vector2i, layer: int) -> String:
 	if not layer_exists(cell, layer):
 		return "目标层没有实体地块"
-	if layer != top_layer(cell):
-		return "只能删除最上层地块，不能在柱体中间制造悬空"
 	var column := column_snapshot(cell)
 	var layers: Array = column["layers"]
-	layers.remove_at(layer)
+	layers[layer] = {}
+	while not layers.is_empty() and (layers.back() as Dictionary).is_empty():
+		layers.pop_back()
 	column["layers"] = layers
-	column["liquid"] = {}
-	column["overlay"] = {}
 	columns[index(cell)] = column
 	_normalize_anchors()
 	emit_changed()
@@ -299,14 +320,14 @@ func clear_column(cell: Vector2i) -> void:
 	_normalize_anchors()
 	emit_changed()
 
-func get_attachment(cell: Vector2i, role: String) -> Dictionary:
+func get_attachment(cell: Vector2i, role: String, layer := -1) -> Dictionary:
 	if role not in ["liquid", "overlay"]:
 		return {}
-	var column := get_column(cell)
-	return column.get(role, {}) if not column.is_empty() else {}
+	var target := top_layer(cell) if layer < 0 else layer
+	return get_layer(cell, target).get(role, {})
 
 func set_attachment(cell: Vector2i, role: String, value: Dictionary,
-		layer := -1, support_tile_id := DEFAULT_SOLID_TILE) -> String:
+		layer := -1, _support_tile_id := DEFAULT_SOLID_TILE) -> String:
 	if role not in ["liquid", "overlay"]:
 		return "未知附加层类型"
 	if not in_bounds(cell):
@@ -316,33 +337,26 @@ func set_attachment(cell: Vector2i, role: String, value: Dictionary,
 			or (role == "overlay" and not tile.is_overlay()):
 		return "地貌类型与附加层不匹配"
 	ensure_layout()
-	var current_top := top_layer(cell)
-	if current_top >= 0 and layer >= 0 and layer != current_top:
-		return "液体和贴花只能附着在最高实体层"
-	var target_layer := current_top if layer < 0 else layer
-	if target_layer < 0:
-		target_layer = 0
-	if target_layer >= MAX_LAYERS:
-		return "地块层级必须在 0～%d" % (MAX_LAYERS - 1)
+	var target_layer := top_layer(cell) if layer < 0 else layer
+	if not is_surface_exposed(cell, target_layer):
+		return "液体和贴花需要一个外露的实体顶面"
 	var column := column_snapshot(cell)
 	var layers: Array = column["layers"]
-	while layers.size() <= target_layer:
-		layers.append(_solid_record(
-			support_tile_id if not support_tile_id.is_empty() else DEFAULT_SOLID_TILE,
-			0))
+	layers[target_layer][role] = _normalized_surface(value)
 	column["layers"] = layers
-	column[role] = _normalized_surface(value)
 	columns[index(cell)] = column
 	_normalize_anchors()
 	emit_changed()
 	return ""
 
-func clear_attachment(cell: Vector2i, role: String) -> void:
+func clear_attachment(cell: Vector2i, role: String, layer := -1) -> void:
 	if role not in ["liquid", "overlay"] or not in_bounds(cell):
 		return
-	ensure_layout()
+	var target := top_layer(cell) if layer < 0 else layer
+	if not layer_exists(cell, target):
+		return
 	var column := column_snapshot(cell)
-	column[role] = {}
+	column["layers"][target].erase(role)
 	columns[index(cell)] = column
 	emit_changed()
 
@@ -392,7 +406,7 @@ func set_cells(values: Dictionary) -> void:
 		emit_changed()
 
 func cell_exists(cell: Vector2i) -> bool:
-	return layer_count(cell) > 0
+	return top_layer(cell) >= 0
 
 func elevation(cell: Vector2i) -> int:
 	return top_layer(cell)
@@ -440,9 +454,14 @@ func stair_cells(stair: Dictionary) -> PackedVector2Array:
 	var direction: int = int(stair.get("direction", 0)) % 4
 	return PackedVector2Array([low, low + DIRS[direction]])
 
-func stair_at(cell: Vector2i) -> int:
+func stair_at(cell: Vector2i, layer := -1) -> int:
+	var target := _surface_layer if layer < 0 else layer
 	for i in stairs.size():
 		if Vector2(cell) in stair_cells(stairs[i]):
+			var low: Vector2i = stairs[i]["cell"]
+			var base := int(stairs[i].get("layer", top_layer(low)))
+			if target >= 0 and target != base + (0 if cell == low else 1):
+				continue
 			return i
 	return -1
 
@@ -452,18 +471,25 @@ func support_top_layer(cell: Vector2i) -> int:
 	if stair_index < 0:
 		return top_layer(cell)
 	var low: Vector2i = stairs[stair_index]["cell"]
-	return mini(top_layer(cell), top_layer(low))
+	return mini(top_layer(cell), int(stairs[stair_index].get("layer", top_layer(low))))
 
-func can_place_stair(low: Vector2i, direction: int) -> String:
+func has_terrain_volume(cell: Vector2i, layer: int) -> bool:
+	if not layer_exists(cell, layer):
+		return false
+	var stair_index := stair_at(cell, layer)
+	return stair_index < 0 or cell == Vector2i(stairs[stair_index]["cell"])
+
+func can_place_stair(low: Vector2i, direction: int, layer := -1) -> String:
 	var high: Vector2i = low + DIRS[direction % 4]
+	var base := top_layer(low) if layer < 0 else layer
 	if not in_bounds(low) or not in_bounds(high):
 		return "阶梯超出地图边界"
-	if stair_at(low) >= 0 or stair_at(high) >= 0:
+	if stair_at(low, base) >= 0 or stair_at(high, base + 1) >= 0:
 		return "阶梯与已有阶梯重叠"
-	if not cell_exists(low) or not cell_exists(high):
+	if not layer_exists(low, base) or not layer_exists(high, base + 1):
 		return "阶梯两端必须有地块"
-	if elevation(high) != elevation(low) + 1:
-		return "高端地块必须比低端高 2 米"
+	if not is_surface_exposed(low, base) or not is_surface_exposed(high, base + 1):
+		return "阶梯两端必须是相差 2 米的外露顶面"
 	return ""
 
 func validate() -> PackedStringArray:
@@ -477,35 +503,35 @@ func validate() -> PackedStringArray:
 			if layers.size() > MAX_LAYERS:
 				errors.append("地块 %s 超过最大层数" % cell)
 			for layer in layers.size():
+				if (layers[layer] as Dictionary).is_empty():
+					continue
 				var tile := TileRegistry.find(str(
 					(layers[layer] as Dictionary).get("tile_id", "")))
 				if tile == null or not tile.is_solid():
 					errors.append("地块 %s 第 %d 层不是有效实体地貌" % [cell, layer])
-			for role in ["liquid", "overlay"]:
-				var attachment: Dictionary = column.get(role, {})
-				if attachment.is_empty():
-					continue
-				if layers.is_empty():
-					errors.append("地块 %s 的%s缺少实体支撑" % [cell, role])
-				var tile := TileRegistry.find(str(attachment.get("tile_id", "")))
-				if tile == null or (role == "liquid" and not tile.is_water()) \
-						or (role == "overlay" and not tile.is_overlay()):
-					errors.append("地块 %s 的附加层类型无效" % cell)
+				for role in ["liquid", "overlay"]:
+					var attachment: Dictionary = layers[layer].get(role, {})
+					if attachment.is_empty():
+						continue
+					var attachment_tile := TileRegistry.find(str(attachment.get("tile_id", "")))
+					if attachment_tile == null or (role == "liquid" and not attachment_tile.is_water()) \
+							or (role == "overlay" and not attachment_tile.is_overlay()):
+						errors.append("地块 %s 第 %d 层的附加层类型无效" % [cell, layer])
 	errors.append_array(validate_content())
+	if layer_exists(spawn_cell, spawn_layer) and not is_surface_exposed(spawn_cell, spawn_layer):
+		errors.append("玩家出生点被上方地块覆盖，请重新选择外露顶面")
 	return errors
 
 ## Terrain edits already validate their changed columns. Check only dependencies.
-func validate_content() -> PackedStringArray:
+func validate_content(check_assets := true) -> PackedStringArray:
 	ensure_layout()
 	var errors := PackedStringArray()
-	if not in_bounds(spawn_cell) or not cell_exists(spawn_cell):
+	if not in_bounds(spawn_cell) or not layer_exists(spawn_cell, spawn_layer):
 		errors.append("缺少有效的玩家出生点")
-	elif spawn_layer != elevation(spawn_cell):
-		errors.append("玩家出生点层锚点与最高地面不一致")
 	for i in stairs.size():
 		var stair := stairs[i]
 		var error := can_place_stair(stair.get("cell", Vector2i(-1, -1)),
-			int(stair.get("direction", 0)))
+			int(stair.get("direction", 0)), int(stair.get("layer", -1)))
 		# Ignore collision against the stair validating itself.
 		if error == "阶梯与已有阶梯重叠":
 			var copy := stairs.duplicate(true)
@@ -513,12 +539,12 @@ func validate_content() -> PackedStringArray:
 			var original := stairs
 			stairs = copy
 			error = can_place_stair(stair.get("cell", Vector2i(-1, -1)),
-				int(stair.get("direction", 0)))
+				int(stair.get("direction", 0)), int(stair.get("layer", -1)))
 			stairs = original
 		if not error.is_empty():
 			errors.append("阶梯 %d：%s" % [i + 1, error])
-	errors.append_array(ObjectRules.validate_all(self))
-	errors.append_array(DetailRules.validate_all(self))
+	errors.append_array(ObjectRules.validate_all(self, check_assets))
+	errors.append_array(DetailRules.validate_all(self, check_assets))
 	return errors
 
 ## Copy the index, share unchanged columns, and copy only columns on write.
@@ -555,6 +581,23 @@ func region_view(region: Rect2i) -> LevelData:
 			view.columns.append(columns[index(Vector2i(x, y))])
 	view.stairs = stairs
 	view.terrain_tints = terrain_tints
+	view._surface_layer = _surface_layer
+	return view
+
+## Reuse the terrain art pipeline at one exposed height without copying columns.
+## Only query methods may be called on this view.
+func surface_view(layer: int) -> LevelData:
+	ensure_layout()
+	var view := LevelData.new()
+	view.map_origin = map_origin
+	view.map_size = map_size
+	view.grid_world_origin = grid_world_origin
+	view.has_grid_world_origin = true
+	view.format_version = FORMAT_VERSION
+	view.columns = columns
+	view.stairs = stairs
+	view.terrain_tints = terrain_tints
+	view._surface_layer = layer
 	return view
 
 func clone_data() -> Dictionary:
@@ -614,17 +657,15 @@ func _set_cell_compat(cell: Vector2i, value: Dictionary) -> void:
 	var old_layers: Array = column.get("layers", [])
 	var layers: Array[Dictionary] = []
 	for layer in target + 1:
-		if layer < old_layers.size():
-			layers.append(_normalized_surface(old_layers[layer]))
+		if layer < old_layers.size() and not (old_layers[layer] as Dictionary).is_empty():
+			layers.append((old_layers[layer] as Dictionary).duplicate(true))
 		else:
 			layers.append(_solid_record(
 				id if role == "solid" else DEFAULT_SOLID_TILE, 0))
 	if role == "solid":
 		layers[target] = _solid_record(id, rotation)
-		column["liquid"] = {}
-		column["overlay"] = {}
 	else:
-		column[role] = _normalized_surface({
+		layers[target][role] = _normalized_surface({
 			"tile_id": id,
 			"rotation": rotation,
 		})
@@ -660,7 +701,7 @@ func _migrate_legacy_cells(wanted: int) -> void:
 				rotation if role == "solid" and layer == target else 0))
 		columns[i]["layers"] = layers
 		if role != "solid":
-			columns[i][role] = _normalized_surface({
+			layers[target][role] = _normalized_surface({
 				"tile_id": id,
 				"rotation": rotation,
 			})
@@ -689,14 +730,15 @@ func _migrate_anchors() -> void:
 		and cell_exists(spawn_cell) else -1
 
 func _normalize_anchors() -> void:
-	if in_bounds(spawn_cell) and cell_exists(spawn_cell):
+	if spawn_layer < 0 and in_bounds(spawn_cell) and cell_exists(spawn_cell):
 		spawn_layer = elevation(spawn_cell)
-	else:
+	elif not in_bounds(spawn_cell):
 		spawn_layer = -1
 	for i in stairs.size():
 		var stair: Dictionary = stairs[i]
 		var low: Vector2i = stair.get("cell", Vector2i(-1, -1))
-		stair["layer"] = elevation(low) if cell_exists(low) else -1
+		if not stair.has("layer"):
+			stair["layer"] = elevation(low) if cell_exists(low) else -1
 		stairs[i] = stair
 	for i in objects.size():
 		var record: Dictionary = objects[i]
@@ -710,8 +752,8 @@ func _normalize_anchors() -> void:
 		if not in_bounds(anchor) or not cell_exists(anchor):
 			anchor = _world_to_cell_unchecked(position)
 		var anchor_layer := int(record.get("anchor_layer", -1))
-		if not layer_exists(anchor, anchor_layer):
-			anchor_layer = elevation(anchor) if cell_exists(anchor) else -1
+		if anchor_layer < 0:
+			anchor_layer = layer_at_surface(position)
 		record["anchor_cell"] = anchor
 		record["anchor_layer"] = anchor_layer
 		objects[i] = record
@@ -723,17 +765,26 @@ func _normalized_column(value: Dictionary) -> Dictionary:
 	for raw in source_layers:
 		if not raw is Dictionary or normalized_layers.size() >= MAX_LAYERS:
 			break
+		if raw.is_empty():
+			normalized_layers.append({})
+			continue
 		var record := _normalized_surface(raw)
 		var tile := TileRegistry.find(str(record.get("tile_id", DEFAULT_SOLID_TILE)))
 		if tile != null and not tile.is_solid():
 			record = _solid_record(DEFAULT_SOLID_TILE, 0)
+		for role in ["liquid", "overlay"]:
+			var attachment: Dictionary = raw.get(role, {})
+			if not attachment.is_empty():
+				record[role] = _normalized_surface(attachment)
 		normalized_layers.append(record)
+	while not normalized_layers.is_empty() and normalized_layers.back().is_empty():
+		normalized_layers.pop_back()
 	result["layers"] = normalized_layers
 	if not normalized_layers.is_empty():
 		for role in ["liquid", "overlay"]:
 			var attachment: Variant = value.get(role, {})
 			if attachment is Dictionary and not attachment.is_empty():
-				result[role] = _normalized_surface(attachment)
+				normalized_layers.back()[role] = _normalized_surface(attachment)
 	return result
 
 func _normalized_surface(value: Dictionary) -> Dictionary:
@@ -771,13 +822,24 @@ func _expanded_bounds(region: Rect2i, padding: int) -> Rect2i:
 		last.x = region.end.x + padding
 	if region.end.y > current.end.y:
 		last.y = region.end.y + padding
+	# Reserve only the padding which fits. A valid edge cell must remain
+	# reachable even when the optional two-cell margin would exceed the limit.
+	for axis in 2:
+		if last[axis] - first[axis] <= MAX_MAP_SIZE[axis]:
+			continue
+		var required_first := mini(current.position[axis], region.position[axis])
+		var required_last := maxi(current.end[axis], region.end[axis])
+		if required_last - required_first > MAX_MAP_SIZE[axis]:
+			continue
+		var available := MAX_MAP_SIZE[axis] - (required_last - required_first)
+		var before := mini(required_first - first[axis], available)
+		first[axis] = required_first - before
+		last[axis] = required_last + mini(last[axis] - required_last, available - before)
 	return Rect2i(first, last - first)
 
 func _blank_column() -> Dictionary:
 	return {
 		"layers": [],
-		"liquid": {},
-		"overlay": {},
 	}
 
 func _blank_cell() -> Dictionary:

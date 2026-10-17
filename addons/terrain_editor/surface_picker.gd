@@ -31,7 +31,8 @@ static func pick(builder: TerrainBuilder, camera: Camera3D, mouse: Vector2,
 		if collider.has_meta("terrain_cell"):
 			var cell: Vector2i = collider.get_meta("terrain_cell")
 			var layer := int(collider.get_meta("terrain_layer", -1))
-			if normal.y > 0.7 and layer != builder.level_data.top_layer(cell):
+			if normal.y > 0.7 and (collider.get_meta("slice_cap", false) \
+					or not builder.level_data.is_surface_exposed(cell, layer)):
 				return {"error": "这里是切片显示的临时盖面；请显示真实顶面后再摆放"}
 			return {"kind": "terrain", "cell": cell, "layer": layer,
 				"position": position, "normal": normal}
@@ -60,6 +61,8 @@ static func placement(data: LevelData, record: Dictionary, surface: Dictionary,
 			if maxf(absf(normal.x), absf(normal.z)) < 0.98:
 				return {}
 			var direction := direction_for(normal)
+			if data.has_terrain_volume(cell + LevelData.DIRS[direction], int(surface["layer"])):
+				return {}
 			var offset := Vector2.ZERO
 			if not snap:
 				var center := data.world_center(cell, int(surface["layer"])) - Vector3.UP * LevelData.ELEVATION_STEP
@@ -71,8 +74,11 @@ static func placement(data: LevelData, record: Dictionary, surface: Dictionary,
 					maxf(0, (LevelData.CELL_SIZE - size.x) * 0.5))
 				offset.y = clampf(offset.y, 0, maxf(0, LevelData.ELEVATION_STEP - size.y))
 			return ObjectRules.wall_anchor(data, copy, cell, int(surface["layer"]), direction, offset)
-		copy["position"] = data.world_center(cell) if snap else Vector3(
-			point.x, data.world_center(cell).y, point.z)
+		var layer := int(surface["layer"])
+		if not data.is_surface_exposed(cell, layer):
+			return {}
+		copy["position"] = data.world_center(cell, layer) if snap else Vector3(
+			point.x, data.surface_y(layer), point.z)
 		copy["anchor_kind"] = "top"
 		copy.erase("support_id")
 		return ObjectRules.anchor_record(data, copy)

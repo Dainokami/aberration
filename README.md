@@ -4,7 +4,10 @@
 
 当前关卡编辑器包括：
 
-- 固定2m厚度的分层地块、自动补支撑、中间层替换与切片查看；
+- 最大600×600格、固定2m地块逐块搭建：左键贴面接块、单次删除、切片查看；
+- “默认右键删除”开关切换右键／Alt＋右键删除与转向，支持点击删除物件；
+- 自由视角左上角显示 Alt 导航／摆放删除状态，分别使用绿色和红色；
+- 空气层与桥下空间、实际底面碰撞；被紧邻上层覆盖的附属内容隐藏并原位恢复；
 - 固定正面轻俯视透视相机；
 - 47类地貌拓扑Mask、四地貌权重混合、稳定不规则变体与连续世界底纹；
 - 草地卷边、岩沙圆钝崖顶、连续侧壁与水岸泡沫；
@@ -73,6 +76,8 @@ $GODOT --headless --path . --script res://tests/test_level_data.gd
 $GODOT --headless --path . --script res://tests/test_v2.gd
 $GODOT --headless --path . --script res://tests/test_terrain_p0.gd
 $GODOT --headless --path . --script res://tests/test_stacked_terrain.gd
+$GODOT --headless --path . --script res://tests/test_free_blocks.gd
+$GODOT --headless --path . --script res://tests/test_terrain_performance.gd
 $GODOT --headless --path . --script res://tests/test_art_pipeline.gd
 $GODOT --headless --path . --script res://tests/test_art_level.gd
 $GODOT --headless --path . --script res://tests/test_art_runtime.gd
@@ -90,7 +95,7 @@ $GODOT --path . --script res://tests/render_art_acceptance.gd
 $GODOT --path . --editor -- --test-v2-editor --capture-art-panels
 ```
 
-编辑器测试包括分层画笔、切片拾取、撤销重做、预览检查，以及导入页图片处理、各导入类型的窄 Dock 宽度和细节页；两处无效保存测试会输出预期的 `Cannot save file`。真实窗口退出时可能出现 Godot 引擎自身的 `Can't use get_node() with absolute paths from outside the active scene tree.`（由恢复的场景选中状态引起，空工程同样出现）。其余脚本/着色器错误应视为失败，即使进程退出码为0。
+编辑器测试包括左键贴面摆放、右键单次删除（大画笔、长按和拖动均不扩大删除）、Alt 状态标识、搭建后拆支撑、拖动锁定平面、切片拾取、撤销重做、预览检查，以及导入页图片处理、各导入类型的窄 Dock 宽度和细节页。图形脚本包含悬空桥、覆盖/恢复和底面视角；两处无效保存测试会输出预期的 `Cannot save file`。真实窗口退出时可能出现 Godot 引擎自身的 `Can't use get_node() with absolute paths from outside the active scene tree.`（由恢复的场景选中状态引起，空工程同样出现）。其余脚本/着色器错误应视为失败，即使进程退出码为0。
 
 ## 资料与授权
 

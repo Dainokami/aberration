@@ -2,6 +2,8 @@
 extends RefCounted
 
 func run(plugin: EditorPlugin, suite: RefCounted) -> void:
+	var right_delete_before: bool = plugin.default_right_delete.button_pressed
+	plugin.default_right_delete.set_pressed_no_signal(true)
 	var original_data: LevelData = plugin.data
 	var original_builder: TerrainBuilder = plugin.builder
 	plugin._disable_2_5d_view()
@@ -26,7 +28,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.tabs.current_tab = 0
 	plugin.mode_select.selected = 0
 	plugin.brush_select.selected = 0
-	plugin.height_select.selected = 2
+	plugin.active_layer = 0
 	plugin.tile_turns = 0
 	plugin._make_preview()
 	select_tile(plugin, "rock")
@@ -35,91 +37,137 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	var initial := map.clone_data()
 	var screen := camera.unproject_position(map.world_center(cell))
 	click(plugin, camera, screen)
-	suite.check(plugin.height_select.selected == 2 and map.layer_count(cell) == 3
-		and map.solid_tile_id(cell, 0) == "grass" and map.solid_tile_id(cell, 2) == "rock",
-		"real click preserves chosen layer and automatically fills support")
+	suite.check(plugin.active_layer == 1 and map.layer_count(cell) == 2
+		and map.solid_tile_id(cell, 0) == "grass" and map.solid_tile_id(cell, 1) == "rock",
+		"real top click places the neighboring block without a height selector")
 	var history: UndoRedo = plugin.get_undo_redo().get_history_undo_redo(
 		plugin.get_undo_redo().get_object_history_id(map))
-	plugin.height_select.selected = 0
 	plugin._update_preview(cell)
 	history.undo()
-	suite.check(map.clone_data() == initial, "one undo removes high block and generated support")
+	suite.check(map.clone_data() == initial, "one undo restores the exact starting map")
 	var undo_preview: TerrainBuilder = plugin.preview.get_child(0)
-	suite.check(undo_preview.level_data.layer_count(Vector2i.ZERO) == 1,
-		"undo invalidates the hovered preview and removes stale upper blocks")
+	suite.check(undo_preview.level_data.layer_exists(Vector2i.ZERO, 1)
+		and not undo_preview.level_data.layer_exists(Vector2i.ZERO, 0),
+		"preview contains only the candidate block and no generated support")
 	history.redo()
-	plugin.height_select.selected = 1
 	select_tile(plugin, "ground_stone")
-	var before_middle := map.clone_data()
-	await plugin.get_tree().physics_frame
-	await plugin.get_tree().physics_frame
-	click(plugin, camera, camera.unproject_position(map.world_center(cell)))
-	suite.check(map.solid_tile_id(cell, 0) == "grass"
-		and map.solid_tile_id(cell, 1) == "ground_stone"
-		and map.solid_tile_id(cell, 2) == "rock",
-		"real middle-layer click replaces B without modifying A or C")
+	var before_side := map.clone_data()
+	var front := camera.unproject_position(map.world_layer_center(cell, 1) + Vector3.BACK)
+	click(plugin, camera, front)
+	var side := cell + Vector2i(0, 1)
+	suite.check(map.solid_tile_id(side, 1) == "ground_stone"
+		and map.layer_exists(side, 1) and not map.layer_exists(side, 0)
+		and map.get_column(cell) == before_side["columns"][map.index(cell)],
+		"real side click extends a floating block at the pointed height")
 	history.undo()
-	suite.check(map.clone_data() == before_middle, "middle-layer undo restores exact column")
-	history.redo()
-	plugin.mode_select.selected = 2
+	suite.check(map.clone_data() == before_side, "side placement undo restores the exact map")
 	plugin.erase_select.selected = 0
 	var before_erase := map.clone_data()
-	plugin._begin_stroke()
-	plugin.touched.clear()
-	plugin.last_stroke_cell = Vector2i(-999, -999)
-	plugin._paint(cell)
-	plugin._commit_stroke("rejected middle erase")
-	suite.check(map.clone_data() == before_erase, "middle erasure changes neither terrain nor dependencies")
-	plugin.slice_select.select(2)
-	plugin._slice_changed(2)
-	await plugin.get_tree().physics_frame
-	await plugin.get_tree().physics_frame
+	click(plugin, camera, camera.unproject_position(map.world_layer_center(cell, 0) + Vector3.BACK),
+		MOUSE_BUTTON_RIGHT)
+	suite.check(not map.layer_exists(cell, 0) and map.layer_exists(cell, 1),
+		"right click erases the pointed lower block and leaves upper blocks suspended")
+	history.undo()
+	suite.check(map.clone_data() == before_erase, "right erase undo restores exact layers")
+	map.set_layer(cell, 3, {"tile_id": "sand"})
+	builder.rebuild_cells([cell])
+	plugin.slice_select.select(3)
+	plugin._slice_changed(3)
 	var screen_b := camera.unproject_position(map.world_center(cell, 1))
 	suite.check(plugin._pick(camera, screen_b) == cell and plugin.picked_layer == 1,
-		"editor picks B on the temporary slice cap")
-	var before_sample := map.clone_data()
-	plugin.height_select.select(0)
-	var sample := InputEventMouseButton.new()
-	sample.button_index = MOUSE_BUTTON_LEFT
-	sample.position = screen_b
-	sample.alt_pressed = true # macOS Option is delivered as Alt by Godot.
-	sample.pressed = true
-	plugin._forward_3d_gui_input(camera, sample)
-	sample.pressed = false
-	plugin._forward_3d_gui_input(camera, sample)
-	suite.check(plugin.height_select.selected == 1 and map.clone_data() == before_sample
-		and not plugin.drawing, "Option-click selects the visible layer without painting")
+		"slice through air picks the real surface below it")
+	suite.check(plugin.active_layer == 0, "display filtering never changes the placement target")
 	plugin.slice_select.select(0)
 	plugin._slice_changed(0)
 	plugin.mode_select.selected = 0
-	plugin.height_select.selected = 2
+	plugin.active_layer = 1
 	select_tile(plugin, "decal_corruption")
 	plugin.touched.clear()
 	plugin._paint_single(cell, 0)
-	suite.check(map.overlay_tile_id(cell) == "decal_corruption"
-		and map.layer_count(cell) == 3 and map.solid_tile_id(cell) == "rock",
-		"overlay brush preserves all solids")
-	plugin.mode_select.selected = 2
+	suite.check(map.overlay_tile_id(cell, 1) == "decal_corruption"
+		and map.layer_count(cell) == 4 and map.solid_tile_id(cell, 1) == "rock",
+		"overlay brush targets an exposed lower surface and preserves all solids")
 	plugin.erase_select.selected = 2
 	plugin.touched.clear()
 	plugin._paint_single(cell, 2)
-	suite.check(map.overlay_tile_id(cell).is_empty() and map.layer_count(cell) == 3,
+	suite.check(map.overlay_tile_id(cell, 1).is_empty() and map.layer_count(cell) == 4,
 		"erase-overlay tool leaves supporting column intact")
-	# A 3x3 dab must reject the whole edit even when the invalid target is last.
+	# A right press is a single deletion, even with the large placement brush.
 	var neighbor := cell + Vector2i.ONE
-	map.set_layer(neighbor, 3, {"tile_id": "sand"})
+	map.set_layer(neighbor, 1, {"tile_id": "sand"})
+	map.set_layer(neighbor, 0, {"tile_id": "grass"})
+	builder.rebuild_cells([neighbor])
 	plugin.brush_select.selected = 1
 	plugin.erase_select.selected = 0
-	plugin.touched.clear()
-	var before_dab := map.clone_data()
-	plugin.last_stroke_cell = Vector2i(-999, -999)
-	plugin._paint(cell)
-	suite.check(map.clone_data() == before_dab, "3x3 top erase rejects an occupied upper layer atomically")
+	var before_click := map.clone_data()
+	var expected := map.fork_for_edit()
+	expected.remove_layer(neighbor, 1)
+	var dab_point := camera.unproject_position(map.world_center(neighbor, 1))
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_RIGHT
+	press.position = dab_point
+	press.pressed = true
+	plugin._forward_3d_gui_input(camera, press)
+	var after_click := map.clone_data()
+	suite.check(after_click == expected.clone_data() and not plugin.drawing,
+		"right press deletes exactly one block even with a 3x3 placement brush")
+	var motion := InputEventMouseMotion.new()
+	motion.position = dab_point
+	motion.button_mask = MOUSE_BUTTON_MASK_RIGHT
+	for i in 3:
+		plugin._forward_3d_gui_input(camera, motion)
+	motion.position = camera.unproject_position(map.world_center(cell, 3))
+	plugin._forward_3d_gui_input(camera, motion)
+	plugin._forward_3d_gui_input(camera, press)
+	suite.check(map.clone_data() == after_click,
+		"holding, dragging and a repeated right press never delete another block")
+	press.pressed = false
+	plugin._input(press)
+	history.undo()
+	suite.check(map.clone_data() == before_click,
+		"single deletion is one undo action after release outside the viewport")
+	history.redo()
+	suite.check(map.clone_data() == after_click, "single deletion redo restores exactly one change")
+	click(plugin, camera, camera.unproject_position(map.world_center(neighbor, 0)), MOUSE_BUTTON_RIGHT)
+	suite.check(not map.layer_exists(neighbor, 0) and map.layer_exists(cell, 1),
+		"a fresh right click can delete the next block without touching its neighbors")
+	plugin.brush_select.selected = 0
+	select_tile(plugin, "rock")
+	var stack_cell := Vector2i(4, 4)
+	var base_point := map.world_center(stack_cell, 0) - Vector3.UP * LevelData.ELEVATION_STEP
+	click(plugin, camera, camera.unproject_position(base_point), MOUSE_BUTTON_LEFT, true)
+	suite.check(map.layer_exists(stack_cell, 0) and map.layer_count(stack_cell) == 1,
+		"Shift click uses the ground plane instead of creating a block in midair")
+	click(plugin, camera, camera.unproject_position(map.world_center(stack_cell, 0)))
+	var stack_top := camera.unproject_position(map.world_center(stack_cell, 1))
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.position = stack_top
+	press.pressed = true
+	plugin._forward_3d_gui_input(camera, press)
+	motion.position = stack_top
+	motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+	for i in 3:
+		plugin._forward_3d_gui_input(camera, motion)
+	# Releasing outside the 3D viewport must still commit exactly one stroke.
+	press.pressed = false
+	plugin._input(press)
+	suite.check(map.layer_exists(stack_cell, 2) and not map.layer_exists(stack_cell, 3)
+		and not plugin.drawing, "left drag locks its starting plane and outside release commits")
+	history.undo()
+	suite.check(map.layer_exists(stack_cell, 1) and not map.layer_exists(stack_cell, 2),
+		"one undo restores a plane-locked stroke after outside release")
+	click(plugin, camera, camera.unproject_position(
+		map.world_layer_center(stack_cell, 0) + Vector3.BACK), MOUSE_BUTTON_RIGHT)
+	suite.check(not map.layer_exists(stack_cell, 0) and map.layer_exists(stack_cell, 1),
+		"building upward then deleting the base leaves the upper block suspended")
+	await check_delete_switch(plugin, suite, camera, map, builder)
+	plugin.stroke_erase = false
+	plugin.hover_normal = Vector3i.UP
 	var large := LevelData.new()
 	large.setup_blank(Vector2i(128, 128))
 	plugin.data = large
 	plugin.mode_select.selected = 0
-	plugin.height_select.selected = 3
+	plugin.active_layer = 3
 	select_tile(plugin, "rock")
 	var started := Time.get_ticks_usec()
 	var target: Array[Vector2i] = [Vector2i(64, 64)]
@@ -153,7 +201,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = populated
 	builder.level_data = populated
 	builder.rebuild()
-	plugin.height_select.selected = 0
+	plugin.active_layer = 0
 	plugin.brush_select.selected = 1
 	select_tile(plugin, "painted_grass")
 	plugin._make_preview()
@@ -212,9 +260,51 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.mode_select.selected = 0
 	plugin.brush_select.selected = 0
 	plugin.erase_select.selected = 0
-	plugin.height_select.selected = 0
+	plugin.active_layer = 0
 	plugin._make_preview()
 	viewport.free()
+	plugin.default_right_delete.set_pressed_no_signal(right_delete_before)
+
+func check_delete_switch(plugin: EditorPlugin, suite: RefCounted, camera: Camera3D,
+		map: LevelData, builder: TerrainBuilder) -> void:
+	var cell := Vector2i(0, 0)
+	map.set_layer(cell, 0, {"tile_id": "grass"})
+	builder.rebuild_cells([cell])
+	var point := camera.unproject_position(map.world_center(cell, 0))
+	plugin.default_right_delete.set_pressed_no_signal(false)
+	var before := map.clone_data()
+	click(plugin, camera, point, MOUSE_BUTTON_RIGHT)
+	suite.check(map.clone_data() == before, "disabled switch prevents ordinary right-click terrain deletion")
+	click(plugin, camera, point, MOUSE_BUTTON_RIGHT, false, true)
+	suite.check(not map.layer_exists(cell, 0), "disabled switch deletes terrain with Alt-right click")
+	var history: UndoRedo = plugin.get_undo_redo().get_history_undo_redo(
+		plugin.get_undo_redo().get_object_history_id(map))
+	history.undo()
+	suite.check(map.clone_data() == before, "Alt-right terrain deletion supports exact undo")
+	map.objects.append(ObjectRules.anchor_record(map, {"id": "right_click_rock",
+		"definition": "res://assets/generated/painted_rock/definition.tres",
+		"position": map.world_center(cell, 0), "scale": 1.0, "yaw": 0.0}))
+	builder.refresh_objects()
+	point = camera.unproject_position(map.world_center(cell, 0) + Vector3.UP)
+	var generated := builder.generated
+	var terrain_nodes: Array = builder._chunk_nodes[Vector2i.ZERO].duplicate()
+	before = map.clone_data()
+	click(plugin, camera, point, MOUSE_BUTTON_RIGHT, false, true)
+	suite.check(ObjectRules.find_record(map, "right_click_rock").is_empty()
+		and map.layer_exists(cell, 0) and builder.generated == generated,
+		"Alt-right deletes a pointed object while retaining its terrain")
+	history.undo()
+	var retained := true
+	for node in terrain_nodes:
+		retained = retained and is_instance_valid(node)
+	suite.check(map.clone_data() == before and retained, "object undo preserves existing terrain nodes")
+	plugin.tabs.current_tab = 1
+	plugin.default_right_delete.set_pressed_no_signal(true)
+	click(plugin, camera, point, MOUSE_BUTTON_RIGHT)
+	suite.check(ObjectRules.find_record(map, "right_click_rock").is_empty()
+		and map.layer_exists(cell, 0), "object page also supports ordinary right-click deletion")
+	history.undo()
+	plugin.tabs.current_tab = 0
 
 func select_tile(plugin: EditorPlugin, id: String) -> void:
 	var tiles := TileRegistry.all_tiles()
@@ -223,9 +313,12 @@ func select_tile(plugin: EditorPlugin, id: String) -> void:
 			plugin.tile_list.select(i)
 			return
 
-func click(plugin: EditorPlugin, camera: Camera3D, point: Vector2) -> void:
+func click(plugin: EditorPlugin, camera: Camera3D, point: Vector2,
+		button := MOUSE_BUTTON_LEFT, shift := false, alt := false) -> void:
 	var event := InputEventMouseButton.new()
-	event.button_index = MOUSE_BUTTON_LEFT
+	event.button_index = button
+	event.shift_pressed = shift
+	event.alt_pressed = alt
 	event.position = point
 	event.pressed = true
 	plugin._forward_3d_gui_input(camera, event)

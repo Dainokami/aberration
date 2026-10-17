@@ -42,7 +42,7 @@ func run(plugin: EditorPlugin) -> void:
 	plugin.data.objects.remove_at(0)
 	var after_delete: Dictionary = plugin.data.clone_data()
 	plugin._commit_external(initial, after_delete, "V2自动检查：删除")
-	check(plugin.data.objects.size() == 11, "commit object deletion")
+	check(plugin.data.objects.size() == initial["objects"].size() - 1, "commit object deletion")
 	# Restore manually for remaining tests
 	plugin.data.restore_data(initial)
 	plugin.builder.rebuild()
@@ -65,7 +65,7 @@ func run(plugin: EditorPlugin) -> void:
 	# Save failure: data survives
 	plugin.current_path = "res://missing_directory_for_save_test/map.tres"
 	plugin._save_map()
-	check(plugin.data.objects.size() == 12, "save failure retains data")
+	check(plugin.data.objects == initial["objects"], "save failure retains data")
 
 	# Importer widgets — tab 2 is import
 	var importer = plugin.world_tools.tabs.get_child(2).get_child(0)

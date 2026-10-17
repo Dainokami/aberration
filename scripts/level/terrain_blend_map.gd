@@ -115,15 +115,16 @@ static func _paint_cached_cell(index_image: Image, weight_image: Image,
 		Vector2i.ONE * pixels_per_cell)
 	# Outer halo cells have an incomplete neighbor view. Do not cache those.
 	var cacheable := data.map_bounds().encloses(Rect2i(cell - Vector2i.ONE, Vector2i(3, 3)))
-	if cacheable and cache.has(cell):
-		var images: Array = cache[cell]
+	var key := Vector3i(cell.x, data.elevation(cell), cell.y)
+	if cacheable and cache.has(key):
+		var images: Array = cache[key]
 		var source := Rect2i(Vector2i.ZERO, rect.size)
 		index_image.blit_rect(images[0], source, rect.position)
 		weight_image.blit_rect(images[1], source, rect.position)
 		return
 	_paint_cell(index_image, weight_image, data, cell, style, pixels_per_cell, page_by_id)
 	if cacheable:
-		cache[cell] = [index_image.get_region(rect), weight_image.get_region(rect)]
+		cache[key] = [index_image.get_region(rect), weight_image.get_region(rect)]
 
 static func _paint_cell(index_image: Image, weight_image: Image,
 		data: LevelData, cell: Vector2i, style: TerrainStyleProfile,

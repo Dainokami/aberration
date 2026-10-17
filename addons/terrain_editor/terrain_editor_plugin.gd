@@ -7,6 +7,10 @@ extends EditorPlugin
 
 enum ToolMode { GROUND = 0, ERASE = 2, STAIR = 3, SPAWN = 4 }
 enum ViewMode { FREE, PERSPECTIVE_2_5D, TOP }
+const BlockPicker := preload("res://addons/terrain_editor/block_picker.gd")
+const INVALID_BLOCK := Vector3i(-999, -999, -999)
+const EDIT_MODE_COLOR := Color("#f06a73")
+const NAVIGATION_MODE_COLOR := Color("#65d58a")
 
 # --- State --------------------------------------------------
 var builder: TerrainBuilder
@@ -14,10 +18,25 @@ var data: LevelData
 var current_path := ""
 var dirty := false
 var drawing := false
+var stroke_erase := false
+var stroke_button := MOUSE_BUTTON_LEFT
+var stroke_plane := Plane()
+var stroke_normal := Vector3i.UP
+var stroke_block := INVALID_BLOCK
+var hover_block := INVALID_BLOCK
+var hover_normal := Vector3i.UP
+var hover_point := Vector3.ZERO
+var active_layer := 0
+var _erase_button_down := false
+var _alt_navigation := false
+var _view_mode_badges: Array[PanelContainer] = []
+var default_right_delete: CheckButton
+var terrain_input_hint: Label
+var last_mouse := Vector2.ZERO
 var stroke_cells_before: Dictionary = {}
 var stroke_aux_before: Dictionary = {}
-var stroke_full_before: Dictionary = {}
-var pending_expansion_before: Dictionary = {}
+var stroke_bounds_before := Rect2i()
+var pending_bounds_before := Rect2i()
 var touched: Dictionary = {}
 var stair_direction := 0
 var tile_turns := 0
@@ -61,7 +80,6 @@ var mode_select
 var ground_controls: Array[Control] = []
 var brush_controls: Array[Control] = []
 var direction_controls: Array[Control] = []
-var height_select: OptionButton
 var slice_select: OptionButton
 var layer_controls: Array[Control] = []
 var erase_select: OptionButton
@@ -108,6 +126,7 @@ func _enter_tree() -> void:
 	editor_dock.close()
 	dock_started_closed = true
 	set_input_event_forwarding_always_enabled()
+	set_force_draw_over_forwarding_enabled()
 	RenderingServer.frame_pre_draw.connect(_apply_fixed_view)
 	get_tree().root.focus_exited.connect(_clear_view_input)
 	get_tree().root.gui_focus_changed.connect(_view_focus_changed)
@@ -123,7 +142,12 @@ func _run_editor_checks() -> void:
 	await suite.run(self)
 
 func _exit_tree() -> void:
+	_finish_terrain_stroke()
 	_disable_2_5d_view()
+	for badge in _view_mode_badges:
+		if is_instance_valid(badge):
+			badge.queue_free()
+	_view_mode_badges.clear()
 	get_tree().root.focus_exited.disconnect(_clear_view_input)
 	get_tree().root.gui_focus_changed.disconnect(_view_focus_changed)
 	if RenderingServer.frame_pre_draw.is_connected(_apply_fixed_view):
@@ -144,6 +168,7 @@ func _handles(object: Object) -> bool:
 	return object is TerrainBuilder
 
 func _edit(object: Object) -> void:
+	_finish_terrain_stroke()
 	if world_tools:
 		world_tools.reset()
 	if object is TerrainBuilder:
@@ -233,6 +258,14 @@ func _build_dock() -> void:
 		button.text = spec[0]
 		button.pressed.connect(Callable(self, spec[1]))
 		files.add_child(button)
+	default_right_delete = CheckButton.new()
+	default_right_delete.name = "DefaultRightDelete"
+	default_right_delete.text = "默认右键删除"
+	default_right_delete.tooltip_text = "开启后右键删除地块，自由视角中移动视角使用alt+右键。\n关闭后删除地块必须alt+右键，自由视角中移动视角则直接右键"
+	default_right_delete.button_pressed = EditorInterface.get_editor_settings().get_project_metadata(
+		"terrain_editor", "default_right_delete", true)
+	default_right_delete.toggled.connect(_right_delete_changed)
+	files.add_child(default_right_delete)
 	var view_modes := HBoxContainer.new()
 	dock_root.add_child(view_modes)
 	var view_label := Label.new()
@@ -245,7 +278,7 @@ func _build_dock() -> void:
 			["俯视", "_top_view_pressed",
 				"正交垂直俯视；适合精确选择和摆放格子"],
 			["自由", "_free_view_pressed",
-				"WASD移动，滚轮缩放，右键拖动转向，中键拖动平移"],
+				"WASD移动，滚轮缩放，Alt＋右键拖动转向，中键拖动平移"],
 		]:
 		var button := Button.new()
 		button.text = spec[0]
@@ -268,6 +301,7 @@ func _build_dock() -> void:
 	# Tabs
 	tabs = TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	tabs.tab_changed.connect(func(_index: int): _finish_terrain_stroke())
 	dock_root.add_child(tabs)
 
 	# Tab 0: 地形
@@ -309,23 +343,13 @@ func _build_terrain_tab() -> void:
 	# Tool mode
 	_add_label(placement, "工具模式")
 	mode_select = load("res://addons/terrain_editor/mode_bar.gd").new()
-	for spec in [["刷地块", ToolMode.GROUND], ["擦除", ToolMode.ERASE],
+	for spec in [["选地块", ToolMode.GROUND],
 			["阶梯", ToolMode.STAIR], ["出生点", ToolMode.SPAWN]]:
 		mode_select.add_mode(spec[0], spec[1])
 	placement.add_child(mode_select)
 	mode_select.item_selected.connect(_terrain_mode_changed)
 
-	# Active layer and slice selector
-	layer_controls.append(_add_label(placement, "地位摆放层次"))
-	height_select = OptionButton.new()
-	height_select.name = "PlacementLayer"
-	for layer in LevelData.MAX_LAYERS:
-		height_select.add_item("第 %d 层（顶面 %dm）" % [
-			layer, (layer + 1) * roundi(LevelData.ELEVATION_STEP)])
-	height_select.item_selected.connect(func(_index: int): _refresh_brush_preview())
-	placement.add_child(height_select)
-	_limit_layer_popup(height_select)
-	layer_controls.append(height_select)
+	# Viewing filters never choose where a block is placed.
 	layer_controls.append(_add_label(placement, "地块显示层次"))
 	slice_select = OptionButton.new()
 	slice_select.name = "DisplayLayer"
@@ -336,12 +360,11 @@ func _build_terrain_tab() -> void:
 	placement.add_child(slice_select)
 	_limit_layer_popup(slice_select)
 	layer_controls.append(slice_select)
-	var sample_key := "⌥ Option" if OS.get_name() == "macOS" else "Alt"
-	var sample_hint := _add_label(placement,
-		sample_key + "＋左键：选择点击位置的摆放层次")
-	sample_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	sample_hint.tooltip_text = "点击顶面选中最高可见层，点击侧面选中对应层；只切换摆放层次，不绘制地块。"
-	layer_controls.append(sample_hint)
+	terrain_input_hint = _add_label(placement,
+		"左键：贴面摆放，可沿起始平面拖动绘制\n右键：每次点击只删除一块，长按不连续删除\nAlt＋右键：转动自由视角")
+	terrain_input_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	layer_controls.append(terrain_input_hint)
+	layer_controls.append(_add_label(placement, "右键擦除内容"))
 	erase_select = OptionButton.new()
 	for label in ["擦除实体块", "仅清除液体", "仅清除贴花", "仅移除阶梯"]:
 		erase_select.add_item(label)
@@ -378,7 +401,7 @@ func _build_terrain_tab() -> void:
 	ground_controls.append(separator)
 
 	# Tile palette
-	ground_controls.append(_add_label(placement, "地块列表（选一个再刷）"))
+	ground_controls.append(_add_label(placement, "地块列表（选择后在视口摆放）"))
 
 	tile_list = ItemList.new()
 	tile_list.auto_height = true
@@ -448,6 +471,7 @@ func _build_terrain_tab() -> void:
 
 	refresh_tile_list()
 	_terrain_mode_changed(ToolMode.GROUND)
+	_sync_right_delete_hints()
 
 func _terrain_panel(title: String, border_color: Color) -> PanelContainer:
 	var panel := PanelContainer.new()
@@ -493,7 +517,7 @@ func _terrain_mode_changed(value: int) -> void:
 		control.visible = value in [ToolMode.GROUND, ToolMode.ERASE]
 	for control in layer_controls:
 		control.visible = value in [ToolMode.GROUND, ToolMode.ERASE]
-	erase_select.visible = value == ToolMode.ERASE
+	erase_select.visible = value in [ToolMode.GROUND, ToolMode.ERASE]
 	for control in direction_controls:
 		control.visible = value in [ToolMode.GROUND, ToolMode.STAIR]
 	if is_instance_valid(tint_panel):
@@ -612,7 +636,7 @@ func _on_tile_selected(index: int) -> void:
 		return
 	var t := tiles[index]
 	tile_name_label.text = "名称：%s（ID: %s）" % [t.display_name, t.tile_id]
-	tile_height_label.text = "固定厚度：2m" if t.is_solid() else "附着在最高实体层"
+	tile_height_label.text = "固定厚度：2m；贴面逐块堆叠" if t.is_solid() else "附着在指向的外露顶面"
 	_sync_tint_controls()
 	_refresh_brush_preview()
 
@@ -832,12 +856,10 @@ func _rotate_stair(delta: int) -> void:
 func _refresh_brush_preview() -> void:
 	_preview_key = ""
 	_preview_pending = false
-	if data != null and is_instance_valid(builder) and data.in_bounds(hover_cell):
+	if data != null and is_instance_valid(builder):
 		_update_preview(hover_cell)
 
 func _slice_changed(index: int) -> void:
-	if index > 0:
-		height_select.select(index - 1)
 	if is_instance_valid(builder):
 		builder.set_slice_layer(index - 1)
 	_refresh_brush_preview()
@@ -869,6 +891,16 @@ func _resize_layer_popup(popup: PopupMenu) -> void:
 func _clear_view_input() -> void:
 	for key in view_move_keys:
 		view_move_keys[key] = false
+	_finish_terrain_stroke()
+	_erase_button_down = false
+	_set_alt_navigation(false)
+
+func _finish_terrain_stroke() -> void:
+	if not drawing:
+		return
+	drawing = false
+	_commit_stroke(_mode_name())
+	stroke_erase = false
 
 func _view_focus_changed(_control: Control) -> void:
 	_clear_view_input()
@@ -877,12 +909,109 @@ func _text_input_focused() -> bool:
 	var focus := get_tree().root.gui_get_focus_owner()
 	return focus is LineEdit or focus is TextEdit
 
+func _update_alt_state(event: InputEvent) -> void:
+	if event is InputEventKey and event.keycode == KEY_ALT:
+		_set_alt_navigation(event.pressed)
+	elif event is InputEventWithModifiers:
+		_set_alt_navigation(event.alt_pressed)
+
+func _set_alt_navigation(pressed: bool) -> void:
+	if _alt_navigation == pressed:
+		return
+	_alt_navigation = pressed
+	if free_view_active:
+		if _right_button_navigates(pressed):
+			_finish_terrain_stroke()
+			_preview_pending = false
+			if is_instance_valid(preview):
+				preview.hide()
+		elif is_instance_valid(editing_camera) and is_instance_valid(builder) and data != null:
+			_update_terrain_target(editing_camera, last_mouse, false)
+			_preview_pending = true
+	_refresh_view_mode_badges()
+
+func _right_button_deletes(alt: bool) -> bool:
+	return alt != default_right_delete.button_pressed
+
+func _right_button_navigates(alt: bool) -> bool:
+	return not _right_button_deletes(alt)
+
+func _right_delete_changed(value: bool) -> void:
+	_finish_terrain_stroke()
+	_erase_button_down = false
+	EditorInterface.get_editor_settings().set_project_metadata(
+		"terrain_editor", "default_right_delete", value)
+	_refresh_view_mode_badges()
+	_sync_right_delete_hints()
+	_refresh_brush_preview()
+
+func _sync_right_delete_hints() -> void:
+	var deletion := "右键" if default_right_delete.button_pressed else "Alt＋右键"
+	var navigation := "Alt＋右键" if default_right_delete.button_pressed else "右键"
+	terrain_input_hint.text = "左键：贴面摆放，可沿起始平面拖动绘制\n%s：单次删除地块或物件，长按不连续删除\n%s：转动自由视角" % [deletion, navigation]
+	free_view_button.tooltip_text = "WASD移动，滚轮缩放，%s拖动转向，中键平移" % navigation
+
+## Native editor overlay: viewport-local, mouse-transparent, and never saved
+## into the user's level scene.
+func _forward_3d_force_draw_over_viewport(overlay: Control) -> void:
+	if free_view_active and is_instance_valid(builder) and data != null:
+		var badge := overlay.get_node_or_null("TerrainEditModeBadge") as PanelContainer
+		if badge == null:
+			badge = PanelContainer.new()
+			badge.name = "TerrainEditModeBadge"
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			badge.position = ui_size(Vector2(12, 44))
+			var style := StyleBoxFlat.new()
+			style.bg_color = Color(0.06, 0.075, 0.09, 0.92)
+			style.set_border_width_all(ui_px(1))
+			style.set_corner_radius_all(ui_px(4))
+			style.content_margin_left = ui_px(10)
+			style.content_margin_right = ui_px(10)
+			style.content_margin_top = ui_px(6)
+			style.content_margin_bottom = ui_px(6)
+			badge.add_theme_stylebox_override("panel", style)
+			var label := Label.new()
+			label.name = "State"
+			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			label.add_theme_font_size_override("font_size", ui_px(14))
+			badge.add_child(label)
+			overlay.add_child(badge)
+			_view_mode_badges.append(badge)
+	_sync_view_mode_badges()
+
+func _refresh_view_mode_badges() -> void:
+	_sync_view_mode_badges()
+	update_overlays()
+
+func _sync_view_mode_badges() -> void:
+	for index in range(_view_mode_badges.size() - 1, -1, -1):
+		var badge := _view_mode_badges[index]
+		if not is_instance_valid(badge):
+			_view_mode_badges.remove_at(index)
+			continue
+		badge.visible = free_view_active and is_instance_valid(builder) and data != null
+		var label := badge.get_node("State") as Label
+		var navigating := _right_button_navigates(_alt_navigation)
+		var color := NAVIGATION_MODE_COLOR if navigating else EDIT_MODE_COLOR
+		label.text = "移动视角中" if navigating else "摆放/删除中"
+		if label.get_theme_color("font_color") != color:
+			label.add_theme_color_override("font_color", color)
+		var style := badge.get_theme_stylebox("panel") as StyleBoxFlat
+		if style.border_color != color:
+			style.border_color = color
+
 func _input(event: InputEvent) -> void:
+	_update_alt_state(event)
 	# A release can arrive outside the 3D viewport, after a popup or focus change.
 	if event is InputEventKey and not event.pressed:
 		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
 		if key in view_move_keys:
 			view_move_keys[key] = false
+	if event is InputEventMouseButton and not event.pressed:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			_erase_button_down = false
+		if drawing and event.button_index == stroke_button:
+			_finish_terrain_stroke()
 
 # ============================================================
 # Input forwarding
@@ -894,7 +1023,31 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 		data = null
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
 	_apply_fixed_view()
+	_update_alt_state(event)
+	if event is InputEventMouse:
+		last_mouse = event.position
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+			and not event.pressed:
+		_erase_button_down = false
 	if (fixed_view_active or free_view_active) and _handle_view_input(camera, event):
+		return EditorPlugin.AFTER_GUI_INPUT_STOP
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+			and _right_button_deletes(event.alt_pressed) and tabs.current_tab in [0, 1]:
+		if event.pressed:
+			if _erase_button_down or drawing:
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			_erase_button_down = true
+			# Objects are picked against terrain depth, including non-colliding art.
+			var id: String = world_tools._pick_object(camera, event.position)
+			if not id.is_empty():
+				world_tools.delete_object(id)
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			if tabs.current_tab == 1:
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			_erase_terrain_at(camera, event.position)
+		return EditorPlugin.AFTER_GUI_INPUT_STOP
+	if free_view_active and _alt_navigation and event is InputEventMouse \
+			and not (event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT):
 		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	# Tabs 1+ (物件/导入/预制) handled by world_tools
 	if world_tools and world_tools.active():
@@ -909,16 +1062,26 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 		if event.keycode == KEY_E:
 			_rotate_stair(1)
 			return EditorPlugin.AFTER_GUI_INPUT_STOP
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT \
+			and not event.alt_pressed:
 		if event.pressed:
-			var cell := _pick(camera, event.position)
-			var can_expand: bool = mode_select.selected == ToolMode.GROUND
+			if drawing:
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			stroke_erase = event.button_index == MOUSE_BUTTON_RIGHT
+			if stroke_erase and mode_select.selected != ToolMode.GROUND:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			_update_terrain_target(camera, event.position, stroke_erase)
+			if hover_block == INVALID_BLOCK:
+				return EditorPlugin.AFTER_GUI_INPUT_STOP
+			var cell := Vector2i(hover_block.x, hover_block.z)
+			var can_expand: bool = mode_select.selected == ToolMode.GROUND and not stroke_erase
 			if not data.in_bounds(cell) and not can_expand:
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			if event.alt_pressed:
-				_adopt_picked_layer()
-				return EditorPlugin.AFTER_GUI_INPUT_STOP
 			drawing = true
+			stroke_button = event.button_index
+			stroke_block = hover_block
+			stroke_normal = hover_normal
+			stroke_plane = Plane(Vector3(stroke_normal), hover_point)
 			_begin_stroke()
 			touched.clear()
 			last_stroke_cell = Vector2i(-999, -999)
@@ -926,22 +1089,42 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 				drawing = false
 				return EditorPlugin.AFTER_GUI_INPUT_STOP
 			_paint(cell)
+			if stroke_erase:
+				# Erasure is committed on press, never continued on mouse motion.
+				_finish_terrain_stroke()
+			_refresh_brush_preview()
 		else:
-			if drawing:
-				drawing = false
-				_commit_stroke(_mode_name())
+			if drawing and event.button_index == stroke_button:
+				_finish_terrain_stroke()
 		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	if event is InputEventMouseMotion:
-		var cell := _pick(camera, event.position)
-		hover_cell = cell
+		_update_terrain_target(camera, event.position, stroke_erase if drawing else false)
+		var cell := hover_cell
 		_preview_pending = true
-		if drawing and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			if mode_select.selected == ToolMode.GROUND \
+		if drawing and event.button_mask & MOUSE_BUTTON_MASK_LEFT and hover_block != INVALID_BLOCK:
+			if mode_select.selected == ToolMode.GROUND and not stroke_erase \
 					and not _ensure_ground_bounds(cell):
 				return EditorPlugin.AFTER_GUI_INPUT_STOP
 			_paint(cell)
-		return EditorPlugin.AFTER_GUI_INPUT_PASS
+		return EditorPlugin.AFTER_GUI_INPUT_STOP if drawing \
+			or event.button_mask & MOUSE_BUTTON_MASK_RIGHT else EditorPlugin.AFTER_GUI_INPUT_PASS
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func _erase_terrain_at(camera: Camera3D, mouse: Vector2) -> void:
+	if mode_select.selected != ToolMode.GROUND:
+		return
+	stroke_erase = true
+	_update_terrain_target(camera, mouse, true)
+	if hover_block == INVALID_BLOCK:
+		stroke_erase = false
+		return
+	drawing = true
+	stroke_button = MOUSE_BUTTON_RIGHT
+	_begin_stroke()
+	touched.clear()
+	_paint(hover_cell)
+	_finish_terrain_stroke()
+	_refresh_brush_preview()
 
 func _handle_view_input(camera: Camera3D, event: InputEvent) -> bool:
 	if event is InputEventKey:
@@ -950,12 +1133,14 @@ func _handle_view_input(camera: Camera3D, event: InputEvent) -> bool:
 			if not event.pressed:
 				view_move_keys[key] = false
 				return true
-			if _text_input_focused() or event.ctrl_pressed or event.meta_pressed or event.alt_pressed:
+			if _text_input_focused() or event.ctrl_pressed or event.meta_pressed \
+					or (event.alt_pressed and not free_view_active):
 				return false
 			view_move_keys[key] = true
 			return true
 	if event is InputEventMouseButton:
-		if event.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+		if event.button_index == MOUSE_BUTTON_MIDDLE \
+				or (event.button_index == MOUSE_BUTTON_RIGHT and _right_button_navigates(event.alt_pressed)):
 			return true
 		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 			var direction := -1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0
@@ -967,8 +1152,9 @@ func _handle_view_input(camera: Camera3D, event: InputEvent) -> bool:
 	if event is InputEventPanGesture:
 		_zoom_editor_view(camera, exp(clampf(event.delta.y * 0.06, -1.0, 1.0)))
 		return true
-	if event is InputEventMouseMotion and event.button_mask & (
-			MOUSE_BUTTON_MASK_RIGHT | MOUSE_BUTTON_MASK_MIDDLE):
+	if event is InputEventMouseMotion and (
+			event.button_mask & MOUSE_BUTTON_MASK_MIDDLE \
+			or (_right_button_navigates(event.alt_pressed) and event.button_mask & MOUSE_BUTTON_MASK_RIGHT)):
 		if free_view_active:
 			_drag_free_view(camera, event)
 		return true
@@ -1010,7 +1196,8 @@ func _free_view_pressed() -> void:
 	_clear_view_input()
 	_sync_view_buttons()
 	_apply_fixed_view()
-	_set_status("自由视角：WASD移动，滚轮/触控板缩放，右键拖动转向")
+	_set_status("自由视角：WASD移动，滚轮/触控板缩放，%s拖动转向" % (
+		"Alt＋右键" if default_right_delete.button_pressed else "右键"))
 
 func _enable_2_5d_view() -> void:
 	_enable_fixed_view(ViewMode.PERSPECTIVE_2_5D)
@@ -1086,6 +1273,7 @@ func _sync_view_buttons() -> void:
 		top_view_button.set_pressed_no_signal(view_mode == ViewMode.TOP)
 	if is_instance_valid(free_view_button):
 		free_view_button.set_pressed_no_signal(view_mode == ViewMode.FREE)
+	_refresh_view_mode_badges()
 
 func _process(delta: float) -> void:
 	if _preview_pending:
@@ -1264,6 +1452,26 @@ func _apply_map_snapshot(target: LevelData, snapshot: Dictionary) -> void:
 		_refresh_brush_preview()
 		_set_dirty(true)
 
+func _commit_objects(before: Array[Dictionary], after: Array[Dictionary], label: String) -> void:
+	if data == null or before == after:
+		return
+	var target := data
+	var undo_redo := get_undo_redo()
+	undo_redo.create_action(label, UndoRedo.MERGE_DISABLE, target)
+	undo_redo.add_do_method(self, "_apply_objects", target, after.duplicate(true))
+	undo_redo.add_undo_method(self, "_apply_objects", target, before.duplicate(true))
+	undo_redo.commit_action(false)
+	if is_instance_valid(builder):
+		builder.refresh_objects()
+	_set_dirty(true)
+
+func _apply_objects(target: LevelData, records: Array[Dictionary]) -> void:
+	target.objects = records.duplicate(true)
+	target.emit_changed()
+	if target == data and is_instance_valid(builder):
+		builder.refresh_objects()
+		_set_dirty(true)
+
 func _commit_details(target: LevelData, before: Array[Dictionary],
 		after: Array[Dictionary], label: String) -> void:
 	if before == after:
@@ -1286,8 +1494,8 @@ func _apply_details(target: LevelData, values: Array[Dictionary]) -> void:
 func _begin_stroke() -> void:
 	stroke_cells_before.clear()
 	stroke_aux_before = _terrain_aux_snapshot(data)
-	stroke_full_before.clear()
-	pending_expansion_before.clear()
+	stroke_bounds_before = data.map_bounds()
+	pending_bounds_before = Rect2i()
 
 func _record_stroke_changes(changes: Array[Dictionary]) -> void:
 	for change in changes:
@@ -1298,24 +1506,22 @@ func _record_stroke_changes(changes: Array[Dictionary]) -> void:
 func _commit_stroke(label: String) -> void:
 	if data == null or not is_instance_valid(builder):
 		return
-	if not stroke_full_before.is_empty():
-		_commit_external(stroke_full_before, data.clone_data(), label, false)
-		return
 	var after_cells := {}
 	for cell: Vector2i in stroke_cells_before:
 		after_cells[cell] = data.column_snapshot(cell)
 	var after_aux := _terrain_aux_snapshot(data)
-	if stroke_cells_before.is_empty() and stroke_aux_before == after_aux:
+	if stroke_cells_before.is_empty() and stroke_aux_before == after_aux \
+			and stroke_bounds_before == data.map_bounds():
 		return
 	var target := data
 	var undo_redo := get_undo_redo()
 	undo_redo.create_action(label, UndoRedo.MERGE_DISABLE, target)
 	undo_redo.add_do_method(
 		self, "_apply_terrain_delta", target,
-		after_cells.duplicate(true), after_aux.duplicate(true))
+		after_cells.duplicate(true), after_aux.duplicate(true), data.map_bounds())
 	undo_redo.add_undo_method(
 		self, "_apply_terrain_delta", target,
-		stroke_cells_before.duplicate(true), stroke_aux_before.duplicate(true))
+		stroke_cells_before.duplicate(true), stroke_aux_before.duplicate(true), stroke_bounds_before)
 	undo_redo.commit_action(false)
 	_set_dirty(true)
 
@@ -1328,47 +1534,51 @@ func _terrain_aux_snapshot(target: LevelData) -> Dictionary:
 		"details": target.details.duplicate(true),
 	}
 
-func _stroke_start_snapshot() -> Dictionary:
-	var snapshot := data.clone_data()
-	for cell: Vector2i in stroke_cells_before:
-		if data.in_bounds(cell):
-			snapshot["columns"][data.index(cell)] = \
-				stroke_cells_before[cell].duplicate(true)
-	snapshot["stairs"] = stroke_aux_before["stairs"].duplicate(true)
-	snapshot["spawn_cell"] = stroke_aux_before["spawn_cell"]
-	snapshot["spawn_layer"] = stroke_aux_before["spawn_layer"]
-	snapshot["objects"] = stroke_aux_before["objects"].duplicate(true)
-	snapshot["details"] = stroke_aux_before["details"].duplicate(true)
-	return snapshot
-
 func _ground_brush_region(cell: Vector2i) -> Rect2i:
-	var brush_size := 3 if brush_select.selected == 1 else 1
-	var half := brush_size / 2
-	return Rect2i(cell - Vector2i(half, half), Vector2i(brush_size, brush_size))
+	var result := Rect2i(cell, Vector2i.ONE)
+	for block in _brush_blocks(Vector3i(cell.x, active_layer, cell.y)):
+		result = result.merge(Rect2i(Vector2i(block.x, block.z), Vector2i.ONE))
+	return result
+
+func _brush_blocks(center: Vector3i) -> Array[Vector3i]:
+	var result: Array[Vector3i] = []
+	var size := 3 if brush_select.selected == 1 else 1
+	var normal := stroke_normal if drawing else hover_normal
+	var u := Vector3i.RIGHT if normal.x == 0 else Vector3i(0, 0, 1)
+	var v := Vector3i(0, 0, 1) if normal.y != 0 else Vector3i.UP
+	for y in size:
+		for x in size:
+			var block := center + u * (x - size / 2) + v * (y - size / 2)
+			if block.y >= 0 and block.y < LevelData.MAX_LAYERS \
+					and (builder.slice_layer_limit < 0 or block.y <= builder.slice_layer_limit):
+				result.append(block)
+	return result
+
+func _blocks_for_cells(cells: Array[Vector2i]) -> Array[Vector3i]:
+	var blocks: Array[Vector3i] = []
+	for cell in cells:
+		blocks.append(Vector3i(cell.x, active_layer, cell.y))
+	return blocks
 
 func _ensure_ground_bounds(cell: Vector2i) -> bool:
 	if mode_select.selected != ToolMode.GROUND:
 		return data.in_bounds(cell)
 	var region := _ground_brush_region(cell)
 	if data.contains_region(region):
-		pending_expansion_before.clear()
+		pending_bounds_before = Rect2i()
 		return true
-	var captured_snapshot := false
-	if stroke_full_before.is_empty():
-		stroke_full_before = _stroke_start_snapshot()
-		captured_snapshot = true
-	pending_expansion_before = data.clone_data()
+	pending_bounds_before = data.map_bounds()
 	var error := data.expand_to_include(region)
 	if not error.is_empty():
-		pending_expansion_before.clear()
-		if captured_snapshot:
-			stroke_full_before.clear()
+		pending_bounds_before = Rect2i()
 		_set_status(error)
 		return false
 	return true
 
 func _apply_terrain_delta(target: LevelData, cell_values: Dictionary,
-		aux: Dictionary) -> void:
+		aux: Dictionary, bounds := Rect2i()) -> void:
+	if bounds.has_area():
+		target.resize_bounds(bounds)
 	target.set_columns(cell_values)
 	target.stairs.assign(aux["stairs"].duplicate(true))
 	target.spawn_cell = aux["spawn_cell"]
@@ -1385,7 +1595,9 @@ func _apply_terrain_delta(target: LevelData, cell_values: Dictionary,
 		_set_dirty(true)
 
 func _mode_name() -> String:
-	return {ToolMode.GROUND: "刷地块", ToolMode.ERASE: "擦除地块",
+	if stroke_erase:
+		return "擦除地块"
+	return {ToolMode.GROUND: "摆放地块", ToolMode.ERASE: "擦除地块",
 		ToolMode.STAIR: "放置阶梯", ToolMode.SPAWN: "设置出生点"}.get(mode_select.selected, "编辑地图")
 
 # ============================================================
@@ -1396,50 +1608,52 @@ func _paint(cell: Vector2i) -> void:
 		return
 	if not data.in_bounds(cell):
 		return
-	if cell == last_stroke_cell:
-		return
 	last_stroke_cell = cell
 	var mode: int = mode_select.selected
 	if mode == ToolMode.STAIR:
 		_try_stair(cell)
 		return
 	if mode == ToolMode.SPAWN:
+		if not data.is_surface_exposed(cell, active_layer):
+			return
 		data.spawn_cell = cell
-		data.spawn_layer = data.elevation(cell) if data.cell_exists(cell) else -1
+		data.spawn_layer = active_layer
 		builder.rebuild()
 		return
-	var brush_size := 3 if brush_select.selected == 1 else 1
-	var half := brush_size / 2
-	var targets: Array[Vector2i] = []
-	for dy in brush_size:
-		for dx in brush_size:
-			var target := cell + Vector2i(dx - half, dy - half)
-			if data.in_bounds(target) and not touched.has(target):
-				targets.append(target)
+	var erasing := mode == ToolMode.ERASE or (drawing and stroke_erase)
+	var center := Vector3i(cell.x, active_layer, cell.y)
+	var brush: Array[Vector3i] = []
+	if erasing:
+		brush.append(center)
+	else:
+		brush = _brush_blocks(center)
+	var targets: Array[Vector3i] = []
+	for block in brush:
+		if data.in_bounds(Vector2i(block.x, block.z)) and not touched.has(block):
+			targets.append(block)
 	var changes: Array[Dictionary] = []
-	if mode == ToolMode.GROUND:
-		changes = _paint_ground_cells(targets)
-	elif mode == ToolMode.ERASE:
-		changes = _erase_cells(targets)
+	if erasing:
+		changes = _erase_blocks(targets)
+	elif mode == ToolMode.GROUND:
+		changes = _paint_ground_blocks(targets)
 	if changes.is_empty():
-		if not pending_expansion_before.is_empty():
-			data.restore_data(pending_expansion_before)
-			pending_expansion_before.clear()
-			builder.rebuild()
+		if pending_bounds_before.has_area():
+			data.resize_bounds(pending_bounds_before)
+			pending_bounds_before = Rect2i()
 		return
-	pending_expansion_before.clear()
+	pending_bounds_before = Rect2i()
 	_record_stroke_changes(changes)
 	_preview_key = ""
 	var dirty_cells: Array[Vector2i] = []
 	for change in changes:
 		dirty_cells.append(change["cell"])
-	if mode == ToolMode.GROUND and _can_refresh_blend(changes):
+	if mode == ToolMode.GROUND and not erasing and _can_refresh_blend(changes):
 		if builder.refresh_blend_cells(dirty_cells):
 			return
 	builder.rebuild_cells(dirty_cells)
 
 func _paint_single(cell: Vector2i, mode: int) -> void:
-	if not data.in_bounds(cell) or touched.has(cell):
+	if not data.in_bounds(cell) or touched.has(Vector3i(cell.x, active_layer, cell.y)):
 		return
 	var targets: Array[Vector2i] = [cell]
 	if mode == ToolMode.GROUND:
@@ -1450,131 +1664,119 @@ func _paint_single(cell: Vector2i, mode: int) -> void:
 	_erase_cells(targets)
 
 func _erase_cells(targets: Array[Vector2i]) -> Array[Dictionary]:
-	var active_layer := height_select.selected
-	for cell in targets:
-		if erase_select.selected == 0 and data.layer_exists(cell, active_layer) \
-				and data.top_layer(cell) != active_layer:
-			_set_status("只能删除最上层地块；第 %d 层上方仍有实体块" % active_layer)
-			return []
+	return _erase_blocks(_blocks_for_cells(targets))
+
+func _erase_blocks(targets: Array[Vector3i]) -> Array[Dictionary]:
 	var candidate := data.fork_for_edit()
-	var changes: Array[Dictionary] = []
-	for cell in targets:
-		if not data.in_bounds(cell) or touched.has(cell):
+	var changed := {}
+	for block in targets:
+		var cell := Vector2i(block.x, block.z)
+		var layer := block.y
+		if not data.in_bounds(cell) or touched.has(block):
 			continue
-		touched[cell] = true
-		if not candidate.layer_exists(cell, active_layer):
+		touched[block] = true
+		if not candidate.layer_exists(cell, layer):
 			continue
-		var before := candidate.column_snapshot(cell)
-		var before_surface := candidate.get_cell(cell)
 		if erase_select.selected > 0:
 			if erase_select.selected == 3:
-				var stair := candidate.stair_at(cell)
+				var stair := candidate.stair_at(cell, layer)
 				if stair < 0:
 					continue
 				candidate.stairs.remove_at(stair)
 			else:
-				if active_layer != candidate.top_layer(cell):
-					_set_status("附加层位于最高实体层，请先选择该层")
-					return []
 				candidate.clear_attachment(cell,
-					"liquid" if erase_select.selected == 1 else "overlay")
-			changes.append({"cell": cell, "before": before,
-				"after": candidate.column_snapshot(cell),
-				"before_surface": before_surface, "after_surface": candidate.get_cell(cell)})
+					"liquid" if erase_select.selected == 1 else "overlay", layer)
+			changed[cell] = true
 			continue
-		# Removing a top support also removes content resting on that surface.
-		ObjectRules.remove_terrain_support(candidate, cell, active_layer)
-		var stair_idx := candidate.stair_at(cell)
+		# Remove only records depending on this exact support, never another height.
+		ObjectRules.remove_terrain_support(candidate, cell, layer)
+		var stair_idx := candidate.stair_at(cell, layer)
 		if stair_idx >= 0:
 			candidate.stairs.remove_at(stair_idx)
-		if candidate.spawn_cell == cell:
+		if candidate.spawn_cell == cell and candidate.spawn_layer == layer:
 			candidate.spawn_cell = Vector2i(-1, -1)
 			candidate.spawn_layer = -1
-		var error := candidate.remove_layer(cell, active_layer)
-		if not error.is_empty():
-			for target in targets:
-				touched.erase(target)
-			_set_status(error)
-			return []
-		changes.append({
-			"cell": cell,
-			"before": before,
-			"after": candidate.column_snapshot(cell),
-			"before_surface": before_surface,
-			"after_surface": candidate.get_cell(cell),
-		})
+		candidate.remove_layer(cell, layer)
+		changed[cell] = true
+	var changes := _column_changes(candidate, changed)
 	if not changes.is_empty():
 		DetailRules.prune_invalid(candidate)
 		_apply_candidate_columns(candidate, changes)
 	return changes
 
 func _paint_ground_cells(targets: Array[Vector2i]) -> Array[Dictionary]:
-	var pending: Array[Vector2i] = []
-	for cell in targets:
-		if not data.in_bounds(cell) or touched.has(cell):
+	return _paint_ground_blocks(_blocks_for_cells(targets))
+
+func _paint_ground_blocks(targets: Array[Vector3i]) -> Array[Dictionary]:
+	var pending: Array[Vector3i] = []
+	for block in targets:
+		if not data.in_bounds(Vector2i(block.x, block.z)) or touched.has(block):
 			continue
-		if data.stair_at(cell) >= 0:
-			_set_status("请先移除阶梯，再替换其地块")
-			return []
-		pending.append(cell)
+		pending.append(block)
 	if pending.is_empty():
 		return []
-	var result := _prepare_ground(pending)
+	var result := _prepare_ground_blocks(pending)
 	if not result["error"].is_empty():
 		_set_status(result["error"])
 		return []
 	var candidate: LevelData = result["candidate"]
 	var changes: Array[Dictionary] = result["changes"]
-	for cell in pending:
-		touched[cell] = true
+	for block in pending:
+		touched[block] = true
 	_apply_candidate_columns(candidate, changes)
 	return changes
 
 func _prepare_ground(pending: Array[Vector2i]) -> Dictionary:
+	return _prepare_ground_blocks(_blocks_for_cells(pending))
+
+func _prepare_ground_blocks(pending: Array[Vector3i]) -> Dictionary:
 	var tile := selected_tile()
 	var tile_id := tile.tile_id if tile else "grass"
-	var active_layer := height_select.selected
 	var candidate := data.fork_for_edit()
-	var changes: Array[Dictionary] = []
 	var region := Rect2i()
-	for cell in pending:
+	for block in pending:
+		var cell := Vector2i(block.x, block.z)
 		var point := Rect2i(cell, Vector2i.ONE)
 		region = point if region.size == Vector2i.ZERO else region.merge(point)
 	var expansion := candidate.expand_to_include(region)
 	if not expansion.is_empty():
 		return {"error": expansion}
-	for cell in pending:
-		if candidate.stair_at(cell) >= 0:
+	var changed := {}
+	for block in pending:
+		var cell := Vector2i(block.x, block.z)
+		var layer := block.y
+		if candidate.stair_at(cell, layer) >= 0:
 			return {"error": "请先移除阶梯，再替换其地块"}
-		var before := candidate.column_snapshot(cell)
-		var before_surface := candidate.get_cell(cell)
-		var old_top := candidate.top_layer(cell)
-		var error := candidate.set_layer(cell, active_layer, {
+		# Occupied brush cells remain intact while a stroke extends the empty plane.
+		if (tile == null or tile.is_solid()) and candidate.layer_exists(cell, layer):
+			continue
+		var error := candidate.set_layer(cell, layer, {
 			"tile_id": tile_id,
 			"rotation": tile_turns,
 		}, tile_id)
 		if not error.is_empty():
 			return {"error": error}
-		var new_top := candidate.top_layer(cell)
-		if new_top > old_top:
-			_move_top_anchors(candidate, cell, old_top, new_top)
-		var after := candidate.column_snapshot(cell)
-		if before == after:
-			continue
-		changes.append({
-			"cell": cell,
-			"before": before,
-			"after": after,
-			"before_surface": before_surface,
-			"after_surface": candidate.get_cell(cell),
-		})
+		changed[cell] = true
 	DetailRules.prune_invalid(candidate)
-	var errors := candidate.validate_content()
+	# Terrain changes cannot change image formats or atlas bounds. Validate
+	# support/collision dependencies here; full validation still runs on play.
+	var errors := candidate.validate_content(false)
 	if errors.has("缺少有效的玩家出生点"):
 		errors.remove_at(errors.find("缺少有效的玩家出生点"))
 	if not errors.is_empty():
 		return {"error": "无法绘制：" + "\n".join(errors)}
-	return {"error": "", "candidate": candidate, "changes": changes}
+	return {"error": "", "candidate": candidate, "changes": _column_changes(candidate, changed)}
+
+func _column_changes(candidate: LevelData, changed: Dictionary) -> Array[Dictionary]:
+	var changes: Array[Dictionary] = []
+	for cell: Vector2i in changed:
+		var before := data.column_snapshot(cell)
+		var after := candidate.column_snapshot(cell)
+		if before == after and candidate.stairs == data.stairs:
+			continue
+		changes.append({"cell": cell, "before": before, "after": after,
+			"before_surface": data.get_cell(cell), "after_surface": candidate.get_cell(cell)})
+	return changes
 
 func _apply_candidate_columns(candidate: LevelData, changes: Array[Dictionary]) -> void:
 	if changes.is_empty():
@@ -1597,15 +1799,19 @@ func _move_top_anchors(candidate: LevelData, cell: Vector2i,
 func _ground_candidate(cell: Vector2i) -> Dictionary:
 	if not data.in_bounds(cell):
 		return {"error": "地块超出地图"}
-	if data.stair_at(cell) >= 0:
+	if data.stair_at(cell, active_layer) >= 0:
 		return {"error": "请先移除阶梯，再替换其地块"}
 	var targets: Array[Vector2i] = [cell]
 	return _prepare_ground(targets)
 
 func _can_refresh_blend(changes: Array[Dictionary]) -> bool:
 	for change in changes:
-		if height_select.selected != data.top_layer(change["cell"]) \
-				or change["before"].get("overlay", {}) != change["after"].get("overlay", {}):
+		if active_layer != data.top_layer(change["cell"]):
+			return false
+		var old_layers: Array = change["before"].get("layers", [])
+		var new_layers: Array = change["after"].get("layers", [])
+		if old_layers.size() != new_layers.size() or active_layer >= old_layers.size() \
+				or old_layers[active_layer].get("overlay", {}) != new_layers[active_layer].get("overlay", {}):
 			return false
 		var before: Dictionary = change["before_surface"]
 		var after: Dictionary = change["after_surface"]
@@ -1630,112 +1836,93 @@ func _can_refresh_blend(changes: Array[Dictionary]) -> bool:
 func _try_stair(cell: Vector2i) -> void:
 	if data == null or not is_instance_valid(builder):
 		return
-	var error := data.can_place_stair(cell, stair_direction)
+	var error := data.can_place_stair(cell, stair_direction, active_layer)
 	if not error.is_empty():
 		_set_status(error)
 		return
 	data.stairs.append({
 		"cell": cell,
 		"direction": stair_direction,
-		"layer": data.elevation(cell),
+		"layer": active_layer,
 	})
 	builder.rebuild()
 
 func _pick(camera: Camera3D, mouse: Vector2) -> Vector2i:
 	picked_layer = -1
-	var collision_cell := _pick_terrain_collision(camera, mouse)
-	if data.in_bounds(collision_cell):
-		return collision_cell
 	var inverse := builder.global_transform.affine_inverse()
 	var origin := inverse * camera.project_ray_origin(mouse)
 	var ray := inverse.basis * camera.project_ray_normal(mouse)
-	var best := INF
-	var result := Vector2i(-1, -1)
-	if absf(ray.y) < 0.00001:
-		return result
-	var highest := LevelData.MAX_LAYERS - 1
-	if is_instance_valid(builder) and builder.slice_layer_limit >= 0:
-		highest = builder.slice_layer_limit
-	for elevation: int in range(highest, -1, -1):
-		var distance := (data.surface_y(elevation) - origin.y) / ray.y
-		if distance < 0 or distance >= best:
-			continue
-		var p := origin + ray * distance
-		var cell := data.world_to_cell(p)
-		if data.cell_exists(cell) and mini(data.elevation(cell), highest) == elevation:
-			result = cell
-			best = distance
-			picked_layer = elevation
-	if is_inf(best):
-		var layer := height_select.selected
-		var base_y := data.surface_y(layer) - LevelData.ELEVATION_STEP
-		var distance: float = (base_y - origin.y) / ray.y
-		var p := origin + ray * maxf(distance, 0)
-		var top_distance: float = (data.surface_y(layer) - origin.y) / ray.y
-		var top_point := origin + ray * maxf(top_distance, 0)
-		var base_cell := data.world_to_cell(p)
-		var top_cell := data.world_to_cell(top_point)
-		var base_neighbors := _terrain_neighbor_count(base_cell)
-		var top_neighbors := _terrain_neighbor_count(top_cell)
-		# A perspective ray can cross two plausible empty cells. The intended
-		# construction frontier is the candidate touching existing terrain.
-		result = top_cell if top_neighbors > base_neighbors else base_cell
-	return result
-
-func _terrain_neighbor_count(cell: Vector2i) -> int:
-	var result := 0
-	for direction in LevelData.DIRS:
-		if data.cell_exists(cell + direction):
-			result += 1
-	return result
-
-func _pick_terrain_collision(camera: Camera3D, mouse: Vector2) -> Vector2i:
-	if not is_instance_valid(builder) or builder.get_world_3d() == null:
-		return Vector2i(-999, -999)
-	var origin := camera.project_ray_origin(mouse)
-	var direction := camera.project_ray_normal(mouse)
-	var excluded: Array[RID] = []
-	var space := builder.get_world_3d().direct_space_state
-	for attempt in 32:
-		var query := PhysicsRayQueryParameters3D.create(
-			origin, origin + direction * 1000.0)
-		query.exclude = excluded
-		query.collide_with_areas = false
-		var hit := space.intersect_ray(query)
-		if hit.is_empty():
-			break
-		var collider: Object = hit.get("collider")
-		if collider is Node and builder.is_ancestor_of(collider) \
-				and collider.has_meta("terrain_cell"):
-			picked_layer = int(collider.get_meta("terrain_layer", -1))
-			var value: Variant = collider.get_meta("terrain_cell")
-			if value is Vector2i:
-				return value
-			if value is Vector2:
-				return Vector2i(value)
-		var rid: RID = hit.get("rid", RID())
-		if not rid.is_valid():
-			break
-		excluded.append(rid)
+	var hit := BlockPicker.raycast(data, origin, ray, builder.slice_layer_limit)
+	if not hit.is_empty():
+		picked_layer = int(hit["layer"])
+		return hit["cell"]
+	if absf(ray.y) > 0.00001:
+		var distance := -origin.y / ray.y
+		if distance >= 0:
+			return data.world_to_cell(origin + ray * distance)
 	return Vector2i(-999, -999)
 
-func _adopt_picked_layer() -> void:
-	if picked_layer < 0 or picked_layer >= height_select.item_count:
+func _update_terrain_target(camera: Camera3D, mouse: Vector2, erase: bool) -> void:
+	hover_block = INVALID_BLOCK
+	hover_cell = Vector2i(-999, -999)
+	var inverse := builder.global_transform.affine_inverse()
+	var origin := inverse * camera.project_ray_origin(mouse)
+	var ray := (inverse.basis * camera.project_ray_normal(mouse)).normalized()
+	if drawing:
+		var point: Variant = stroke_plane.intersects_ray(origin, ray)
+		if point == null:
+			return
+		hover_block = data.world_to_block(point)
+		var axis := Vector3(stroke_normal).abs().max_axis_index()
+		hover_block[axis] = stroke_block[axis]
+		hover_normal = stroke_normal
+		hover_point = point
+	else:
+		var tile := selected_tile()
+		var solid := tile == null or tile.is_solid()
+		var hit := BlockPicker.raycast(data, origin, ray, builder.slice_layer_limit)
+		if not hit.is_empty():
+			hover_block = hit["block"]
+			picked_layer = int(hit["layer"])
+			hover_normal = hit["normal"]
+			hover_point = hit["position"]
+			if not erase:
+				if mode_select.selected == ToolMode.GROUND and solid:
+					hover_block += hover_normal
+				elif hover_normal != Vector3i.UP:
+					hover_block = INVALID_BLOCK
+		elif not erase and solid and mode_select.selected == ToolMode.GROUND \
+				and absf(ray.y) > 0.00001 and -origin.y / ray.y >= 0:
+			hover_point = origin + ray * (-origin.y / ray.y)
+			hover_block = data.world_to_block(hover_point)
+			hover_block.y = 0
+			hover_normal = Vector3i.UP
+	if hover_block.y < 0 or hover_block.y >= LevelData.MAX_LAYERS \
+			or (builder.slice_layer_limit >= 0 and hover_block.y > builder.slice_layer_limit):
+		hover_block = INVALID_BLOCK
+	if hover_block == INVALID_BLOCK:
 		return
-	height_select.select(picked_layer)
-	_refresh_brush_preview()
-	_set_status("摆放层次已切换为第 %d 层（顶面 %dm）" % [
-		picked_layer, (picked_layer + 1) * roundi(LevelData.ELEVATION_STEP)])
+	active_layer = hover_block.y
+	hover_cell = Vector2i(hover_block.x, hover_block.z)
 
 func _update_preview(cell: Vector2i) -> void:
 	hover_cell = cell
 	if data == null or not is_instance_valid(builder) or not is_instance_valid(preview):
 		return
+	if free_view_active and _alt_navigation and default_right_delete.button_pressed:
+		preview.hide()
+		return
 	var selected := selected_tile()
-	var key := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
-		data.get_instance_id(), cell, mode_select.selected, height_select.selected,
+	if cell == Vector2i(-999, -999):
+		preview.visible = false
+		_set_status(terrain_input_hint.text)
+		return
+	var erasing: bool = (drawing and stroke_erase) or mode_select.selected == ToolMode.ERASE
+	var key := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
+		data.get_instance_id(), cell, mode_select.selected, active_layer,
 		slice_select.selected, tile_turns, stair_direction, brush_select.selected,
-		selected.tile_id if selected else "", erase_select.selected]
+		selected.tile_id if selected else "", erase_select.selected,
+		hover_normal, erasing]
 	if key == _preview_key and preview.visible:
 		return
 	_preview_key = key
@@ -1751,7 +1938,7 @@ func _update_preview(cell: Vector2i) -> void:
 	if not data.in_bounds(cell) and mode != ToolMode.GROUND:
 		preview.visible = false
 		return
-	if mode == ToolMode.GROUND:
+	if mode == ToolMode.GROUND and not erasing:
 		preview.visible = true
 		preview.mesh = null
 		preview.position = Vector3.ZERO
@@ -1759,36 +1946,35 @@ func _update_preview(cell: Vector2i) -> void:
 		var error_text := expansion_error
 		var valid := expansion_error.is_empty()
 		var fragment := LevelData.new()
-		var brush_size := 3 if brush_select.selected == 1 else 1
-		fragment.setup_blank(Vector2i(brush_size, brush_size))
+		var region := _ground_brush_region(cell)
+		fragment.setup_blank(region.size)
 		fragment.terrain_tints = data.terrain_tints.duplicate(true)
 		var tile := selected_tile()
 		var id := tile.tile_id if tile else "grass"
-		var targets: Array[Vector2i] = []
-		for y in brush_size:
-			for x in brush_size:
-				targets.append(cell + Vector2i(x - brush_size / 2, y - brush_size / 2))
-		var check := _prepare_ground(targets)
+		var targets := _brush_blocks(Vector3i(cell.x, active_layer, cell.y))
+		var check := _prepare_ground_blocks(targets)
 		if not check["error"].is_empty():
 			valid = false
 			error_text = check["error"]
-		for y in brush_size:
-			for x in brush_size:
-				if valid:
-					var target := cell + Vector2i(x - brush_size / 2, y - brush_size / 2)
-					fragment.set_column(Vector2i(x, y), check["candidate"].get_column(target))
-				else:
-					fragment.set_cell(Vector2i(x, y), {"exists": true, "tile_id": id,
-						"terrain": TileRegistry.id_to_legacy_terrain(id),
-						"height": height_select.selected, "rotation": tile_turns})
+		if valid and check["changes"].is_empty() and not drawing:
+			valid = false
+			error_text = "该位置已有地块；右键可擦除"
+		for block in targets:
+			var local := Vector2i(block.x, block.z) - region.position
+			var support_id := id if tile == null or tile.is_solid() else "grass"
+			if valid and tile != null and not tile.is_solid():
+				support_id = (check["candidate"] as LevelData).solid_tile_id(
+					Vector2i(block.x, block.z), block.y)
+			fragment.set_layer(local, block.y, {"tile_id": support_id, "rotation": tile_turns})
+			if tile != null and not tile.is_solid():
+				fragment.set_layer(local, block.y, {"tile_id": id, "rotation": tile_turns})
 		var display := TerrainBuilder.new()
 		display.level_data = fragment
 		display.show_grid = false
 		display.build_collision = false
 		display.slice_layer_limit = builder.slice_layer_limit
-		var local_center := Vector2i(brush_size / 2, brush_size / 2)
-		display.position = data.world_center(cell, height_select.selected) \
-			- fragment.world_center(local_center, height_select.selected) \
+		display.position = data.world_center(region.position, active_layer) \
+			- fragment.world_center(Vector2i.ZERO, active_layer) \
 			+ Vector3(0, 0.035, 0)
 		preview.add_child(display)
 		# Same builder/materials as the final terrain, plus a translucent overlay.
@@ -1799,14 +1985,15 @@ func _update_preview(cell: Vector2i) -> void:
 				overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 				overlay.albedo_color = Color(0.3, 1, 0.5, 0.08) if valid else Color(1, 0.1, 0.1, 0.55)
 				node.material_overlay = overlay
-		_set_status("地块预览：第 %d 层 / %d°，左键绘制" % [
-			height_select.selected, tile_turns * 90]
+		_set_status("地块预览：顶面 %dm / %d°；左键摆放，%s单次删除" % [
+			roundi(data.surface_y(active_layer)), tile_turns * 90,
+			"右键" if default_right_delete.button_pressed else "Alt＋右键"]
 			if valid else "红色区域不可绘制：" + error_text)
 		return
 	if mode == ToolMode.STAIR:
 		var low := cell
 		var high: Vector2i = cell + LevelData.DIRS[stair_direction]
-		var valid := data.can_place_stair(low, stair_direction).is_empty()
+		var valid := data.can_place_stair(low, stair_direction, active_layer).is_empty()
 		preview.visible = true
 		preview.mesh = null
 		preview.position = Vector3.ZERO
@@ -1814,27 +2001,21 @@ func _update_preview(cell: Vector2i) -> void:
 		fragment.setup_blank(Vector2i(3, 3))
 		var local_low := Vector2i(1, 1)
 		var local_high: Vector2i = local_low + LevelData.DIRS[stair_direction]
-		var low_height: int = data.elevation(low) if data.cell_exists(low) \
-			else height_select.selected
-		var low_tile: String = data.tile_id(low) if data.cell_exists(low) else "grass"
-		var high_tile: String = data.tile_id(high) if data.cell_exists(high) else low_tile
-		fragment.set_cell(local_low, {
-			"exists": true,
-			"terrain": TileRegistry.id_to_legacy_terrain(low_tile),
-			"height": low_height,
+		var low_height := active_layer
+		var low_tile := data.solid_tile_id(low, low_height)
+		var high_tile := data.solid_tile_id(high, low_height + 1)
+		fragment.set_layer(local_low, low_height, {
 			"tile_id": low_tile,
 			"rotation": 0,
 		})
-		fragment.set_cell(local_high, {
-			"exists": true,
-			"terrain": TileRegistry.id_to_legacy_terrain(high_tile),
-			"height": low_height + 1,
+		fragment.set_layer(local_high, low_height + 1, {
 			"tile_id": high_tile,
 			"rotation": 0,
 		})
 		fragment.stairs.append({
 			"cell": local_low,
 			"direction": stair_direction,
+			"layer": low_height,
 		})
 		var display := TerrainBuilder.new()
 		display.level_data = fragment
@@ -1852,20 +2033,25 @@ func _update_preview(cell: Vector2i) -> void:
 			(node as MeshInstance3D).material_overlay = overlay
 		_set_status("楼梯预览：从当前格升向 %d°" % (stair_direction * 90)
 			if valid else "红色楼梯不可放置：" + data.can_place_stair(
-				low, stair_direction))
+				low, stair_direction, active_layer))
 		return
-	var brush_size := 3 if brush_select.selected == 1 and mode <= ToolMode.ERASE else 1
-	var layer := height_select.selected if mode == ToolMode.ERASE \
-		else (data.elevation(cell) if data.cell_exists(cell)
-			else height_select.selected)
-	var center := data.world_center(cell, layer)
 	preview.visible = true
+	preview.position = Vector3.ZERO
+	preview.mesh = null
 	var mesh := BoxMesh.new()
-	mesh.size = Vector3(LevelData.CELL_SIZE * brush_size, 0.12, LevelData.CELL_SIZE * brush_size)
-	preview.mesh = mesh
-	preview.position = center + Vector3(0, 0.08, 0)
+	mesh.size = Vector3(LevelData.CELL_SIZE, LevelData.ELEVATION_STEP, LevelData.CELL_SIZE) * 1.015 \
+		if erasing else Vector3(LevelData.CELL_SIZE, 0.12, LevelData.CELL_SIZE)
 	var mat := preview.material_override as StandardMaterial3D
-	mat.albedo_color = Color(1, 1, 0.3, 0.45) if mode != ToolMode.ERASE else Color(1, 0.25, 0.15, 0.45)
+	mat.albedo_color = Color(1, 0.25, 0.15, 0.3) if erasing else Color(1, 1, 0.3, 0.45)
+	for block in _brush_blocks(Vector3i(cell.x, active_layer, cell.y)):
+		var marker := MeshInstance3D.new()
+		marker.mesh = mesh
+		marker.material_override = mat
+		marker.position = data.world_layer_center(Vector2i(block.x, block.z), block.y) if erasing \
+			else data.world_center(cell, active_layer) + Vector3.UP * 0.08
+		preview.add_child(marker)
+		if not erasing:
+			break
 
 func _playtest() -> void:
 	if data == null or not _require_builder():

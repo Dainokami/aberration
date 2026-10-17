@@ -46,8 +46,8 @@ func _ready() -> void:
 		return
 	data = source.fork_for_edit()
 	data.ensure_layout()
-	if not data.cell_exists(data.spawn_cell):
-		push_error("关卡缺少有效的玩家出生点")
+	if not data.is_surface_exposed(data.spawn_cell, data.spawn_layer):
+		push_error("关卡缺少外露的玩家出生点")
 		get_tree().quit(2)
 		return
 	builder = TerrainBuilder.new()

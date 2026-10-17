@@ -26,7 +26,7 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 		if region.has_point(low):
 			var copy := stair.duplicate(true)
 			copy["cell"] = low - region.position
-			copy["layer"] = source.top_layer(low)
+			copy["layer"] = int(stair.get("layer", source.top_layer(low)))
 			target.stairs.append(copy)
 	for record in source.objects:
 		var inside := false
@@ -103,17 +103,19 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 				var cell := fragment.map_origin + Vector2i(x, y)
 				var rotated := fragment.column_snapshot(cell)
 				for layer: Dictionary in rotated["layers"]:
+					if layer.is_empty():
+						continue
 					layer["rotation"] = posmod(int(layer.get("rotation", 0)) + turns, 4)
-				for role in ["liquid", "overlay"]:
-					var surface: Dictionary = rotated[role]
-					if not surface.is_empty():
-						surface["rotation"] = posmod(int(surface.get("rotation", 0)) + turns, 4)
+					for role in ["liquid", "overlay"]:
+						var surface: Dictionary = layer.get(role, {})
+						if not surface.is_empty():
+							surface["rotation"] = posmod(int(surface.get("rotation", 0)) + turns, 4)
 				candidate.set_column(anchor + rotate_cell(cell - fragment.map_origin, turns), rotated)
 		for stair in fragment.stairs:
 			var copy := stair.duplicate(true)
 			copy["cell"] = anchor + rotate_cell(stair["cell"] - fragment.map_origin, turns)
 			copy["direction"] = posmod(int(stair["direction"]) + turns, 4)
-			copy["layer"] = candidate.top_layer(copy["cell"])
+			copy["layer"] = int(stair.get("layer", fragment.top_layer(stair["cell"])))
 			candidate.stairs.append(copy)
 		for i in range(candidate.details.size() - 1, -1, -1):
 			if area.has_point(candidate.details[i]["anchor_cell"]):
@@ -132,11 +134,9 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 		copy["anchor_cell"] = new_cell
 		if str(copy.get("anchor_kind", "top")) == "wall":
 			copy["wall_direction"] = posmod(int(copy.get("wall_direction", 0)) + turns, 4)
-			if objects_only:
-				copy["anchor_layer"] = candidate.top_layer(new_cell) - (
-					fragment.top_layer(old_cell) - int(record["anchor_layer"]))
-		elif objects_only:
-			copy["anchor_layer"] = candidate.top_layer(new_cell)
+		if objects_only:
+			copy["anchor_layer"] = int(record["anchor_layer"]) \
+				+ candidate.top_layer(new_cell) - fragment.top_layer(old_cell)
 		copy["yaw"] = float(copy.get("yaw", 0.0)) - posmod(turns, 4) * PI * 0.5
 		copy["id"] = remapped_ids[str(record["id"])]
 		if copy.has("support_id"):
@@ -149,7 +149,9 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 		var new_cell := anchor + rotate_cell(old_cell - fragment.map_origin, turns)
 		copy["id"] = ObjectRules.new_id()
 		copy["anchor_cell"] = new_cell
-		copy["anchor_layer"] = candidate.top_layer(new_cell)
+		copy["anchor_layer"] = int(record["anchor_layer"])
+		if objects_only:
+			copy["anchor_layer"] += candidate.top_layer(new_cell) - fragment.top_layer(old_cell)
 		copy["position"] = candidate.world_center(new_cell) + rotation_basis * (
 			record["position"] - fragment.world_center(old_cell))
 		copy["yaw"] = float(record.get("yaw", 0.0)) - posmod(turns, 4) * PI * 0.5

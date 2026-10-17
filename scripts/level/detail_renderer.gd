@@ -62,7 +62,13 @@ void fragment() {
 ## Only changed (chunk, set, layer) batches are replaced, even during a long brush stroke.
 func refresh(data: LevelData) -> void:
 	var batches := {}
+	var sets := {}
 	for record in data.details:
+		var path := str(record["set"])
+		if not sets.has(path):
+			sets[path] = DetailRules.definition(record)
+		if DetailRules.is_hidden(data, record, sets[path]):
+			continue
 		var cell: Vector2i = record["anchor_cell"]
 		var chunk := Vector2i(floori(float(cell.x) / CHUNK_SIZE), floori(float(cell.y) / CHUNK_SIZE))
 		var key := "%d,%d|%s|%d" % [chunk.x, chunk.y, record["set"], record["anchor_layer"]]

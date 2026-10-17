@@ -74,19 +74,20 @@ func _init() -> void:
 		"tile_id": "sand", "rotation": 0}, "grass").is_empty(),
 		"high placement succeeds")
 	check(stacked.layer_count(stack_cell) == 3
-		and stacked.tile_id(stack_cell, 0) == "grass"
-		and stacked.tile_id(stack_cell, 1) == "grass"
+		and not stacked.layer_exists(stack_cell, 0)
+		and not stacked.layer_exists(stack_cell, 1)
 		and stacked.tile_id(stack_cell, 2) == "sand",
-		"high placement fills continuous support")
+		"high placement keeps stable empty slots below the block")
 	check(stacked.set_layer(stack_cell, 1, {
 		"tile_id": "rock", "rotation": 2}).is_empty()
-		and stacked.tile_id(stack_cell, 0) == "grass"
+		and not stacked.layer_exists(stack_cell, 0)
 		and stacked.tile_id(stack_cell, 1) == "rock"
 		and stacked.tile_id(stack_cell, 2) == "sand",
-		"middle replacement preserves lower and upper blocks")
-	check(not stacked.remove_layer(stack_cell, 1).is_empty()
-		and stacked.layer_count(stack_cell) == 3,
-		"middle deletion is rejected")
+		"middle placement preserves lower air and upper blocks")
+	check(stacked.remove_layer(stack_cell, 1).is_empty()
+		and stacked.layer_count(stack_cell) == 3 and not stacked.layer_exists(stack_cell, 1)
+		and stacked.solid_tile_id(stack_cell, 2) == "sand",
+		"middle deletion preserves upper blocks at the same height")
 	check(stacked.set_layer(stack_cell, 2, {
 		"tile_id": "water", "rotation": 1}).is_empty()
 		and stacked.layer_count(stack_cell) == 3

@@ -23,6 +23,7 @@ func check_migration() -> void:
 	var path := "res://data/levels/objects_acceptance.tres"
 	var original_hash := FileAccess.get_sha256(path)
 	var map := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
+	var needs_shift := map.format_version < 6
 	var positions: Array[Vector3] = []
 	for record in map.objects:
 		positions.append(record["position"])
@@ -35,8 +36,17 @@ func check_migration() -> void:
 	var shifted := true
 	for i in positions.size():
 		shifted = shifted and map.objects[i]["position"].is_equal_approx(
-			positions[i] + Vector3.UP * 2)
-	check(shifted and map.validate().is_empty(), "v5 objects move exactly once and keep valid anchors")
+			positions[i] + (Vector3.UP * 2 if needs_shift else Vector3.ZERO))
+	check(shifted and map.validate().is_empty(), "sample migration respects its saved version and anchors")
+	var legacy := LevelData.new()
+	legacy.map_size = Vector2i.ONE
+	legacy.cells = [{"exists": true, "tile_id": "grass", "height": 2}]
+	legacy.objects = [{"id": "v5", "definition": "res://assets/generated/painted_rock/definition.tres",
+		"position": Vector3(0, 4, 0), "scale": 1.0, "yaw": 0.0}]
+	legacy.ensure_layout()
+	check(legacy.layer_exists(Vector2i.ZERO, 0) and legacy.layer_exists(Vector2i.ZERO, 1)
+		and legacy.objects[0]["position"].y == 6 and legacy.objects[0]["anchor_layer"] == 2,
+		"explicit v5 fixture migrates filled columns and shifts old object heights")
 	var output := "user://stacked_roundtrip.tres"
 	check(ResourceSaver.save(map, output) == OK, "explicit save writes v6")
 	var loaded := ResourceLoader.load(output, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData

@@ -18,7 +18,7 @@ var yaw_input: SpinBox
 var snap: CheckBox
 var selected_id := ""
 var dragging := false
-var drag_before: Dictionary
+var drag_before: Array[Dictionary] = []
 var prefab: LevelPrefab
 var prefab_mode
 var prefab_sub_tabs: TabContainer
@@ -117,7 +117,7 @@ func add_detail_page() -> void:
 func _object_mode_changed(value: int) -> void:
 	if dragging and host.data != null:
 		dragging = false
-		host._commit_external(drag_before, host.data.clone_data(), "移动物件")
+		host._commit_objects(drag_before, host.data.objects, "移动物件")
 	clear_ghost()
 	for control in placement_controls:
 		control.visible = value == 0
@@ -431,7 +431,7 @@ func _selected_index() -> int:
 func _point(camera: Camera3D, mouse: Vector2, free_move: bool) -> Vector3:
 	var data: LevelData = host.data
 	var cell: Vector2i = host._pick(camera, mouse)
-	var layer: int = data.top_layer(cell) if data.cell_exists(cell) else host.height_select.selected
+	var layer: int = maxi(host.picked_layer, 0)
 	var result := data.world_center(cell, layer)
 	if not free_move:
 		return result
@@ -449,12 +449,17 @@ func _point(camera: Camera3D, mouse: Vector2, free_move: bool) -> Vector3:
 func _pick_object(camera: Camera3D, mouse: Vector2) -> String:
 	var origin := camera.project_ray_origin(mouse)
 	var ray := camera.project_ray_normal(mouse)
+	var inverse_builder: Transform3D = host.builder.global_transform.affine_inverse()
+	var terrain: Dictionary = host.BlockPicker.raycast(host.data, inverse_builder * origin,
+		inverse_builder.basis * ray, host.builder.slice_layer_limit)
 	var best := INF
+	if not terrain.is_empty():
+		best = origin.distance_to(host.builder.global_transform * terrain["position"]) + 0.02
 	var id := ""
 	if not is_instance_valid(host.builder.generated):
 		return id
-	for object in host.builder.generated.get_children():
-		if not object.has_meta("object_id") or not object.is_visible_in_tree():
+	for object: Node3D in host.builder._object_nodes.values():
+		if not is_instance_valid(object) or not object.is_visible_in_tree():
 			continue
 		for child in object.find_children("*", "MeshInstance3D", true, false):
 			var mesh := child as MeshInstance3D
@@ -542,7 +547,7 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 						scale_input.value = float(host.data.objects[index].get("scale", 1))
 						var definition := ObjectRules.definition(host.data.objects[index])
 						selected_label.text = "选中：" + (definition.display_name if definition != null else selected_id.left(8))
-						drag_before = host.data.clone_data()
+						drag_before = host.data.objects.duplicate(true)
 						dragging = true
 						_preview_object(host.data.objects[index], selected_id)
 					else:
@@ -550,7 +555,7 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 						clear_ghost()
 				elif dragging:
 					dragging = false
-					host._commit_external(drag_before, host.data.clone_data(), "移动物件")
+					host._commit_objects(drag_before, host.data.objects, "移动物件")
 		elif tabs.current_tab == 3 and event.pressed:
 			var point := _point(camera, event.position, not snap.button_pressed or event.shift_pressed)
 			if point.is_finite():
@@ -607,9 +612,9 @@ func place_object(record: Dictionary) -> void:
 	if not error.is_empty():
 		host._set_status(error)
 		return
-	var before: Dictionary = host.data.clone_data()
+	var before: Array[Dictionary] = host.data.objects.duplicate(true)
 	host.data.objects.append(ObjectRules.anchor_record(host.data, record))
-	host._commit_external(before, host.data.clone_data(), "放置物件")
+	host._commit_objects(before, host.data.objects, "放置物件")
 
 func _move_selected(point: Vector3) -> void:
 	var index := _selected_index()
@@ -642,7 +647,7 @@ func _apply_moved_record(record: Dictionary, index: int) -> void:
 		host._set_status("\n".join(errors))
 		return
 	host.data.objects = candidate.objects
-	host.builder.rebuild()
+	host.builder.refresh_objects()
 
 func apply_transform() -> void:
 	var index := _selected_index()
@@ -661,18 +666,20 @@ func apply_transform() -> void:
 	if not errors.is_empty():
 		host._set_status("\n".join(errors))
 		return
-	var before: Dictionary = host.data.clone_data()
+	var before: Array[Dictionary] = host.data.objects.duplicate(true)
 	host.data.objects = candidate.objects
-	host._commit_external(before, host.data.clone_data(), "调整物件")
+	host._commit_objects(before, host.data.objects, "调整物件")
 	_preview_object(record, selected_id)
 
 func delete_selected() -> void:
-	var index := _selected_index()
-	if index < 0:
+	delete_object(selected_id)
+
+func delete_object(id: String) -> void:
+	if ObjectRules.find_record(host.data, id).is_empty():
 		return
-	var before: Dictionary = host.data.clone_data()
-	ObjectRules.remove_with_dependents(host.data, [selected_id])
-	host._commit_external(before, host.data.clone_data(), "删除物件")
+	var before: Array[Dictionary] = host.data.objects.duplicate(true)
+	ObjectRules.remove_with_dependents(host.data, [id])
+	host._commit_objects(before, host.data.objects, "删除物件")
 	selected_id = ""
 	selected_label.text = "未选择物件"
 	clear_ghost()

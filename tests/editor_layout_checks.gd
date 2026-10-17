@@ -2,6 +2,8 @@
 extends RefCounted
 
 func run(plugin: EditorPlugin, suite: RefCounted) -> void:
+	var right_delete_before: bool = plugin.default_right_delete.button_pressed
+	plugin.default_right_delete.set_pressed_no_signal(true)
 	suite.check(plugin.launcher_button != null and plugin.launcher_button.text == "关卡编辑器",
 		"persistent toolbar launcher exists")
 	suite.check(plugin.editor_dock != null and plugin.editor_dock.title == "关卡编辑器",
@@ -47,12 +49,12 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		plugin.pending_action.is_empty(), "dialog callback survives deleted builder")
 	plugin.builder = real_builder
 	plugin.data = real_data
-	suite.check(plugin.mode_select.buttons.size() == 4 and not plugin.mode_select.buttons.has(1),
-		"terrain has four horizontal modes and no height mode")
+	suite.check(plugin.mode_select.buttons.size() == 3 and not plugin.mode_select.buttons.has(1),
+		"terrain has three horizontal modes and no height mode")
 	suite.check(plugin.tabs.get_child_count() == 6 and
 		plugin.tabs.get_child(4).name == "视角" and plugin.tabs.get_child(5).name == "细节",
 		"detail tab added while preserving all existing tab indices")
-	for mode in [0, 2, 3, 4]:
+	for mode in [0, 3, 4]:
 		plugin.mode_select.selected = mode
 		var correct := true
 		for control: Control in plugin.ground_controls:
@@ -206,6 +208,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	suite.check(list.get_combined_minimum_size().y <= small, "palette shrinks after filtering")
 	list.queue_free()
 	await _check_layer_popups(plugin, suite)
+	plugin.default_right_delete.set_pressed_no_signal(right_delete_before)
 
 func _check_free_navigation(plugin: EditorPlugin, suite: RefCounted, camera: Camera3D) -> void:
 	var before := camera.global_transform
@@ -243,13 +246,19 @@ func _check_free_navigation(plugin: EditorPlugin, suite: RefCounted, camera: Cam
 	plugin._forward_3d_gui_input(camera, wheel)
 	suite.check((camera.global_position - before_zoom).dot(-camera.global_basis.z) > 1.0,
 		"free wheel zoom makes a visible forward movement")
+	before_zoom = camera.global_position
+	wheel.shift_pressed = true
+	plugin._forward_3d_gui_input(camera, wheel)
+	suite.check((camera.global_position - before_zoom).dot(-camera.global_basis.z) > 1.0,
+		"Shift wheel retains ordinary camera zoom with no air placement mode")
 	var drag := InputEventMouseMotion.new()
 	drag.button_mask = MOUSE_BUTTON_MASK_RIGHT
+	drag.alt_pressed = true
 	drag.relative = Vector2(32, 12)
 	var before_turn := camera.global_basis
 	plugin._forward_3d_gui_input(camera, drag)
 	suite.check(not camera.global_basis.is_equal_approx(before_turn),
-		"free right drag changes the viewing direction")
+		"free Alt-right drag changes the viewing direction")
 	var magnify := InputEventMagnifyGesture.new()
 	magnify.factor = 1.15
 	var before_pinch := camera.global_position
@@ -268,6 +277,89 @@ func _check_free_navigation(plugin: EditorPlugin, suite: RefCounted, camera: Cam
 		and not plugin.view_move_keys[KEY_W], "typing into a field cannot move the free camera")
 	field.release_focus()
 	field.queue_free()
+	await _check_free_mode_badge(plugin, suite, camera)
+
+func _check_free_mode_badge(plugin: EditorPlugin, suite: RefCounted, camera: Camera3D) -> void:
+	# Use the actual overlay callback even on the headless renderer.
+	var overlay := Control.new()
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plugin.get_tree().root.add_child(overlay)
+	plugin._forward_3d_force_draw_over_viewport(overlay)
+	var badge := overlay.get_node("TerrainEditModeBadge") as PanelContainer
+	var label := badge.get_node("State") as Label
+	suite.check(badge.visible and label.text == "摆放/删除中"
+		and label.get_theme_color("font_color") == plugin.EDIT_MODE_COLOR
+		and badge.mouse_filter == Control.MOUSE_FILTER_IGNORE
+		and label.mouse_filter == Control.MOUSE_FILTER_IGNORE,
+		"free viewport starts with a red, mouse-transparent placement/deletion badge")
+	var alt := InputEventKey.new()
+	alt.keycode = KEY_ALT
+	alt.pressed = true
+	plugin._forward_3d_gui_input(camera, alt)
+	suite.check(label.text == "移动视角中"
+		and label.get_theme_color("font_color") == plugin.NAVIGATION_MODE_COLOR,
+		"pressing Alt updates the green navigation badge without mouse motion")
+	var before: Dictionary = plugin.data.clone_data()
+	for button in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+		var click := InputEventMouseButton.new()
+		click.button_index = button
+		click.alt_pressed = true
+		click.position = camera.unproject_position(plugin.data.world_center(plugin.data.spawn_cell))
+		click.pressed = true
+		plugin._forward_3d_gui_input(camera, click)
+		click.pressed = false
+		plugin._forward_3d_gui_input(camera, click)
+	suite.check(plugin.data.clone_data() == before and not plugin.drawing,
+		"Alt navigation cannot place or delete terrain")
+	alt.pressed = false
+	plugin._input(alt)
+	suite.check(label.text == "摆放/删除中"
+		and label.get_theme_color("font_color") == plugin.EDIT_MODE_COLOR,
+		"Alt release outside the viewport immediately restores the red badge")
+	alt.pressed = true
+	plugin._input(alt)
+	plugin._clear_view_input()
+	suite.check(label.text == "摆放/删除中" and not plugin._alt_navigation,
+		"window focus loss clears the navigation modifier and stale green badge")
+	plugin._enable_2_5d_view()
+	suite.check(not badge.visible, "camera mode badge is hidden outside free view")
+	plugin._free_view_pressed()
+	suite.check(badge.visible and label.text == "摆放/删除中",
+		"returning to free view restores the current badge")
+	plugin.default_right_delete.set_pressed_no_signal(false)
+	plugin._refresh_view_mode_badges()
+	suite.check(label.text == "移动视角中"
+		and plugin._right_button_navigates(false) and plugin._right_button_deletes(true),
+		"disabled switch uses right-button navigation and Alt-right deletion")
+	alt.pressed = true
+	plugin._input(alt)
+	suite.check(label.text == "摆放/删除中", "disabled switch reverses the Alt badge states")
+	alt.pressed = false
+	plugin._input(alt)
+	var drag := InputEventMouseMotion.new()
+	drag.button_mask = MOUSE_BUTTON_MASK_RIGHT
+	drag.relative = Vector2(16, 8)
+	var pose := camera.transform
+	plugin._forward_3d_gui_input(camera, drag)
+	suite.check(not camera.transform.is_equal_approx(pose),
+		"disabled switch rotates the free camera with ordinary right drag")
+	plugin.default_right_delete.set_pressed_no_signal(true)
+	plugin._refresh_view_mode_badges()
+	overlay.free()
+	if "--capture-interaction" in OS.get_cmdline_user_args():
+		# Capture the native viewport badges, with no synthetic overlay remaining.
+		for state in [false, true]:
+			alt.pressed = state
+			plugin._input(alt)
+			plugin.update_overlays()
+			for frame in 3:
+				await plugin.get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			var suffix := "navigation" if state else "placement"
+			plugin.get_tree().root.get_texture().get_image().save_png(
+				"/tmp/aberration-editor-%s-mode.png" % suffix)
+		alt.pressed = false
+		plugin._input(alt)
 
 func _check_layer_popups(plugin: EditorPlugin, suite: RefCounted) -> void:
 	var root := plugin.get_tree().root
@@ -277,7 +369,12 @@ func _check_layer_popups(plugin: EditorPlugin, suite: RefCounted) -> void:
 		plugin.tabs.current_tab = 0
 		for frame in 4:
 			await plugin.get_tree().process_frame
-	for option: OptionButton in [plugin.height_select, plugin.slice_select]:
+	suite.check(plugin.dock_root.find_child("PlacementLayer", true, false) == null
+		and plugin.mode_select.buttons.size() == 3
+		and plugin.mode_select.buttons[0].text == "选地块"
+		and not plugin.mode_select.buttons.has(2),
+		"terrain dock merges placement and erasure and removes manual placement layers")
+	for option: OptionButton in [plugin.slice_select]:
 		var popup := option.get_popup()
 		if capture:
 			option.show_popup()
@@ -397,7 +494,7 @@ func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
 	plugin.tabs.current_tab = 0
 	plugin.mode_select.selected = 0
 	plugin.brush_select.selected = 0
-	plugin.height_select.selected = 0
+	plugin.active_layer = 0
 	plugin._make_preview()
 	await plugin.get_tree().physics_frame
 	await plugin.get_tree().physics_frame
@@ -415,16 +512,19 @@ func _check_terrain_pick_and_stair_preview(plugin: EditorPlugin,
 		and not sparse_data.cell_exists(front + Vector2i(0, 1)),
 		"2.5D ground brush places the front neighbor without skipping a cell")
 	var back := anchor + Vector2i(0, -1)
-	var back_screen := camera.unproject_position(sparse_data.world_center(back, 0))
+	camera.position = sparse_data.world_center(anchor, 0) + Vector3(0, 8, -12)
+	camera.look_at(sparse_data.world_layer_center(anchor, 0))
+	var back_screen := camera.unproject_position(
+		sparse_data.world_layer_center(anchor, 0) + Vector3.FORWARD)
 	var picked_back: Vector2i = plugin._pick(camera, back_screen)
 	click.position = back_screen
 	click.pressed = true
 	plugin._forward_3d_gui_input(camera, click)
 	click.pressed = false
 	plugin._forward_3d_gui_input(camera, click)
-	suite.check(picked_back == back and sparse_data.cell_exists(back)
+	suite.check(picked_back == anchor and sparse_data.cell_exists(back)
 		and not sparse_data.cell_exists(back + Vector2i(0, -1)),
-		"2.5D ground brush places the far neighbor without skipping a cell")
+		"reverse view attaches to the far face without skipping a cell")
 	plugin.mode_select.selected = 0
 	plugin.builder = real_builder
 	plugin.data = real_data
