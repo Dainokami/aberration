@@ -1,0 +1,816 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://rtpc4jakg1p"]
+
+[ext_resource type="Script" uid="uid://dvemtrhbd2svo" path="res://scripts/level/level_data.gd" id="1_j3sab"]
+
+[resource]
+script = ExtResource("1_j3sab")
+grid_world_origin = Vector2(-16, -16)
+has_grid_world_origin = true
+columns = Array[Dictionary]([{
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "ground_stone"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}])
+format_version = 9
