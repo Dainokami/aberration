@@ -177,7 +177,7 @@ class Runner extends Node:
 			8, 9, 10:
 				_once("attack", 0.3)
 			11, 12:
-				pass
+				_once("part_interact", 0.3)
 			13:
 				_once("part_interact", 0.25)
 				if t > 0.45:
@@ -275,13 +275,13 @@ class Runner extends Node:
 			8:
 				_expect(_find("enemy_small").health < 20, "朝向攻击应打到面前的小怪，剩余 %d" % _find("enemy_small").health)
 			9:
-				_expect(_find("enemy_small").health == 20, "朝向攻击不该打到身后，剩余 %d" % _find("enemy_small").health)
+				_expect(_find("enemy_small").health < 20, "360度锁定应打到范围内身后的可见目标，剩余 %d" % _find("enemy_small").health)
 			10:
 				_expect(_find("enemy_small").health < 20, "触手周围攻击应打到身后，剩余 %d" % _find("enemy_small").health)
 			11:
-				_expect(_find("destructible_hard").spent, "猩猩臂靠近应砸碎硬物件")
+				_expect(_find("destructible_hard").spent, "猩猩臂应按 G 砸碎硬物件")
 			12:
-				_expect(_find("destructible_soft").spent, "沙鼠前肢在流体里应挖开软物件")
+				_expect(_find("destructible_soft").spent, "沙鼠前肢在流体里应按 G 挖开软物件")
 			13:
 				var box := _find("pushable")
 				var carried := box.global_position.distance_to(Vector3(-6.2, 0.0, 6.2))

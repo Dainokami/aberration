@@ -217,6 +217,23 @@ func _build_objects() -> void:
 func _bind_affordance(object: Node3D, asset_id: String) -> void:
 	var kind := ""
 	var health := 1
+	var gameplay := object as GameplayProp
+	if gameplay != null and gameplay.definition != null:
+		match gameplay.definition.behaviour:
+			PlaceableDefinition.Behaviour.ROCK:
+				kind = "pushable"
+			PlaceableDefinition.Behaviour.BREAKABLE:
+				# 当前资产数据还没有硬/软标签；可破坏场景物件默认按硬物处理。
+				kind = "destructible_hard"
+				health = gameplay.definition.max_health
+	if not kind.is_empty():
+		var gameplay_affordance := AffordanceProp.new()
+		gameplay_affordance.configure_host(object, kind, health)
+		gameplay_affordance.position = object.position
+		gameplay_affordance.rotation = object.rotation
+		gameplay_affordance.set_meta("object_id", object.get_meta("object_id", ""))
+		generated.add_child(gameplay_affordance)
+		return
 	match asset_id:
 		"demo_rock":
 			kind = "pushable"
@@ -235,6 +252,7 @@ func _bind_affordance(object: Node3D, asset_id: String) -> void:
 	if level_data.cell_exists(cell):
 		prop.position.y = level_data.world_center(cell).y
 	prop.rotation = object.rotation
+	prop.set_meta("object_id", object.get_meta("object_id", ""))
 	generated.add_child(prop)
 
 

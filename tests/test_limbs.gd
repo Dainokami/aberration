@@ -105,6 +105,12 @@ func _check_scene() -> void:
 		_fail("snake equip should show the tail and hide the scythe")
 		return
 	bag.move_bag_to_equip(bag.slots.find("mantis_arm"), "upper")
+	if player.parts.current_upper().id != "mantis_arm" or player.parts.current_lower().id != "snake_body":
+		_fail("equipped limbs did not become the active gameplay definitions")
+		return
+	if player.parts.current_upper().has_ability("smash_hard", false):
+		_fail("mantis arm inherited the previous gorilla ability")
+		return
 	if not rig._attachments["AnimScytheGrip"].visible or not rig._attachments["AnimScytheBlade"].visible:
 		_fail("mantis equip should show the scythe")
 		return

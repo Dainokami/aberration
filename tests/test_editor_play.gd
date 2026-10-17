@@ -103,8 +103,8 @@ func _tick() -> void:
 		if _peak > 0.08:
 			_fail("hop movement rotated the body by %s" % _peak)
 			return
-		if _player.assembly.resolve_locomotion() != CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP:
-			_fail("gorilla arm should hop")
+		if _player.assembly.resolve_locomotion() != CharacterAssemblyController.LocomotionMode.BIPED_WALK:
+			_fail("wolf legs should keep locomotion priority over the gorilla arm")
 			return
 		_goto("aim_right")
 		_attack_at(_player.global_position + Vector3(1.7, 0.0, 0.0))
@@ -807,11 +807,9 @@ func _expect_upper(part_id: String) -> bool:
 		_fail("upper %s drew the wrong sockets" % part_id)
 		return false
 	var mode := _player.assembly.resolve_locomotion()
-	var expected := CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP
-	if part_id == "octopus_arm":
-		expected = CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK
-	elif part_id in ["goose_wing", "bat_wing", "albatross_wing", "eagle_wing"]:
-		expected = CharacterAssemblyController.LocomotionMode.BIPED_WALK
+	# 狼腿在整个上肢轮换期间保持装备；下肢移动优先于所有上肢。
+	var expected := CharacterAssemblyController.LocomotionMode.BIPED_WALK
+	if part_id in ["goose_wing", "bat_wing", "albatross_wing", "eagle_wing"]:
 		if not _player.assembly.part_wings:
 			_fail("upper %s did not enable wing movement" % part_id)
 			return false
@@ -849,9 +847,11 @@ func _expect_lower(part_id: String) -> bool:
 		_fail("lower %s drew the wrong sockets" % part_id)
 		return false
 	var mode := _player.assembly.resolve_locomotion()
-	var expected := CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP
+	var expected := CharacterAssemblyController.LocomotionMode.BIPED_WALK
 	if part_id == "water_snake" or part_id == "fish_tail":
 		expected = CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER
+	elif part_id == "octopus_leg":
+		expected = CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL
 	if mode != expected:
 		_fail("lower %s movement %s" % [part_id, mode])
 		return false

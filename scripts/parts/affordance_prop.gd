@@ -65,6 +65,13 @@ func take_hit(amount: int) -> bool:
 		return false
 	if kind == "pushable" or kind == "climbable" or kind == "grabbable":
 		return false
+	var gameplay := host as GameplayProp
+	if gameplay != null:
+		if not gameplay.apply_damage(amount):
+			return false
+		health = gameplay.health
+		spent = gameplay.state == "broken"
+		return spent
 	health -= amount
 	var block := get_node_or_null("Block") as MeshInstance3D
 	if block and block.material_override is StandardMaterial3D:
@@ -80,6 +87,23 @@ func take_hit(amount: int) -> bool:
 		visible = false
 		collision_layer = 0
 	return true
+
+
+func interaction_point() -> Vector3:
+	if host != null and is_instance_valid(host):
+		var shapes := host.find_children("*", "CollisionShape3D", true, false)
+		if not shapes.is_empty():
+			return (shapes[0] as CollisionShape3D).global_position
+	return global_position + Vector3.UP * maxf(box_size.y * 0.5, 0.35)
+
+
+func owns_collider(collider: Object) -> bool:
+	var node := collider as Node
+	if node == null:
+		return false
+	if node == self or is_ancestor_of(node):
+		return true
+	return host != null and is_instance_valid(host) and (node == host or host.is_ancestor_of(node))
 
 
 func set_carried(carried: bool) -> void:

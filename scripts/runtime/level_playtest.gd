@@ -1,6 +1,7 @@
 extends Node3D
 
 const DEFAULT_LEVEL := "res://data/levels/acceptance_map.tres"
+const PLAYER_SCENE := preload("res://scenes/player.tscn")
 var data: LevelData
 var builder: TerrainBuilder
 var player: CharacterBody3D
@@ -102,29 +103,21 @@ func _setup_camera() -> void:
 	add_child(sun)
 
 func _setup_player() -> void:
-	player = CharacterBody3D.new()
+	player = PLAYER_SCENE.instantiate() as CharacterBody3D
+	if player == null:
+		push_error("无法实例化肢体角色：res://scenes/player.tscn")
+		get_tree().quit(2)
+		return
 	player.name = "Player"
 	player.floor_snap_length = 0.4
-	player.floor_max_angle = deg_to_rad(50)
+	player.floor_max_angle = deg_to_rad(50.0)
 	add_child(player)
 	player.add_to_group("level_player")
-	var collision := CollisionShape3D.new()
-	var shape := CapsuleShape3D.new()
-	shape.height = 1.6
-	shape.radius = 0.32
-	collision.shape = shape
-	player.add_child(collision)
-	var visual := MeshInstance3D.new()
-	var mesh := CapsuleMesh.new()
-	mesh.height = 1.6
-	mesh.radius = 0.32
-	visual.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("#ffc875")
-	visual.material_override = material
-	player.add_child(visual)
-	spawn_position = data.world_center(data.spawn_cell, data.spawn_layer) + Vector3(0, 0.82, 0)
+	# PlayerController 的原点在脚底；保留少量离地量，避免出生首帧嵌入顶面。
+	spawn_position = data.world_center(data.spawn_cell, data.spawn_layer) + Vector3(0, 0.08, 0)
 	player.position = spawn_position
+	if player is PlayerController:
+		(player as PlayerController).respawn_position = spawn_position
 
 func _setup_ui(path: String) -> void:
 	var layer := CanvasLayer.new()
@@ -132,18 +125,20 @@ func _setup_ui(path: String) -> void:
 	var label := Label.new()
 	label.position = Vector2(18, 18)
 	label.text = "地形编辑器试玩 · " + path.get_file().get_basename() \
-		+ "\nWASD / 方向键移动　Space 跳跃　E 交互 / 脱离　J 破坏　R 回到出生点"
+		+ "\nWASD 移动　Space 跳跃 / 起飞　E 场景交互　G 肢体交互　J 攻击　R 返回"
 	label.add_theme_font_override("font", runtime_font())
 	label.add_theme_font_size_override("font_size", 18)
 	layer.add_child(label)
-	var ability := CheckButton.new()
-	ability.text = "攀爬能力（C）"
-	ability.position = Vector2(18, 76)
-	ability.add_theme_font_override("font", runtime_font())
-	ability.button_pressed = climb_enabled
-	ability.toggled.connect(func(enabled: bool): climb_enabled = enabled)
-	layer.add_child(ability)
-	ability.set_meta("climb_toggle", true)
+	# 自动化仍可直接设置 climb_enabled；正式试玩由当前上肢能力决定，不再占用 C。
+	if not player is PlayerController:
+		var ability := CheckButton.new()
+		ability.text = "攀爬能力（C）"
+		ability.position = Vector2(18, 76)
+		ability.add_theme_font_override("font", runtime_font())
+		ability.button_pressed = climb_enabled
+		ability.toggled.connect(func(enabled: bool): climb_enabled = enabled)
+		layer.add_child(ability)
+		ability.set_meta("climb_toggle", true)
 	interaction_label = Label.new()
 	interaction_label.position = Vector2(18, 122)
 	interaction_label.add_theme_font_override("font", runtime_font())
@@ -167,21 +162,23 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_SPACE:
 			if climbing:
 				_end_climb(true)
-			else:
+			elif not player is PlayerController:
 				jump_requested = true
 		KEY_E:
 			attempt_interact()
 		KEY_J:
-			attempt_damage()
+			if not player is PlayerController:
+				attempt_damage()
 		KEY_R:
 			reset_player()
 		KEY_C:
-			climb_enabled = not climb_enabled
-			for child in get_children():
-				if child is CanvasLayer:
-					for control in child.get_children():
-						if control.has_meta("climb_toggle"):
-							control.set_pressed_no_signal(climb_enabled)
+			if not player is PlayerController:
+				climb_enabled = not climb_enabled
+				for child in get_children():
+					if child is CanvasLayer:
+						for control in child.get_children():
+							if control.has_meta("climb_toggle"):
+								control.set_pressed_no_signal(climb_enabled)
 
 func _feedback(text: String) -> void:
 	if feedback_label != null:
@@ -249,8 +246,8 @@ func attempt_damage() -> bool:
 	return focused_prop.apply_damage(1) if focused_prop != null else false
 
 func begin_climb(prop: GameplayProp) -> bool:
-	if not climb_enabled:
-		_feedback("需要攀爬能力；可用 C 开关验证")
+	if not _has_climb_ability():
+		_feedback("当前上肢没有攀爬能力")
 		return false
 	var record := ObjectRules.find_record(data, prop.instance_id)
 	if record.is_empty():
@@ -270,6 +267,8 @@ func begin_climb(prop: GameplayProp) -> bool:
 	climb_input_armed = false
 	jump_requested = false
 	player.velocity = Vector3.ZERO
+	if player is PlayerController:
+		player.set_physics_process(false)
 	_feedback("已附着攀爬面；WASD 移动，E 脱离，Space 跳离")
 	return true
 
@@ -328,20 +327,43 @@ static func _climb_surface_center(prop: GameplayProp) -> Vector3:
 	var shape: CollisionShape3D = _interaction_shape(prop)
 	return shape.global_position if shape != null else prop.global_position
 
-static func _climb_position(prop: GameplayProp) -> Vector3:
-	return _climb_surface_center(prop) + prop.global_basis.z.normalized() * CLIMB_WALL_OFFSET
+func _climb_position(prop: GameplayProp) -> Vector3:
+	return _climb_surface_center(prop) + prop.global_basis.z.normalized() * _climb_wall_offset() \
+		- Vector3.UP * _player_collision_center_offset() + Vector3.UP * 0.08
+
+
+func _player_collision_center_offset() -> float:
+	var collision := player.get_node_or_null("Collision") as CollisionShape3D
+	if collision != null:
+		return collision.position.y
+	return 0.0
+
+
+func _climb_wall_offset() -> float:
+	var collision := player.get_node_or_null("Collision") as CollisionShape3D
+	if collision != null and collision.shape is CapsuleShape3D:
+		return (collision.shape as CapsuleShape3D).radius + 0.06
+	return CLIMB_WALL_OFFSET
 
 func _player_space_clear(point: Vector3) -> bool:
+	var collision := player.get_node_or_null("Collision") as CollisionShape3D
+	if collision == null:
+		for child in player.get_children():
+			if child is CollisionShape3D:
+				collision = child
+				break
+	if collision == null or collision.shape == null:
+		return false
 	var query := PhysicsShapeQueryParameters3D.new()
-	query.shape = (player.get_child(0) as CollisionShape3D).shape
-	query.transform = Transform3D(Basis.IDENTITY, point)
+	query.shape = collision.shape
+	query.transform = Transform3D(Basis.IDENTITY, point + Vector3.UP * _player_collision_center_offset())
 	query.exclude = [player.get_rid()]
 	query.collision_mask = 1
 	query.margin = 0.01
 	return get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 func _step_climb(delta: float) -> void:
-	if not is_instance_valid(climb_prop) or climb_prop.state == "broken" or not climb_enabled:
+	if not is_instance_valid(climb_prop) or climb_prop.state == "broken" or not _has_climb_ability():
 		_end_climb(false)
 		return
 	if climb_moving and climb_next_prop != null and (
@@ -397,6 +419,8 @@ func _end_climb(jump_away: bool) -> void:
 	climb_next_prop = null
 	jump_requested = false
 	player.velocity = normal * (3.2 if jump_away else 0.8)
+	if player is PlayerController:
+		player.set_physics_process(not testing)
 	if jump_away:
 		player.velocity.y = 6.0
 		_feedback("已跳离攀爬面")
@@ -446,6 +470,14 @@ func _physics_process(delta: float) -> void:
 	if climbing:
 		_step_climb(delta)
 		return
+	if player is PlayerController and not testing:
+		_update_interaction_ui()
+		if player.position.y < -4.0:
+			reset_player()
+		return
+	if player is PlayerController and player.is_physics_processing():
+		# 物理验收通过 test_direction 驱动同一个角色，但只能有一个移动循环。
+		player.set_physics_process(false)
 	var axis := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var forward := camera.global_basis.z
 	forward.y = 0
@@ -465,13 +497,26 @@ func _physics_process(delta: float) -> void:
 	if player.position.y < -4.0:
 		reset_player()
 	if not testing:
-		focused_prop = _nearest_prop()
-		if interaction_label != null:
-			interaction_label.text = focused_prop.interaction_text() if focused_prop != null else ""
-			if focused_prop != null and focused_prop.definition.behaviour == PlaceableDefinition.Behaviour.CLIMBABLE:
-				interaction_label.text = "E 攀爬" if climb_enabled else "E 攀爬 · 需要攀爬能力"
-		if feedback_label != null and Time.get_ticks_msec() > feedback_until:
-			feedback_label.text = ""
+		_update_interaction_ui()
+
+
+func _update_interaction_ui() -> void:
+	focused_prop = _nearest_prop()
+	if interaction_label != null:
+		interaction_label.text = focused_prop.interaction_text() if focused_prop != null else ""
+		if focused_prop != null and focused_prop.definition.behaviour == PlaceableDefinition.Behaviour.CLIMBABLE:
+			interaction_label.text = "E 攀爬" if _has_climb_ability() else "E 攀爬 · 当前上肢不可攀爬"
+	if feedback_label != null and Time.get_ticks_msec() > feedback_until:
+		feedback_label.text = ""
+
+
+func _has_climb_ability() -> bool:
+	if climb_enabled:
+		return true
+	var controller := player as PlayerController
+	if controller == null or controller.parts == null:
+		return false
+	return controller.parts.current_upper().has_ability("grab_climb", controller.parts.breakthrough)
 
 func reset_player() -> void:
 	climbing = false
@@ -483,15 +528,17 @@ func reset_player() -> void:
 	jump_requested = false
 	player.position = spawn_position
 	player.velocity = Vector3.ZERO
+	if player is PlayerController:
+		player.set_physics_process(not testing)
 
 func run_physics_checks() -> void:
 	await get_tree().physics_frame
 	var failures: Array[String] = []
 	# Acceptance map stairs point north (negative Z).
 	var tests := [
-		["stair_0_2", data.world_center(Vector2i(7, 11)) + Vector3(0, 0.82, 0),
+		["stair_0_2", data.world_center(Vector2i(7, 11)) + Vector3(0, 0.08, 0),
 			Vector3(0, 0, -1), 170, data.surface_y(1)],
-		["stair_2_4", data.world_center(Vector2i(7, 7)) + Vector3(0, 0.82, 0),
+		["stair_2_4", data.world_center(Vector2i(7, 7)) + Vector3(0, 0.08, 0),
 			Vector3(0, 0, -1), 170, data.surface_y(2)],
 	]
 	for spec in tests:
@@ -500,13 +547,13 @@ func run_physics_checks() -> void:
 		test_direction = spec[2]
 		for frame in spec[3]:
 			await get_tree().physics_frame
-		var foot := player.position.y - 0.8
+		var foot := player.position.y
 		var passed := absf(foot - float(spec[4])) < 0.2
-		print("EDITOR CHECK ", spec[0], " ", passed, " foot=", foot)
+		print("EDITOR CHECK ", spec[0], " ", passed, " foot=", foot, " position=", player.position)
 		if not passed:
 			failures.append(spec[0])
 	# A plain +2m face must block a player with no stair.
-	player.position = data.world_center(Vector2i(3, 10)) + Vector3(0, 0.82, 0)
+	player.position = data.world_center(Vector2i(3, 10)) + Vector3(0, 0.08, 0)
 	player.velocity = Vector3.ZERO
 	test_direction = Vector3(0, 0, -1)
 	for frame in 65:

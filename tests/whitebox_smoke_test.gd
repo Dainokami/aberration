@@ -29,6 +29,8 @@ func _initialize() -> void:
 
 func _on_physics_frame() -> void:
 	_frame += 1
+	if _frame == 1:
+		_player.parts.equip("eagle_wing", "wolf_leg")
 
 	if _frame == 15:
 		Input.action_release("move_forward")
@@ -44,7 +46,7 @@ func _on_physics_frame() -> void:
 		if _player.global_position.y < 0.25:
 			_fail("Default Space action did not take off")
 			return
-		_player.set_air_action(PlayerController.AirAction.JUMP)
+		_player.parts.equip("gorilla_arm", "kangaroo_leg")
 		_player.global_position = Vector3(0.0, 0.05, 0.0)
 		_player.velocity = Vector3.ZERO
 
@@ -58,7 +60,7 @@ func _on_physics_frame() -> void:
 		if _player.global_position.y < 0.25:
 			_fail("Extensible jump mode did not jump")
 			return
-		_write_result("PASS: movement, default flight, and extensible jump responded in physics frames")
+		_write_result("PASS: movement, wing flight, and leg jump responded in physics frames")
 		print("WHITEBOX_SMOKE_TEST: PASS")
 		quit(0)
 
