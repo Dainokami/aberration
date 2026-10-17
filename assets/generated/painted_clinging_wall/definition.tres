@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_5chg2"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_r5g5u"]
+
+[resource]
+script = ExtResource("2_r5g5u")
+asset_id = "painted_clinging_wall"
+display_name = "攀附岩壁"
+category = "墙面附件"
+source_image = "res://assets/derived_art/scene_pack_20261015/painted_clinging_wall.png"
+scene_path = "res://assets/generated/painted_clinging_wall/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_clinging_wall/thumbnail.png"
+carrier = 5
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(2, 2, 0.16)
+collision_size = Vector3(2, 2, 0.16)
+fade_when_occluding = false
+profile = ExtResource("1_5chg2")
+generator_version = 5
+behaviour = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261015/manifest.json"
+preparation = {
+"id": "painted_clinging_wall",
+"kind": "wall",
+"name": "攀附岩壁",
+"output": "painted_clinging_wall.png",
+"recipe": {
+"canvas": [512.0, 512.0],
+"crop": [173.0, 20.0, 347.0, 500.0],
+"fit": [174.0, 480.0],
+"offset": [169.0, 28.0],
+"pivot": [0.5, 0.9921875],
+"upscale": false
+},
+"runtime_interface": "climb_surfaces",
+"source_id": "clinging_wall",
+"spec_row": 15.0,
+"world_size": [2.0, 2.0, 0.16]
+}

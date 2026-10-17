@@ -1,0 +1,679 @@
+{
+  "version": 1,
+  "pack": "scene_pack_20261015",
+  "spec_workbook": "2m单元格_4K场景素材绘制规格.xlsx",
+  "mechanism_workbook": "场景机制物件_加入情况核对.xlsx",
+  "sources": [
+    {
+      "id": "traction_rock_01",
+      "supplied_path": "牵引岩块/牵引岩块_01_512.png",
+      "source": "traction_rock_01.png",
+      "sha256": "911fe92479c8ca4489264c4b09159aad53fd1d5c36f73c8d5c26beb36509481b",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 69367,
+          "bounds": [
+            56,
+            148,
+            464,
+            383
+          ]
+        }
+      ]
+    },
+    {
+      "id": "traction_rock_02",
+      "supplied_path": "牵引岩块/牵引岩块_02_512.png",
+      "source": "traction_rock_02.png",
+      "sha256": "2030ac93b5917e2661c05f59d928852cb06a716d16e583541b6c224979a19c8d",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 75450,
+          "bounds": [
+            88,
+            95,
+            435,
+            413
+          ]
+        }
+      ]
+    },
+    {
+      "id": "traction_rock_03",
+      "supplied_path": "牵引岩块/牵引岩块_03_512.png",
+      "source": "traction_rock_03.png",
+      "sha256": "0115160208bbfe6f7f4ededbc8da1817f77025f3b1395330fb22c9f53ed3655b",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 85700,
+          "bounds": [
+            74,
+            102,
+            445,
+            410
+          ]
+        }
+      ]
+    },
+    {
+      "id": "traction_rock_04",
+      "supplied_path": "牵引岩块/牵引岩块_04_512.png",
+      "source": "traction_rock_04.png",
+      "sha256": "b9217946b979b061db5b106e5fe1f4de8f9139d85962ae536c466c107b542a8c",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 56137,
+          "bounds": [
+            47,
+            174,
+            466,
+            362
+          ]
+        }
+      ]
+    },
+    {
+      "id": "traction_rock_05",
+      "supplied_path": "牵引岩块/牵引岩块_05_512.png",
+      "source": "traction_rock_05.png",
+      "sha256": "b4ab5cf144c041da07b6ac3d6907cf3edb1425bab2081f6662042b328402aa0a",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 68695,
+          "bounds": [
+            91,
+            124,
+            439,
+            393
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clinging_wall",
+      "supplied_path": "攀附岩壁/攀附岩壁_512.png",
+      "source": "clinging_wall.png",
+      "sha256": "1d05772bd67448635a3c722ca8614706cb4cbdd01bbb59fcfad3b5c818b0b765",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 70691,
+          "bounds": [
+            173,
+            20,
+            347,
+            500
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fissured_rock_intact",
+      "supplied_path": "裂隙风化岩/裂隙风化岩（完整态）_512.png",
+      "source": "fissured_rock_intact.png",
+      "sha256": "3bfb62d76b73df220edcc239e7f972f53686d85914c62dc08af188399639519f",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 104714,
+          "bounds": [
+            213,
+            19,
+            487,
+            497
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fissured_rock_sheet",
+      "supplied_path": "裂隙风化岩/裂隙风化岩（破损与独立落石）_512.png",
+      "source": "fissured_rock_sheet.png",
+      "sha256": "d47443b5299f979beda59270629561864a87dbe3fc475f02ee9a390222d07ffb",
+      "pixels": [
+        512,
+        512
+      ],
+      "components": [
+        {
+          "label": 1,
+          "pixels": 100057,
+          "bounds": [
+            247,
+            19,
+            487,
+            497
+          ]
+        },
+        {
+          "label": 2,
+          "pixels": 9171,
+          "bounds": [
+            70,
+            109,
+            192,
+            227
+          ]
+        },
+        {
+          "label": 3,
+          "pixels": 7287,
+          "bounds": [
+            86,
+            243,
+            193,
+            350
+          ]
+        },
+        {
+          "label": 4,
+          "pixels": 2715,
+          "bounds": [
+            99,
+            369,
+            162,
+            433
+          ]
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "painted_traction_rock_01",
+      "name": "牵引岩块·01",
+      "source_id": "traction_rock_01",
+      "output": "painted_traction_rock_01.png",
+      "spec_row": 13,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "traction",
+      "recipe": {
+        "crop": [
+          56,
+          147,
+          464,
+          384
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          408,
+          237
+        ],
+        "offset": [
+          52,
+          271
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_traction_rock_02",
+      "name": "牵引岩块·02",
+      "source_id": "traction_rock_02",
+      "output": "painted_traction_rock_02.png",
+      "spec_row": 13,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "traction",
+      "recipe": {
+        "crop": [
+          88,
+          95,
+          436,
+          413
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          348,
+          318
+        ],
+        "offset": [
+          82,
+          190
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_traction_rock_03",
+      "name": "牵引岩块·03",
+      "source_id": "traction_rock_03",
+      "output": "painted_traction_rock_03.png",
+      "spec_row": 13,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "traction",
+      "recipe": {
+        "crop": [
+          72,
+          101,
+          445,
+          410
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          373,
+          309
+        ],
+        "offset": [
+          69,
+          199
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_traction_rock_04",
+      "name": "牵引岩块·04",
+      "source_id": "traction_rock_04",
+      "output": "painted_traction_rock_04.png",
+      "spec_row": 13,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "traction",
+      "recipe": {
+        "crop": [
+          47,
+          173,
+          467,
+          363
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          420,
+          190
+        ],
+        "offset": [
+          46,
+          318
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_traction_rock_05",
+      "name": "牵引岩块·05",
+      "source_id": "traction_rock_05",
+      "output": "painted_traction_rock_05.png",
+      "spec_row": 13,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "traction",
+      "recipe": {
+        "crop": [
+          91,
+          124,
+          439,
+          394
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          348,
+          270
+        ],
+        "offset": [
+          82,
+          238
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_clinging_wall",
+      "name": "攀附岩壁",
+      "source_id": "clinging_wall",
+      "output": "painted_clinging_wall.png",
+      "spec_row": 15,
+      "world_size": [
+        2,
+        2,
+        0.16
+      ],
+      "kind": "wall",
+      "recipe": {
+        "crop": [
+          173,
+          20,
+          347,
+          500
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          174,
+          480
+        ],
+        "offset": [
+          169,
+          28
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_fissured_rock",
+      "name": "裂隙风化岩",
+      "source_id": "fissured_rock_intact",
+      "output": "painted_fissured_rock.png",
+      "spec_row": 14,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "breakable",
+      "recipe": {
+        "crop": [
+          212,
+          19,
+          487,
+          498
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          275,
+          479
+        ],
+        "offset": [
+          118,
+          29
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false
+      }
+    },
+    {
+      "id": "painted_fissured_rock_damaged",
+      "name": "裂隙风化岩·破损岩体",
+      "source_id": "fissured_rock_sheet",
+      "output": "painted_fissured_rock_damaged.png",
+      "spec_row": 14,
+      "world_size": [
+        2,
+        2,
+        2
+      ],
+      "kind": "decoration",
+      "recipe": {
+        "crop": [
+          212,
+          19,
+          487,
+          498
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          275,
+          479
+        ],
+        "offset": [
+          118,
+          29
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false,
+        "component": {
+          "label": 1,
+          "pixels": 100057,
+          "bounds": [
+            247,
+            19,
+            487,
+            497
+          ]
+        }
+      }
+    },
+    {
+      "id": "painted_fissured_rock_fragment_01",
+      "name": "裂隙落石·01",
+      "source_id": "fissured_rock_sheet",
+      "output": "painted_fissured_rock_fragment_01.png",
+      "spec_row": 14,
+      "world_size": [
+        0.4927,
+        0.4927,
+        0.4927
+      ],
+      "kind": "fragment",
+      "recipe": {
+        "crop": [
+          70,
+          109,
+          193,
+          227
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          123,
+          118
+        ],
+        "offset": [
+          194,
+          390
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false,
+        "component": {
+          "label": 2,
+          "pixels": 9171,
+          "bounds": [
+            70,
+            109,
+            192,
+            227
+          ]
+        }
+      }
+    },
+    {
+      "id": "painted_fissured_rock_fragment_02",
+      "name": "裂隙落石·02",
+      "source_id": "fissured_rock_sheet",
+      "output": "painted_fissured_rock_fragment_02.png",
+      "spec_row": 14,
+      "world_size": [
+        0.4468,
+        0.4468,
+        0.4468
+      ],
+      "kind": "fragment",
+      "recipe": {
+        "crop": [
+          86,
+          243,
+          193,
+          350
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          107,
+          107
+        ],
+        "offset": [
+          202,
+          401
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false,
+        "component": {
+          "label": 3,
+          "pixels": 7287,
+          "bounds": [
+            86,
+            243,
+            193,
+            350
+          ]
+        }
+      }
+    },
+    {
+      "id": "painted_fissured_rock_fragment_03",
+      "name": "裂隙落石·03",
+      "source_id": "fissured_rock_sheet",
+      "output": "painted_fissured_rock_fragment_03.png",
+      "spec_row": 14,
+      "world_size": [
+        0.2672,
+        0.2672,
+        0.2672
+      ],
+      "kind": "fragment",
+      "recipe": {
+        "crop": [
+          99,
+          369,
+          162,
+          434
+        ],
+        "canvas": [
+          512,
+          512
+        ],
+        "fit": [
+          63,
+          65
+        ],
+        "offset": [
+          224,
+          443
+        ],
+        "pivot": [
+          0.5,
+          0.9921875
+        ],
+        "upscale": false,
+        "component": {
+          "label": 4,
+          "pixels": 2715,
+          "bounds": [
+            99,
+            369,
+            162,
+            433
+          ]
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "512px sources are below the rock specification; no added detail",
+    "single-view PNGs lack separate side/top faces",
+    "existing carry/climb/damage interfaces do not complete all Excel mechanics"
+  ]
+}

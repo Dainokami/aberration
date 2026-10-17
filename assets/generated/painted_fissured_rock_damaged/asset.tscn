@@ -1,0 +1,148 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_damaged_front.png" id="1_8u0ti"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_damaged_left.png" id="2_ue7r2"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_damaged_right.png" id="3_4h6ma"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_damaged_top.png" id="4_4t1ka"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vkpwe"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_8u0ti")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_5yeo2"]
+_surfaces = [{
+"aabb": AABB(-1, 0, 1, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xfpgq"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_8u0ti")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_x5cdc"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_myyls"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("2_ue7r2")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_xcnnw"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 1e-05, 2, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jlx3s"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("3_4h6ma")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_rj2a0"]
+_surfaces = [{
+"aabb": AABB(1, 0, -1, 1e-05, 2, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3h8b8"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_4t1ka")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ucgrw"]
+_surfaces = [{
+"aabb": AABB(-1, 2, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u20o8"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_8u0ti")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ofx34"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63)
+}]
+
+[node name="painted_fissured_rock_damaged" type="Node3D" unique_id=249452034]
+
+[node name="Art" type="Node3D" parent="." unique_id=1751417503]
+
+[node name="Front" type="MeshInstance3D" parent="Art" unique_id=835872099]
+material_override = SubResource("StandardMaterial3D_vkpwe")
+mesh = SubResource("ArrayMesh_5yeo2")
+
+[node name="Back" type="MeshInstance3D" parent="Art" unique_id=1807323790]
+material_override = SubResource("StandardMaterial3D_xfpgq")
+mesh = SubResource("ArrayMesh_x5cdc")
+
+[node name="Left" type="MeshInstance3D" parent="Art" unique_id=212154524]
+material_override = SubResource("StandardMaterial3D_myyls")
+mesh = SubResource("ArrayMesh_xcnnw")
+
+[node name="Right" type="MeshInstance3D" parent="Art" unique_id=2136542950]
+material_override = SubResource("StandardMaterial3D_jlx3s")
+mesh = SubResource("ArrayMesh_rj2a0")
+
+[node name="Top" type="MeshInstance3D" parent="Art" unique_id=1460597687]
+material_override = SubResource("StandardMaterial3D_3h8b8")
+mesh = SubResource("ArrayMesh_ucgrw")
+
+[node name="Bottom" type="MeshInstance3D" parent="Art" unique_id=806547611]
+material_override = SubResource("StandardMaterial3D_u20o8")
+mesh = SubResource("ArrayMesh_ofx34")

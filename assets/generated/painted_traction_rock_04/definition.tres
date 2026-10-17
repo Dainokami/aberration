@@ -1,0 +1,81 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_dmkhu"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_c2p0r"]
+
+[resource]
+script = ExtResource("2_c2p0r")
+asset_id = "painted_traction_rock_04"
+display_name = "牵引岩块·04"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_preview.png"
+scene_path = "res://assets/generated/painted_traction_rock_04/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_traction_rock_04/thumbnail.png"
+carrier = 4
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(2, 2, 2)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("1_dmkhu")
+generator_version = 6
+face_images = {
+"back": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_front.png",
+"bottom": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_front.png",
+"front": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_front.png",
+"left": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_left.png",
+"right": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_right.png",
+"top": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_traction_rock_04_top.png"
+}
+behaviour = 1
+source_manifest = "res://assets/derived_art/scene_pack_20261015/manifest.json"
+preparation = {
+"id": "painted_traction_rock_04",
+"kind": "traction",
+"name": "牵引岩块·04",
+"output": "painted_traction_rock_04.png",
+"recipe": {
+"canvas": [512.0, 512.0],
+"crop": [47.0, 173.0, 467.0, 363.0],
+"fit": [420.0, 190.0],
+"offset": [46.0, 318.0],
+"pivot": [0.5, 0.9921875],
+"upscale": false
+},
+"runtime_interface": "pushable",
+"source_id": "traction_rock_04",
+"spec_row": 13.0,
+"volume": {
+"faces": {
+"back": "volume_faces/painted_traction_rock_04_front.png",
+"bottom": "volume_faces/painted_traction_rock_04_front.png",
+"front": "volume_faces/painted_traction_rock_04_front.png",
+"left": "volume_faces/painted_traction_rock_04_left.png",
+"right": "volume_faces/painted_traction_rock_04_right.png",
+"top": "volume_faces/painted_traction_rock_04_top.png"
+},
+"id": "painted_traction_rock_04",
+"preview": "volume_faces/painted_traction_rock_04_preview.png",
+"recipe": {
+"back_reuses": "front",
+"bottom_reuses": "front",
+"edge_colour": "source_dark_line_median",
+"edge_outline_px": 4.0,
+"geometry_matches_collision": true,
+"opaque_faces": true,
+"output_size": [512.0, 512.0],
+"quads_px": {
+"front": [[218.0, 271.0], [319.0, 270.0], [348.0, 317.0], [199.0, 326.0]],
+"left": [[103.0, 222.0], [191.0, 262.0], [162.0, 333.0], [65.0, 305.0]],
+"right": [[359.0, 268.0], [430.0, 239.0], [449.0, 284.0], [390.0, 324.0]],
+"top": [[107.0, 211.0], [176.0, 191.0], [221.0, 248.0], [154.0, 256.0]]
+}
+},
+"size_m": [2.0, 2.0, 2.0],
+"source_id": "traction_rock_04",
+"source_sha256": "b9217946b979b061db5b106e5fe1f4de8f9139d85962ae536c466c107b542a8c"
+},
+"volume_manifest": "res://assets/derived_art/scene_pack_20261015/volume_manifest.json",
+"world_size": [2.0, 2.0, 2.0]
+}

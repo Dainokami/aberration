@@ -1,0 +1,260 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/gameplay_prop.gd" id="1_sv4g0"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_pg77t"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_lfpap"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_frontface.png" id="4_1x2na"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_sideface3.png" id="5_c0d5r"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_sideface2.png" id="6_5fpba"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_topface2.png" id="7_obpvq"]
+
+[sub_resource type="Resource" id="Resource_x4maw"]
+script = ExtResource("3_lfpap")
+asset_id = "painted_climbingrock_alt"
+display_name = "攀岩岩块·顶面二"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_alt_preview.png"
+scene_path = "res://assets/generated/painted_climbingrock_alt/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_climbingrock_alt/thumbnail.png"
+carrier = 4
+image_size = Vector2(2, 2)
+volume_size = Vector3(2, 2, 2)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("2_pg77t")
+generator_version = 4
+face_images = {
+"back": "res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_frontface.png",
+"front": "res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_frontface.png",
+"left": "res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_sideface3.png",
+"right": "res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_sideface2.png",
+"top": "res://assets/derived_art/scene_pack_20261014/remaining_objects/climbingrock_topface2.png"
+}
+behaviour = 1
+supports_objects = true
+source_manifest = "res://assets/derived_art/scene_pack_20261014/remaining_objects_manifest.json"
+preparation = {
+"climb_attachment": "painted_climb_surface",
+"faces": {
+"climbingrock_frontface": {
+"id": "climbingrock_frontface",
+"output": "remaining_objects/climbingrock_frontface.png",
+"recipe": {
+"opaque_seams": true,
+"output_size": [1024.0, 1024.0],
+"perspective_removed": true,
+"quad": [[0.220703, 0.414062], [0.783203, 0.412109], [0.785156, 0.613281], [0.226562, 0.615234]]
+},
+"sha256": "8a21278c98b992438de5178a91ba4ef07a3be0d26cbd16ae76cae6f77a2c7b9e",
+"size_m": [2.0, 2.0],
+"source": "objects/climbingrock_frontface.png"
+},
+"climbingrock_sideface2": {
+"id": "climbingrock_sideface2",
+"output": "remaining_objects/climbingrock_sideface2.png",
+"recipe": {
+"opaque_seams": true,
+"output_size": [1024.0, 1024.0],
+"perspective_removed": true,
+"quad": [[0.214844, 0.328125], [0.685547, 0.564453], [0.664062, 0.777344], [0.21875, 0.544922]]
+},
+"sha256": "26c7d6d5c1f1616cf075a670c4ad5724bc903cb548472e8c33fc7a8b62dee5c5",
+"size_m": [2.0, 2.0],
+"source": "objects/climbingrock_sideface2.png"
+},
+"climbingrock_sideface3": {
+"id": "climbingrock_sideface3",
+"output": "remaining_objects/climbingrock_sideface3.png",
+"recipe": {
+"opaque_seams": true,
+"output_size": [1024.0, 1024.0],
+"perspective_removed": true,
+"quad": [[0.433594, 0.431641], [0.574219, 0.353516], [0.568359, 0.568359], [0.431641, 0.640625]]
+},
+"sha256": "c65973714ead0b39efa3bd49650d84eb29a367808553fe900ffe7eb9eb7d8efd",
+"size_m": [2.0, 2.0],
+"source": "objects/climbingrock_sideface3.png"
+},
+"climbingrock_topface": {
+"id": "climbingrock_topface",
+"output": "remaining_objects/climbingrock_topface.png",
+"recipe": {
+"opaque_seams": true,
+"output_size": [1024.0, 1024.0],
+"perspective_removed": true,
+"quad": [[0.277344, 0.291016], [0.728516, 0.289062], [0.783203, 0.414062], [0.220703, 0.412109]]
+},
+"sha256": "760afaa70edcfb21d53575c601954eed171a9f130fe4e4199132d77a6be6d7f1",
+"size_m": [2.0, 2.0],
+"source": "objects/climbingrock_topface.png"
+},
+"climbingrock_topface2": {
+"id": "climbingrock_topface2",
+"output": "remaining_objects/climbingrock_topface2.png",
+"recipe": {
+"opaque_seams": true,
+"output_size": [1024.0, 1024.0],
+"perspective_removed": true,
+"quad": [[0.230469, 0.339844], [0.679688, 0.564453], [0.828125, 0.490234], [0.392578, 0.263672]]
+},
+"sha256": "3950c5b3ff5f753d864ea037753f3f40302544fdd25eb5b1e3828e3b39b22a6c",
+"size_m": [2.0, 2.0],
+"source": "objects/climbingrock_topface2.png"
+}
+},
+"top_source": "climbingrock_topface2"
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f1jmh"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_1x2na")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_r633r"]
+_surfaces = [{
+"aabb": AABB(-1, 0, 1, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k6a10"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_1x2na")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_otxjk"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wv82n"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("5_c0d5r")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_0l35l"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 1e-05, 2, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0c7d4"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("6_5fpba")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_c7bxk"]
+_surfaces = [{
+"aabb": AABB(1, 0, -1, 1e-05, 2, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0jug7"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("7_obpvq")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_h6crx"]
+_surfaces = [{
+"aabb": AABB(-1, 2, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tulru"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_1x2na")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_j3swu"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f2x6c"]
+size = Vector3(2, 2, 2)
+
+[node name="painted_climbingrock_alt" type="Node3D" unique_id=1055730698]
+script = ExtResource("1_sv4g0")
+definition = SubResource("Resource_x4maw")
+
+[node name="Art" type="Node3D" parent="." unique_id=1034340499]
+
+[node name="Front" type="MeshInstance3D" parent="Art" unique_id=921224616]
+material_override = SubResource("StandardMaterial3D_f1jmh")
+mesh = SubResource("ArrayMesh_r633r")
+
+[node name="Back" type="MeshInstance3D" parent="Art" unique_id=9301589]
+material_override = SubResource("StandardMaterial3D_k6a10")
+mesh = SubResource("ArrayMesh_otxjk")
+
+[node name="Left" type="MeshInstance3D" parent="Art" unique_id=404377407]
+material_override = SubResource("StandardMaterial3D_wv82n")
+mesh = SubResource("ArrayMesh_0l35l")
+
+[node name="Right" type="MeshInstance3D" parent="Art" unique_id=1845074302]
+material_override = SubResource("StandardMaterial3D_0c7d4")
+mesh = SubResource("ArrayMesh_c7bxk")
+
+[node name="Top" type="MeshInstance3D" parent="Art" unique_id=1026664474]
+material_override = SubResource("StandardMaterial3D_0jug7")
+mesh = SubResource("ArrayMesh_h6crx")
+
+[node name="Bottom" type="MeshInstance3D" parent="Art" unique_id=952995126]
+material_override = SubResource("StandardMaterial3D_tulru")
+mesh = SubResource("ArrayMesh_j3swu")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=821208649]
+
+[node name="Shape" type="CollisionShape3D" parent="ProxyCollision" unique_id=714447151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_f2x6c")

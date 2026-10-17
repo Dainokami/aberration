@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_2xe75"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_5ahrv"]
+
+[resource]
+script = ExtResource("2_5ahrv")
+asset_id = "painted_fissured_rock"
+display_name = "裂隙风化岩"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_preview.png"
+scene_path = "res://assets/generated/painted_fissured_rock/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_fissured_rock/thumbnail.png"
+carrier = 4
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(2, 2, 2)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("1_2xe75")
+generator_version = 6
+face_images = {
+"back": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_front.png",
+"bottom": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_front.png",
+"front": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_front.png",
+"left": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_left.png",
+"right": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_right.png",
+"top": "res://assets/derived_art/scene_pack_20261015/volume_faces/painted_fissured_rock_top.png"
+}
+behaviour = 2
+supports_objects = true
+source_manifest = "res://assets/derived_art/scene_pack_20261015/manifest.json"
+preparation = {
+"damaged_asset": "painted_fissured_rock_damaged",
+"id": "painted_fissured_rock",
+"kind": "breakable",
+"name": "裂隙风化岩",
+"output": "painted_fissured_rock.png",
+"recipe": {
+"canvas": [512.0, 512.0],
+"crop": [212.0, 19.0, 487.0, 498.0],
+"fit": [275.0, 479.0],
+"offset": [118.0, 29.0],
+"pivot": [0.5, 0.9921875],
+"upscale": false
+},
+"source_id": "fissured_rock_intact",
+"spec_row": 14.0,
+"volume": {
+"faces": {
+"back": "volume_faces/painted_fissured_rock_front.png",
+"bottom": "volume_faces/painted_fissured_rock_front.png",
+"front": "volume_faces/painted_fissured_rock_front.png",
+"left": "volume_faces/painted_fissured_rock_left.png",
+"right": "volume_faces/painted_fissured_rock_right.png",
+"top": "volume_faces/painted_fissured_rock_top.png"
+},
+"id": "painted_fissured_rock",
+"preview": "volume_faces/painted_fissured_rock_preview.png",
+"recipe": {
+"back_reuses": "front",
+"bottom_reuses": "front",
+"edge_colour": "source_dark_line_median",
+"edge_outline_px": 4.0,
+"geometry_matches_collision": true,
+"opaque_faces": true,
+"output_size": [512.0, 512.0],
+"quads_px": {
+"front": [[274.0, 26.0], [473.0, 48.0], [474.0, 476.0], [259.0, 485.0]],
+"left": [[273.0, 50.0], [448.0, 71.0], [451.0, 470.0], [268.0, 466.0]],
+"right": [[291.0, 37.0], [471.0, 52.0], [472.0, 460.0], [286.0, 478.0]],
+"top": [[277.0, 27.0], [470.0, 48.0], [469.0, 194.0], [276.0, 198.0]]
+}
+},
+"size_m": [2.0, 2.0, 2.0],
+"source_id": "fissured_rock_intact",
+"source_sha256": "3bfb62d76b73df220edcc239e7f972f53686d85914c62dc08af188399639519f"
+},
+"volume_manifest": "res://assets/derived_art/scene_pack_20261015/volume_manifest.json",
+"world_size": [2.0, 2.0, 2.0]
+}

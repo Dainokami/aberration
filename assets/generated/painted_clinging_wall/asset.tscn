@@ -1,0 +1,84 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/gameplay_prop.gd" id="1_x3yjc"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_s5xva"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_vlqqc"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261015/painted_clinging_wall.png" id="4_pce41"]
+
+[sub_resource type="Resource" id="Resource_qf3pl"]
+script = ExtResource("3_vlqqc")
+asset_id = "painted_clinging_wall"
+display_name = "攀附岩壁"
+category = "墙面附件"
+source_image = "res://assets/derived_art/scene_pack_20261015/painted_clinging_wall.png"
+scene_path = "res://assets/generated/painted_clinging_wall/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_clinging_wall/thumbnail.png"
+carrier = 5
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(2, 2, 0.16)
+collision_size = Vector3(2, 2, 0.16)
+fade_when_occluding = false
+profile = ExtResource("2_s5xva")
+generator_version = 5
+behaviour = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261015/manifest.json"
+preparation = {
+"id": "painted_clinging_wall",
+"kind": "wall",
+"name": "攀附岩壁",
+"output": "painted_clinging_wall.png",
+"recipe": {
+"canvas": [512.0, 512.0],
+"crop": [173.0, 20.0, 347.0, 500.0],
+"fit": [174.0, 480.0],
+"offset": [169.0, 28.0],
+"pivot": [0.5, 0.9921875],
+"upscale": false
+},
+"runtime_interface": "climb_surfaces",
+"source_id": "clinging_wall",
+"spec_row": 15.0,
+"world_size": [2.0, 2.0, 0.16]
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rlx48"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_pce41")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_6detc"]
+_surfaces = [{
+"aabb": AABB(-1, -0.015625, 0.025, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 254, 63, 205, 204, 204, 60, 0, 0, 128, 191, 0, 0, 128, 188, 205, 204, 204, 60, 0, 0, 128, 63, 0, 0, 128, 188, 205, 204, 204, 60, 0, 0, 128, 63, 0, 0, 254, 63, 205, 204, 204, 60)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sstvf"]
+size = Vector3(2, 2, 0.16)
+
+[node name="painted_clinging_wall" type="Node3D" unique_id=2078507629]
+script = ExtResource("1_x3yjc")
+definition = SubResource("Resource_qf3pl")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1333392714]
+material_override = SubResource("StandardMaterial3D_rlx48")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_6detc")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=135625795]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1201977710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_sstvf")
