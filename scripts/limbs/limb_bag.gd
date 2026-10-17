@@ -318,7 +318,8 @@ func _collect_nearby() -> bool:
 	if body == null:
 		return false
 	var best: Node = null
-	var best_distance := 3.2
+	# 拾取只在脚边触发，避免测试区肢体抢走对岩石、抓点等场景物的 G 交互。
+	var best_distance := 0.85
 	for node in get_tree().get_nodes_in_group("limb_pickup"):
 		var pickup := node as Node3D
 		if pickup == null:

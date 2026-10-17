@@ -453,10 +453,16 @@ func _animate_locomotion() -> void:
 				_set_bone_rotation("anim_scythe_grip", -support * 0.22 * amount)
 				_set_bone_rotation("anim_scythe_shaft", -support * 0.1 * amount)
 
-		CharacterAssemblyController.LocomotionMode.BIPED_WALK, CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK:
-			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0), 0.0))
+		CharacterAssemblyController.LocomotionMode.BIPED_WALK:
+			_animate_biped(phase, amount, moving)
 			if _carrying_scythe():
 				_set_bone_rotation("anim_scythe_grip", sin(phase) * 0.12)
+
+		CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK:
+			var trot := sin(phase) if moving else 0.0
+			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0) + absf(trot) * 0.03 * amount, 0.0))
+			_set_bone_rotation("left_leg", trot * 0.34 * amount)
+			_set_bone_rotation("right_leg", -trot * 0.34 * amount)
 
 		CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL:
 			# 触手不是迈步：左右轮流张开吸附，身体在收缩阶段被拉向前方。
@@ -474,15 +480,64 @@ func _animate_locomotion() -> void:
 			# 身子横着穿过路线，尾巴比身体晚一拍，波从头部往后传。
 			var wave := sin(phase) if moving else 0.0
 			var tail_wave := sin(phase - 1.15) if moving else 0.0
-			var weave := _weave_offset(wave * 0.22 * amount * gait)
+			var fish := _shown_lower() == "fish_tail"
+			var weave_scale := 0.12 if fish else 0.22
+			var weave := _weave_offset(wave * weave_scale * amount * gait)
 			_set_bone_position("root", Vector3(weave.x, _anim_ground(ANIM_LOWEST_Y) + weave.y, weave.z))
-			_set_bone_rotation("anim_tail", tail_wave * 0.55 * amount * gait)
+			var tail_scale := 1.35 if fish else 0.72 if _shown_lower() == "water_snake" else 1.0
+			_set_bone_rotation("anim_tail", tail_wave * 0.55 * tail_scale * amount * gait)
 			if assembly.arm_count >= 1:
 				_set_bone_rotation("anim_arm_upper", -wave * 0.12 * amount * gait)
 				_set_bone_rotation("anim_arm_fore", -wave * 0.08 * amount * gait)
 			if assembly.arm_count >= 2 or _carrying_scythe():
 				_set_bone_rotation("anim_scythe_grip", wave * 0.1 * amount * gait)
 	_face_travel()
+
+
+func _animate_biped(phase: float, amount: float, moving: bool) -> void:
+	var step := sin(phase) if moving else 0.0
+	var ground := _anim_ground(848.0)
+	match _shown_lower():
+		"kangaroo_leg":
+			var hop := maxf(sin(phase), 0.0) if moving else 0.0
+			var compress := maxf(-sin(phase), 0.0) if moving else 0.0
+			_set_bone_position("root", Vector3(0.0, ground + hop * 0.28 - compress * 0.04, 0.0))
+			var tuck := (-compress * 0.55 + hop * 0.2) * amount
+			_set_bone_rotation("left_leg", tuck)
+			_set_bone_rotation("right_leg", tuck)
+		"ostrich_leg":
+			_set_bone_position("root", Vector3(0.0, ground + absf(step) * 0.06 * amount, 0.0))
+			_set_bone_rotation("left_leg", step * 0.55 * amount)
+			_set_bone_rotation("right_leg", -step * 0.55 * amount)
+		"gerbil_leg":
+			var crouch := 0.08 if player.parts != null and player.parts.is_burrowed() else 0.0
+			_set_bone_position("root", Vector3(0.0, ground - crouch + absf(step) * 0.02 * amount, 0.0))
+			_set_bone_rotation("left_leg", step * 0.22 * amount)
+			_set_bone_rotation("right_leg", -step * 0.22 * amount)
+		"goose_foot":
+			var waddle := step
+			var brace := _weave_offset(waddle * 0.04 * amount)
+			_set_bone_position("root", Vector3(brace.x, ground + brace.y, brace.z))
+			_set_bone_rotation("left_leg", waddle * 0.2 * amount)
+			_set_bone_rotation("right_leg", -waddle * 0.2 * amount)
+			_set_bone_rotation("body", waddle * 0.06 * amount)
+		"demon_dog_leg":
+			_set_bone_position("root", Vector3(0.0, ground, 0.0))
+			_set_bone_rotation("left_leg", step * 0.28 * amount)
+			_set_bone_rotation("right_leg", -step * 0.28 * amount)
+		_:
+			_set_bone_position("root", Vector3(0.0, ground + absf(step) * 0.035 * amount, 0.0))
+			_set_bone_rotation("left_leg", step * 0.42 * amount)
+			_set_bone_rotation("right_leg", -step * 0.42 * amount)
+
+
+func _shown_lower() -> String:
+	var bag := player.get_node_or_null("LimbBag") as LimbBag
+	if bag != null and not bag.equipped_lower.is_empty():
+		return bag.equipped_lower
+	if player.parts:
+		return player.parts.current_lower().id
+	return ""
 
 
 func _shown_upper() -> String:

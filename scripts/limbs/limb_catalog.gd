@@ -51,6 +51,52 @@ static func _ensure() -> void:
 	_add("mantis_blade", "巨镰螳臂", "upper", "mantis", 2, false, "", "mantis_king", "res://art/characters/anim/scythe_blade.png", "scythe", 1.16, Color(0.95, 0.55, 0.45), "两条螳螂臂养成的加强臂", 1.0)
 	_add("mantis_king", "王螳臂", "upper", "mantis", 3, true, "", "", "res://art/characters/anim/scythe_blade.png", "scythe", 1.28, Color(1.0, 0.84, 0.32), "稀有螳螂臂", 1.0)
 	_add("scrap", "残肢", "none", "scrap", 0, false, "", "", "res://art/characters/psd/arm_hop.png", "", 1.0, Color(0.55, 0.5, 0.48), "对不上的肢体养成的废物，只能回收", 1.0)
+	_add_playable_parts()
+
+
+static func _add_playable_parts() -> void:
+	for part in PartCatalog.uppers():
+		_add_playable(part, "upper")
+	for part in PartCatalog.lowers():
+		_add_playable(part, "lower")
+
+
+static func _add_playable(part: PartDefinition, slot_name: String) -> void:
+	if _defs.has(part.id):
+		return
+	var style := _pickup_style(part.id, slot_name)
+	_add(part.id, part.display_name, slot_name, "play_" + part.id,
+		int(part.rank) + 1, false, "", "", style["texture"], style["visual"],
+		style["scale"], style["tint"], part.blurb, 1.0)
+
+
+static func _pickup_style(limb_id: String, slot_name: String) -> Dictionary:
+	if limb_id in ["goose_wing", "bat_wing", "albatross_wing", "eagle_wing"]:
+		var wing_tints := {
+			"goose_wing": Color(0.92, 0.92, 0.9),
+			"bat_wing": Color(0.35, 0.32, 0.4),
+			"albatross_wing": Color(0.75, 0.86, 0.95),
+			"eagle_wing": Color(0.62, 0.42, 0.22),
+		}
+		return {"texture": "res://art/characters/psd/wing_left.png", "visual": "wing", "scale": 0.78, "tint": wing_tints[limb_id]}
+	if limb_id == "octopus_arm":
+		return {"texture": "res://art/characters/psd/arm_crawl_gorilla.png", "visual": "crawl", "scale": 0.8, "tint": Color(0.45, 0.55, 0.85)}
+	if limb_id in ["gibbon_arm", "gerbil_paw"]:
+		return {"texture": "res://art/characters/psd/arm_hop.png", "visual": "hop", "scale": 0.75, "tint": Color(0.72, 0.55, 0.36) if limb_id == "gerbil_paw" else Color.WHITE}
+	if slot_name == "upper":
+		return {"texture": "res://art/characters/anim/arm_upper.png", "visual": "arm", "scale": 0.75, "tint": Color.WHITE}
+	if limb_id in ["water_snake", "fish_tail"]:
+		return {"texture": "res://art/characters/anim/tail.png", "visual": "tail", "scale": 0.68, "tint": Color(0.35, 0.75, 0.95) if limb_id == "fish_tail" else Color.WHITE}
+	var leg_tints := {
+		"wolf_leg": Color(0.55, 0.55, 0.58),
+		"ostrich_leg": Color(0.86, 0.72, 0.48),
+		"gerbil_leg": Color(0.72, 0.58, 0.4),
+		"kangaroo_leg": Color(0.62, 0.45, 0.32),
+		"demon_dog_leg": Color(0.45, 0.18, 0.18),
+		"octopus_leg": Color(0.4, 0.48, 0.78),
+		"goose_foot": Color(0.95, 0.72, 0.28),
+	}
+	return {"texture": "res://art/characters/psd/leg_left.png", "visual": "leg", "scale": 0.72, "tint": leg_tints.get(limb_id, Color.WHITE)}
 
 
 static func _add(

@@ -79,6 +79,11 @@ func _part_for_limb(limb_id: String, slot: PartDefinition.Slot) -> PartDefinitio
 	var key := "%d:%s" % [slot, limb_id]
 	if _limb_part_cache.has(key):
 		return _limb_part_cache[key] as PartDefinition
+	# 地图拾取与 Z/X 调试共用 PartCatalog，装入背包后不能丢失原能力。
+	var catalog_part := PartCatalog.find(limb_id)
+	if catalog_part != null and catalog_part.slot == slot:
+		_limb_part_cache[key] = catalog_part
+		return catalog_part
 	var part := PartDefinition.new()
 	part.id = limb_id
 	part.slot = slot
@@ -205,12 +210,20 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 			return flat.normalized() * 12.0
 		return Vector3.ZERO
 	var assembly := player.get_node_or_null("Assembly") as CharacterAssemblyController
-	var tentacle_crawl := assembly != null and assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL
-	var drive := assembly.get_drive_multiplier() if tentacle_crawl else 1.0
-	var target := wish * speed_on(_tags()) * drive
-	var accel := 34.0 if wish.length_squared() > 0.01 else 40.0
+	var mode := assembly.resolve_locomotion() if assembly != null else CharacterAssemblyController.LocomotionMode.BIPED_WALK
+	var tentacle_crawl := mode == CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL
+	var drive := 1.0
 	if tentacle_crawl:
-		accel *= assembly.get_acceleration_multiplier() if wish.length_squared() > 0.01 else assembly.get_deceleration_multiplier()
+		drive = assembly.get_drive_multiplier()
+	elif mode == CharacterAssemblyController.LocomotionMode.BIPED_WALK:
+		drive = _biped_drive(assembly)
+	var target := wish * speed_on(_tags()) * drive
+	var moving := wish.length_squared() > 0.01
+	var accel := 34.0 if moving else 40.0
+	if tentacle_crawl:
+		accel *= assembly.get_acceleration_multiplier() if moving else assembly.get_deceleration_multiplier()
+	elif mode == CharacterAssemblyController.LocomotionMode.BIPED_WALK:
+		accel *= _biped_response(moving)
 	if is_burrowed():
 		accel *= 0.75
 	if not player.is_on_floor() and not _flying and not _stuck:
@@ -605,6 +618,40 @@ func _tick_dive(player: PlayerController) -> void:
 			continue
 		_dive_hit.append(prop)
 		prop.take_hit(PartDefinition.power_value(current_upper().attack_power))
+
+
+func _biped_drive(assembly: CharacterAssemblyController) -> float:
+	var phase := assembly.get_locomotion_phase()
+	match current_lower().id:
+		"kangaroo_leg":
+			# 双腿一起蹬地，腾空时才有推进，平均速度仍接近原档位。
+			return 0.72 + maxf(sin(phase), 0.0) * 0.88
+		"ostrich_leg":
+			return 0.92 + absf(sin(phase * 2.0)) * 0.16
+		"goose_foot":
+			return 0.86 + absf(sin(phase)) * 0.22
+		"gerbil_leg":
+			return 0.9 + absf(sin(phase * 2.0)) * 0.2
+		"demon_dog_leg":
+			return 0.94
+		_:
+			return 1.0
+
+
+func _biped_response(moving: bool) -> float:
+	match current_lower().id:
+		"ostrich_leg":
+			return 1.25 if moving else 1.05
+		"kangaroo_leg":
+			return 0.85 if moving else 1.15
+		"demon_dog_leg":
+			return 0.7
+		"goose_foot":
+			return 0.8
+		"gerbil_leg":
+			return 1.15 if moving else 1.3
+		_:
+			return 1.0
 
 
 func sync_movement() -> void:

@@ -111,4 +111,4 @@ rendering_device/driver.windows="d3d12"
 
 [terrain_editor]
 
-playtest_level="res://data/levels/objects_acceptance.tres"
+playtest_level="res://data/levels/art_acceptance.tres"

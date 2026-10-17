@@ -1,7 +1,7 @@
 class_name LimbField
 extends RefCounted
 
-# 出生点前摆两排，方便先捡蛇身和螳螂臂。
+# 正式关卡在出生点前摆完整玩法肢体；旧白盒仍保留蛇身/螳螂培养样例。
 
 
 static func scatter(parent: Node) -> void:
@@ -16,14 +16,25 @@ static func scatter(parent: Node) -> void:
 
 
 static func scatter_ahead(parent: Node, origin: Vector3) -> void:
-	_place(parent, origin, [
-		["snake_body", Vector3(-2.4, 0.15, -2.8)],
-		["snake_body", Vector3(-0.4, 0.15, -3.6)],
-		["snake_body", Vector3(1.6, 0.15, -2.8)],
-		["mantis_arm", Vector3(-2.4, 0.15, -4.6)],
-		["mantis_arm", Vector3(0.6, 0.15, -4.8)],
-		["mantis_arm", Vector3(2.6, 0.15, -3.8)],
-	])
+	var layout: Array = []
+	var upper_ids := [
+		"gorilla_arm", "gibbon_arm", "goose_wing", "octopus_arm",
+		"bat_wing", "albatross_wing", "eagle_wing", "gerbil_paw",
+	]
+	var lower_ids := [
+		"wolf_leg", "ostrich_leg", "gerbil_leg", "kangaroo_leg", "demon_dog_leg",
+		"octopus_leg", "goose_foot", "water_snake", "fish_tail",
+	]
+	for index in upper_ids.size():
+		layout.append([upper_ids[index], Vector3(-7.0 + index * 2.0, 0.15, -1.8)])
+	for index in lower_ids.size():
+		layout.append([lower_ids[index], Vector3(-7.0 + index * 2.0, 0.15, -5.4)])
+	# 留下两组培养系统原料，但不再用它们冒充完整肢体测试。
+	layout.append(["snake_body", Vector3(-2.0, 0.15, -7.2)])
+	layout.append(["snake_body", Vector3(-0.4, 0.15, -7.2)])
+	layout.append(["mantis_arm", Vector3(1.2, 0.15, -7.2)])
+	layout.append(["mantis_arm", Vector3(2.8, 0.15, -7.2)])
+	_place(parent, origin, layout)
 
 
 static func _place(parent: Node, origin: Vector3, layout: Array) -> void:
@@ -32,5 +43,5 @@ static func _place(parent: Node, origin: Vector3, layout: Array) -> void:
 		var pickup := pickup_script.new() as Node3D
 		var offset: Vector3 = entry[1]
 		pickup.position = origin + offset
-		parent.add_child(pickup)
 		pickup.call("setup", entry[0])
+		parent.add_child(pickup)

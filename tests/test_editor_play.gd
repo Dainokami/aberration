@@ -39,6 +39,7 @@ func _tick() -> void:
 			_player = _level.get_node("Player") as PlayerController
 			_rig = _player.get_node("ArtRoot/PartSockets") as ModularCharacterRig
 			_player.parts.note.connect(func(message: String) -> void: _note = message)
+			LimbField.scatter_ahead(_level, _player.global_position)
 			return
 		if _wait < 8:
 			return
@@ -51,6 +52,16 @@ func _tick() -> void:
 		if _player.parts.current_upper().id != "gorilla_arm" or _player.parts.current_lower().id != "wolf_leg":
 			_fail("start limbs %s %s" % [_player.parts.current_upper().id, _player.parts.current_lower().id])
 			return
+		var field_ids := [
+			"gorilla_arm", "gibbon_arm", "goose_wing", "octopus_arm", "bat_wing",
+			"albatross_wing", "eagle_wing", "gerbil_paw", "wolf_leg", "ostrich_leg",
+			"gerbil_leg", "kangaroo_leg", "demon_dog_leg", "octopus_leg", "goose_foot",
+			"water_snake", "fish_tail", "snake_body", "mantis_arm",
+		]
+		for limb_id in field_ids:
+			if _first_pickup(limb_id) == null:
+				_fail("full map limb test field is missing %s" % limb_id)
+				return
 		if not _on("AnimArmUpper") or not _on("LeftLegSocket") or _on("AnimTail") or _on("HopArmSocket"):
 			_fail("start picture is not the gorilla arm and wolf legs")
 			return

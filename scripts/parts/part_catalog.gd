@@ -9,6 +9,16 @@ static var _uppers: Array[PartDefinition] = []
 static var _lowers: Array[PartDefinition] = []
 
 
+static func find(part_id: String) -> PartDefinition:
+	for part in uppers():
+		if part.id == part_id:
+			return part
+	for part in lowers():
+		if part.id == part_id:
+			return part
+	return null
+
+
 static func uppers() -> Array[PartDefinition]:
 	if not _uppers.is_empty():
 		return _uppers

@@ -26,6 +26,10 @@ func _initialize() -> void:
 	if LimbCatalog.combine("scrap", "snake_body", 0.5) != "scrap":
 		_fail("scrap stays scrap")
 		return
+	for limb_id in ["gorilla_arm", "eagle_wing", "octopus_leg", "fish_tail"]:
+		if LimbCatalog.find(limb_id) == null:
+			_fail("playable part is missing from pickup catalog: %s" % limb_id)
+			return
 
 	var bag := LimbBag.new()
 	root.add_child(bag)
@@ -116,6 +120,17 @@ func _check_scene() -> void:
 		return
 	if rig._attachments["AnimArmUpper"].visible:
 		_fail("mantis equip should not show the gorilla arm")
+		return
+	bag.try_add("octopus_leg")
+	bag.move_bag_to_equip(bag.slots.find("octopus_leg"), "lower")
+	if player.parts.current_lower().id != "octopus_leg" \
+			or player.assembly.resolve_locomotion() != CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL:
+		_fail("picked octopus lower limb did not retain its gameplay gait")
+		return
+	bag.try_add("eagle_wing")
+	bag.move_bag_to_equip(bag.slots.find("eagle_wing"), "upper")
+	if player.parts.current_upper().id != "eagle_wing" or not player.assembly.can_fly():
+		_fail("picked eagle wing did not retain its flight ability")
 		return
 	var menu := _main.get_node("StitchMenu")
 	bag.try_add("snake_body")

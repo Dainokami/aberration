@@ -84,10 +84,8 @@ func apply_limb_loadout(upper_id: String, lower_id: String) -> void:
 	limbs_equipped = true
 	limb_upper_id = upper_id
 	limb_lower_id = lower_id
-	var upper := LimbCatalog.find(upper_id)
-	var lower := LimbCatalog.find(lower_id)
-	arm_count = 1 if upper != null and upper.visual == "scythe" else 0
-	lower_body = LowerBody.SNAKE if lower != null and lower.visual == "tail" else LowerBody.NONE
+	# 背包装配与 PartLoadout 轮换使用同一套移动解析，避免拾取版只有外观没有能力。
+	apply_part_movement(upper_id, lower_id)
 	wings_equipped = false
 	loadout_changed.emit()
 
@@ -282,7 +280,21 @@ func get_collision_height() -> float:
 
 func get_locomotion_label() -> String:
 	if limbs_equipped:
-		return "蛇行" if resolve_locomotion() == LocomotionMode.SNAKE_SLITHER else "站立"
+		match resolve_locomotion():
+			LocomotionMode.HEAD_ROLL:
+				return "头部滚动"
+			LocomotionMode.SINGLE_ARM_HOP:
+				return "单臂跳跃"
+			LocomotionMode.DOUBLE_ARM_WALK:
+				return "双臂支撑"
+			LocomotionMode.BIPED_WALK:
+				return "双足行走"
+			LocomotionMode.QUADRUPED_WALK:
+				return "四足移动"
+			LocomotionMode.SNAKE_SLITHER:
+				return "蛇行"
+			LocomotionMode.TENTACLE_CRAWL:
+				return "触手爬行"
 	return PRESETS[_preset_index]["name"]
 
 
