@@ -75,6 +75,9 @@ func controls_vertical() -> bool:
 
 func speed_on(tags: PackedStringArray) -> float:
 	var lower := current_lower()
+	var terrain_speed := TerrainMovementRules.speed_for_tags(lower.id, tags)
+	if terrain_speed >= 0.0:
+		return terrain_speed
 	if lower.swim == "skim":
 		if tags.has("fluid"):
 			return PartDefinition.speed_value(PartDefinition.Band.HIGH)
@@ -157,7 +160,9 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 		if flat.length() > 0.35:
 			return flat.normalized() * 12.0
 		return Vector3.ZERO
-	var target := wish * speed_on(_tags())
+	var effects := SceneMechanism.effects_at(player.global_position)
+	var target := wish * speed_on(_tags()) * float(effects.speed_multiplier) \
+		+ Vector3(effects.drift.x, 0, effects.drift.z)
 	var accel := 34.0 if wish.length_squared() > 0.01 else 40.0
 	if is_burrowed():
 		accel *= 0.75
@@ -183,6 +188,11 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 		_coyote = maxf(_coyote - delta, 0.0)
 
 	if _climbing:
+		if Input.is_action_just_pressed("air_action"):
+			_climbing = false
+			_climb_target = null
+			player.velocity.y = 7.4
+			return
 		if _climb_target != null and _climb_target.ledge_height >= 0.0 and player.global_position.y >= _climb_target.ledge_height - 0.2:
 			var landed := _climb_target.ledge_point
 			_climbing = false
@@ -307,6 +317,17 @@ func _interact() -> void:
 		note.emit("抛出去了" if throwing else "松开了")
 		return
 	var origin := player.global_position
+	var nearby: SceneMechanism
+	var distance := 2.5
+	for node in get_tree().get_nodes_in_group("scene_mechanisms"):
+		if not node is SceneMechanism or node.collected:
+			continue
+		var current := origin.distance_to(node.global_position)
+		if current < distance:
+			nearby = node
+			distance = current
+	if nearby != null and nearby.interact(player):
+		return
 	var upper := current_upper()
 	if upper.has_ability("grab_climb", breakthrough):
 		var pillar := SceneProbe.nearest(origin, 1.9, PackedStringArray(["climbable"]))
@@ -506,6 +527,21 @@ func _apply_flight(player: PlayerController, delta: float) -> void:
 func _apply_swim_vertical(player: PlayerController, delta: float) -> bool:
 	if not _tags().has("fluid"):
 		return false
+	if _tags().has("ocean"):
+		var lower := current_lower().id
+		if lower == "goose_foot":
+			var surface_y := SceneProbe.water_surface_y(player.global_position)
+			if surface_y > -INF:
+				player.velocity.y = clampf((surface_y - player.global_position.y) * 12.0, -3.0, 5.0)
+			return true
+		if lower in ["fish_tail", "water_snake", "octopus_leg"]:
+			var vertical := (1.0 if Input.is_action_pressed("air_action") else 0.0) \
+				- (1.0 if Input.is_physical_key_pressed(KEY_CTRL) else 0.0)
+			var effects := SceneMechanism.effects_at(player.global_position)
+			player.velocity.y = vertical * TerrainMovementRules.speed(lower, "ocean") + effects.drift.y
+			player.set_meta("scene_oxygen", minf(100.0,
+				float(player.get_meta("scene_oxygen", 100.0)) + effects.oxygen * delta))
+			return true
 	match current_lower().swim:
 		"hover_fast", "skim":
 			player.velocity.y = move_toward(player.velocity.y, 0.0, 22.0 * delta)
@@ -538,7 +574,8 @@ func _try_jump(player: PlayerController, on_floor: bool) -> bool:
 
 func _swim_controls_air() -> bool:
 	var swim := current_lower().swim
-	return swim == "hover_fast" or swim == "skim" or swim == "sink"
+	return swim == "hover_fast" or swim == "skim" or swim == "sink" \
+		or (_tags().has("ocean") and swim == "fluid_and_hard")
 
 
 func _begin_dive(player: PlayerController, enemy: AffordanceProp) -> void:

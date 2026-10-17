@@ -8,7 +8,7 @@ const BASE_Y := 0.0
 const TERRAIN_GRASS := 0
 const TERRAIN_ROCK := 1
 const DIRS := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
-const FORMAT_VERSION := 8
+const FORMAT_VERSION := 9
 const MAX_MAP_SIZE := Vector2i(600, 600)
 const MAX_LAYERS := 32
 const DEFAULT_SOLID_TILE := "grass"
@@ -20,7 +20,7 @@ const DEFAULT_SOLID_TILE := "grass"
 @export var grid_world_origin := Vector2.ZERO
 @export var has_grid_world_origin := false
 ## Stable height slots: an empty dictionary is air, never a missing support to fill.
-## Each solid layer owns its optional liquid/overlay surface records.
+## Solid and water blocks occupy separate slots. Only solids own overlays.
 @export var columns: Array[Dictionary] = []
 ## Legacy v5 payload. It is consumed and cleared by ensure_layout().
 @export var cells: Array[Dictionary] = []
@@ -90,9 +90,6 @@ func tile_id(cell: Vector2i, layer := -1) -> String:
 	if layer >= 0:
 		return str(get_layer(cell, layer).get("tile_id", DEFAULT_SOLID_TILE))
 	var target := top_layer(cell)
-	var liquid := get_attachment(cell, "liquid", target)
-	if not liquid.is_empty():
-		return str(liquid.get("tile_id", "water"))
 	return str(get_layer(cell, target).get("tile_id", DEFAULT_SOLID_TILE))
 
 func solid_tile_id(cell: Vector2i, layer := -1) -> String:
@@ -213,15 +210,23 @@ func top_layer(cell: Vector2i) -> int:
 func layer_exists(cell: Vector2i, layer: int) -> bool:
 	return not get_layer(cell, layer).is_empty()
 
+func is_water_layer(cell: Vector2i, layer: int) -> bool:
+	var tile := TileRegistry.find(str(get_layer(cell, layer).get("tile_id", "")))
+	return tile != null and tile.is_water()
+
+func is_solid_layer(cell: Vector2i, layer: int) -> bool:
+	var tile := TileRegistry.find(str(get_layer(cell, layer).get("tile_id", "")))
+	return tile != null and tile.is_solid()
+
 func is_surface_exposed(cell: Vector2i, layer: int) -> bool:
-	return layer_exists(cell, layer) and not layer_exists(cell, layer + 1)
+	return layer_exists(cell, layer) and not is_solid_layer(cell, layer + 1) \
+		and (not is_water_layer(cell, layer) or not is_water_layer(cell, layer + 1))
 
 func exposed_layers(cell: Vector2i) -> Array[int]:
 	var result: Array[int] = []
 	var layers: Array = get_column(cell).get("layers", [])
 	for layer in layers.size():
-		if not (layers[layer] as Dictionary).is_empty() \
-				and (layer + 1 == layers.size() or (layers[layer + 1] as Dictionary).is_empty()):
+		if is_surface_exposed(cell, layer):
 			result.append(layer)
 	return result
 
@@ -253,16 +258,18 @@ func set_layer(cell: Vector2i, layer: int, value: Dictionary,
 	var tile := TileRegistry.find(str(record.get("tile_id", DEFAULT_SOLID_TILE)))
 	if tile == null:
 		return "地貌定义不存在"
-	if tile != null and tile.is_water():
-		return set_attachment(cell, "liquid", record, layer, support_tile_id)
 	if tile != null and tile.is_overlay():
 		return set_attachment(cell, "overlay", record, layer, support_tile_id)
 	var column := column_snapshot(cell)
 	var layers: Array = column["layers"]
 	while layers.size() <= layer:
 		layers.append({})
-	var replacement := (layers[layer] as Dictionary).duplicate(true)
-	replacement.merge(_solid_record(str(record["tile_id"]), int(record["rotation"])), true)
+	if layer_exists(cell, layer) and is_water_layer(cell, layer) != tile.is_water():
+		ObjectRules.remove_terrain_support(self, cell, layer)
+	var replacement := record
+	if tile.is_solid() and is_solid_layer(cell, layer):
+		replacement = (layers[layer] as Dictionary).duplicate(true)
+		replacement.merge(record, true)
 	layers[layer] = replacement
 	column["layers"] = layers
 	columns[index(cell)] = column
@@ -280,17 +287,18 @@ func set_layers(values: Dictionary, layer: int, _support_tile_id := "") -> Strin
 	for cell: Vector2i in values:
 		var record: Dictionary = values[cell]
 		var tile := TileRegistry.find(str(record.get("tile_id", DEFAULT_SOLID_TILE)))
-		if tile == null or not tile.is_solid():
-			return "批量分层绘制只接受实体地貌"
+		if tile == null or not tile.is_block():
+			return "批量分层绘制只接受实体或海水地块"
 	for cell: Vector2i in values:
 		var column := column_snapshot(cell)
 		var layers: Array = column["layers"]
 		var record: Dictionary = values[cell]
 		while layers.size() <= layer:
 			layers.append({})
-		var replacement := (layers[layer] as Dictionary).duplicate(true)
-		replacement.merge(_solid_record(str(record.get("tile_id", DEFAULT_SOLID_TILE)),
-			int(record.get("rotation", 0))), true)
+		var replacement := _normalized_surface(record)
+		if is_solid_layer(cell, layer) and not tile_is_water(record):
+			replacement = (layers[layer] as Dictionary).duplicate(true)
+			replacement.merge(_normalized_surface(record), true)
 		layers[layer] = replacement
 		column["layers"] = layers
 		columns[index(cell)] = column
@@ -324,6 +332,12 @@ func get_attachment(cell: Vector2i, role: String, layer := -1) -> Dictionary:
 	if role not in ["liquid", "overlay"]:
 		return {}
 	var target := top_layer(cell) if layer < 0 else layer
+	if role == "liquid":
+		if is_water_layer(cell, target):
+			return get_layer(cell, target)
+		if is_water_layer(cell, target + 1):
+			return get_layer(cell, target + 1)
+		return {}
 	return get_layer(cell, target).get(role, {})
 
 func set_attachment(cell: Vector2i, role: String, value: Dictionary,
@@ -338,8 +352,13 @@ func set_attachment(cell: Vector2i, role: String, value: Dictionary,
 		return "地貌类型与附加层不匹配"
 	ensure_layout()
 	var target_layer := top_layer(cell) if layer < 0 else layer
-	if not is_surface_exposed(cell, target_layer):
-		return "液体和贴花需要一个外露的实体顶面"
+	if role == "liquid":
+		var water_layer := target_layer if is_water_layer(cell, target_layer) else target_layer + 1
+		if layer_exists(cell, water_layer) and not is_water_layer(cell, water_layer):
+			return "目标层已被其他地块占用"
+		return set_layer(cell, water_layer, value)
+	if not is_solid_layer(cell, target_layer) or not is_surface_exposed(cell, target_layer):
+		return "贴花需要一个外露的实体顶面"
 	var column := column_snapshot(cell)
 	var layers: Array = column["layers"]
 	layers[target_layer][role] = _normalized_surface(value)
@@ -353,6 +372,12 @@ func clear_attachment(cell: Vector2i, role: String, layer := -1) -> void:
 	if role not in ["liquid", "overlay"] or not in_bounds(cell):
 		return
 	var target := top_layer(cell) if layer < 0 else layer
+	if role == "liquid":
+		if is_water_layer(cell, target):
+			remove_layer(cell, target)
+		elif is_water_layer(cell, target + 1):
+			remove_layer(cell, target + 1)
+		return
 	if not layer_exists(cell, target):
 		return
 	var column := column_snapshot(cell)
@@ -370,9 +395,7 @@ func get_cell(cell: Vector2i) -> Dictionary:
 		return _blank_cell()
 	var record: Dictionary = get_layer(cell, top)
 	var visible := tile_id(cell)
-	var visible_record := get_attachment(cell, "liquid")
-	if visible_record.is_empty():
-		visible_record = record
+	var visible_record := record
 	return {
 		"exists": true,
 		"terrain": TileRegistry.id_to_legacy_terrain(visible),
@@ -474,7 +497,7 @@ func support_top_layer(cell: Vector2i) -> int:
 	return mini(top_layer(cell), int(stairs[stair_index].get("layer", top_layer(low))))
 
 func has_terrain_volume(cell: Vector2i, layer: int) -> bool:
-	if not layer_exists(cell, layer):
+	if not is_solid_layer(cell, layer):
 		return false
 	var stair_index := stair_at(cell, layer)
 	return stair_index < 0 or cell == Vector2i(stairs[stair_index]["cell"])
@@ -486,7 +509,7 @@ func can_place_stair(low: Vector2i, direction: int, layer := -1) -> String:
 		return "阶梯超出地图边界"
 	if stair_at(low, base) >= 0 or stair_at(high, base + 1) >= 0:
 		return "阶梯与已有阶梯重叠"
-	if not layer_exists(low, base) or not layer_exists(high, base + 1):
+	if not is_solid_layer(low, base) or not is_solid_layer(high, base + 1):
 		return "阶梯两端必须有地块"
 	if not is_surface_exposed(low, base) or not is_surface_exposed(high, base + 1):
 		return "阶梯两端必须是相差 2 米的外露顶面"
@@ -507,8 +530,8 @@ func validate() -> PackedStringArray:
 					continue
 				var tile := TileRegistry.find(str(
 					(layers[layer] as Dictionary).get("tile_id", "")))
-				if tile == null or not tile.is_solid():
-					errors.append("地块 %s 第 %d 层不是有效实体地貌" % [cell, layer])
+				if tile == null or not tile.is_block():
+					errors.append("地块 %s 第 %d 层不是有效地貌" % [cell, layer])
 				for role in ["liquid", "overlay"]:
 					var attachment: Dictionary = layers[layer].get(role, {})
 					if attachment.is_empty():
@@ -526,7 +549,7 @@ func validate() -> PackedStringArray:
 func validate_content(check_assets := true) -> PackedStringArray:
 	ensure_layout()
 	var errors := PackedStringArray()
-	if not in_bounds(spawn_cell) or not layer_exists(spawn_cell, spawn_layer):
+	if not in_bounds(spawn_cell) or not is_solid_layer(spawn_cell, spawn_layer):
 		errors.append("缺少有效的玩家出生点")
 	for i in stairs.size():
 		var stair := stairs[i]
@@ -648,6 +671,12 @@ func _set_cell_compat(cell: Vector2i, value: Dictionary) -> void:
 		TileRegistry.legacy_terrain_to_id(int(value.get("terrain", 0)))))
 	var rotation := int(value.get("rotation", 0))
 	var tile := TileRegistry.find(id)
+	if tile != null and tile.is_water():
+		var water_layers: Array[Dictionary] = []
+		for layer in target + 1:
+			water_layers.append(_normalized_surface({"tile_id": id, "rotation": rotation}))
+		columns[column_index] = {"layers": water_layers}
+		return
 	var role := "solid"
 	if tile != null and tile.is_water():
 		role = "liquid"
@@ -657,7 +686,7 @@ func _set_cell_compat(cell: Vector2i, value: Dictionary) -> void:
 	var old_layers: Array = column.get("layers", [])
 	var layers: Array[Dictionary] = []
 	for layer in target + 1:
-		if layer < old_layers.size() and not (old_layers[layer] as Dictionary).is_empty():
+		if layer < old_layers.size() and is_solid_layer(cell, layer):
 			layers.append((old_layers[layer] as Dictionary).duplicate(true))
 		else:
 			layers.append(_solid_record(
@@ -705,6 +734,7 @@ func _migrate_legacy_cells(wanted: int) -> void:
 				"tile_id": id,
 				"rotation": rotation,
 			})
+		columns[i] = _normalized_column(columns[i])
 	_migrate_anchors()
 	cells.clear()
 
@@ -770,7 +800,7 @@ func _normalized_column(value: Dictionary) -> Dictionary:
 			continue
 		var record := _normalized_surface(raw)
 		var tile := TileRegistry.find(str(record.get("tile_id", DEFAULT_SOLID_TILE)))
-		if tile != null and not tile.is_solid():
+		if tile != null and not tile.is_block():
 			record = _solid_record(DEFAULT_SOLID_TILE, 0)
 		for role in ["liquid", "overlay"]:
 			var attachment: Dictionary = raw.get(role, {})
@@ -785,7 +815,24 @@ func _normalized_column(value: Dictionary) -> Dictionary:
 			var attachment: Variant = value.get(role, {})
 			if attachment is Dictionary and not attachment.is_empty():
 				normalized_layers.back()[role] = _normalized_surface(attachment)
+	# v6-v8 liquids lived on a solid surface. Preserve that seabed and place
+	# a genuine water volume above it; never overwrite an existing block.
+	for layer in normalized_layers.size():
+		var liquid: Dictionary = normalized_layers[layer].get("liquid", {})
+		normalized_layers[layer].erase("liquid")
+		if liquid.is_empty():
+			continue
+		var target := layer + 1
+		while target < normalized_layers.size() and not normalized_layers[target].is_empty():
+			target += 1
+		while normalized_layers.size() <= target:
+			normalized_layers.append({})
+		normalized_layers[target] = liquid
 	return result
+
+func tile_is_water(record: Dictionary) -> bool:
+	var tile := TileRegistry.find(str(record.get("tile_id", "")))
+	return tile != null and tile.is_water()
 
 func _normalized_surface(value: Dictionary) -> Dictionary:
 	return {

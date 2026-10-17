@@ -68,6 +68,9 @@ func is_solid() -> bool:
 func is_overlay() -> bool:
 	return terrain_role == TerrainRole.OVERLAY
 
+func is_block() -> bool:
+	return is_solid() or is_water()
+
 func has_soft_rim() -> bool:
 	return not rim_texture_path.is_empty() and rim_drop_m > 0.0
 

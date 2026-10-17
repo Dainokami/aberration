@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_waqq8"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_bqdsq"]
+
+[resource]
+script = ExtResource("2_bqdsq")
+asset_id = "scene1016_thorns_1552"
+display_name = "刺棘丛·草原·1552"
+category = "刺棘丛"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1552.png"
+scene_path = "res://assets/generated/scene1016_thorns_1552/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_thorns_1552/thumbnail.png"
+image_size = Vector2(6, 2)
+pivot = Vector2(0.5, 0.9453125)
+volume_size = Vector3(6, 2, 2)
+collision_size = Vector3(6, 2, 2)
+collision_offset = Vector3(2, 0, 0)
+profile = ExtResource("1_waqq8")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "刺棘丛",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "刺棘丛·草原·1552",
+"ecosystems": ["grass"],
+"id": "scene1016_thorns_1552",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_thorns_1552.png",
+"image_size_m": [6.0, 2.0],
+"kind": "thorns",
+"layout": [3.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_thorns_1552.png",
+"original_pixels": [768.0, 256.0],
+"output_pixels": [768.0, 256.0],
+"parameters": {
+"damage_per_second": 1.0,
+"speed_multiplier": 0.5
+},
+"pivot": [0.5, 0.9453125],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016221152_1552_21.png",
+"source_sha256": "e4633e8357b11b29ca6ab6e03a04281058b0227e134e6ead4c7da96008f81138",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [4.0, 0.0, 0.0]],
+"spec_row": 11.0,
+"view": "用户图二"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(4, 0, 0)])
+mechanism = "thorns"
+ecosystems = PackedStringArray("grass")
+mechanism_parameters = {
+"damage_per_second": 1.0,
+"speed_multiplier": 0.5
+}

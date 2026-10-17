@@ -71,7 +71,7 @@ func check_prefab() -> void:
 	source.set_layer(cell, 0, {"tile_id": "grass", "rotation": 0})
 	source.set_layer(cell, 1, {"tile_id": "ground_stone", "rotation": 1})
 	source.set_layer(cell, 2, {"tile_id": "sand", "rotation": 2})
-	source.set_layer(cell, 2, {"tile_id": "water", "rotation": 3})
+	source.set_layer(cell, 3, {"tile_id": "water", "rotation": 3})
 	source.set_layer(cell, 2, {"tile_id": "decal_corruption", "rotation": 1})
 	var capture := LevelPrefab.capture(source, source.map_bounds())
 	var prefab: LevelPrefab = capture["prefab"]
@@ -85,13 +85,13 @@ func check_prefab() -> void:
 		var stamped := LevelData.new()
 		stamped.restore_data(result["snapshot"])
 		var target := Vector2i(2, 2) + prefab.rotate_cell(cell, turns)
-		check(stamped.layer_count(target) == 3
+		check(stamped.layer_count(target) == 4
 			and stamped.solid_tile_id(target, 0) == "grass"
 			and stamped.solid_tile_id(target, 1) == "ground_stone"
 			and stamped.solid_tile_id(target, 2) == "sand"
 			and stamped.get_layer(target, 1)["rotation"] == posmod(1 + turns, 4)
 			and stamped.get_attachment(target, "liquid")["rotation"] == posmod(3 + turns, 4)
-			and stamped.get_attachment(target, "overlay")["rotation"] == posmod(1 + turns, 4),
+			and stamped.get_attachment(target, "overlay", 2)["rotation"] == posmod(1 + turns, 4),
 			"prefab preserves and rotates every block and attachment %d" % turns)
 	check(not destination.cell_exists(Vector2i(2, 2)), "prefab candidate leaves destination unchanged")
 
@@ -162,7 +162,9 @@ func check_geometry() -> void:
 		"unequal-height columns meet flush along both ends of their shared edge")
 	map.set_layer(neighbor, 0, {"tile_id": "water"})
 	check(TerrainEdgeBuilder._top_polygon(map, neighbor, TileRegistry.find("water"), 4)
-		== low_outline, "liquid outline matches its solid support")
+		== PackedVector2Array([Vector2(-1,-1),Vector2(1,-1),Vector2(1,1),Vector2(-1,1)]),
+		"independent water uses its grid volume without a solid support")
+	map.set_layer(neighbor, 0, {"tile_id": "grass"})
 	builder.rebuild_cells([neighbor])
 	await physics_frame
 	await physics_frame

@@ -79,7 +79,7 @@ static func transition_info(data: LevelData, cell: Vector2i) -> Dictionary:
 		if data.elevation(neighbor) != data.elevation(cell):
 			continue
 		var candidate := TileRegistry.find(data.tile_id(neighbor))
-		if candidate == null or candidate.tile_id == upper.tile_id:
+		if candidate == null or not candidate.is_solid() or candidate.tile_id == upper.tile_id:
 			continue
 		if not _dominant(upper, candidate):
 			continue

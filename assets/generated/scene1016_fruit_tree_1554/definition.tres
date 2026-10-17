@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_2iy04"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_d1wb6"]
+
+[resource]
+script = ExtResource("2_d1wb6")
+asset_id = "scene1016_fruit_tree_1554"
+display_name = "垂蔓果树·草原·1554"
+category = "垂蔓果树"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1554.png"
+scene_path = "res://assets/generated/scene1016_fruit_tree_1554/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_fruit_tree_1554/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.9667969)
+volume_size = Vector3(4, 2, 4)
+collision = 1
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("1_2iy04")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "垂蔓果树",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "垂蔓果树·草原·1554",
+"ecosystems": ["grass"],
+"id": "scene1016_fruit_tree_1554",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_fruit_tree_1554.png",
+"image_size_m": [4.0, 4.0],
+"kind": "fruit_tree",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_fruit_tree_1554.png",
+"original_pixels": [384.0, 384.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.9667969],
+"requires_seabed": false,
+"solid_collision": true,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016221219_1554_21.png",
+"source_sha256": "a7d90bf6ea21ffbaa3ddc46459128b08372e53c0f29de0fac03ab8e7092f9359",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [2.0, 0.0, 2.0]],
+"spec_row": 12.0,
+"view": "用户图六，3格视图"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(2, 0, 2)])
+mechanism = "fruit_tree"
+ecosystems = PackedStringArray("grass")

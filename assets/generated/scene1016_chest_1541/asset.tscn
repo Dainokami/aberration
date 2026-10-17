@@ -1,0 +1,132 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_hskrt"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_e3r5f"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_2ue0m"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_chest_1541.png" id="4_2l5or"]
+
+[sub_resource type="Resource" id="Resource_5gioi"]
+script = ExtResource("3_2ue0m")
+asset_id = "scene1016_chest_1541"
+display_name = "遗落宝箱·海洋·1541"
+category = "遗落宝箱"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1541.png"
+scene_path = "res://assets/generated/scene1016_chest_1541/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_chest_1541/thumbnail.png"
+image_size = Vector2(2, 2)
+pivot = Vector2(0.5, 0.90234375)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("2_e3r5f")
+generator_version = 4
+behaviour = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "遗落宝箱",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "遗落宝箱·海洋·1541",
+"ecosystems": ["ocean"],
+"id": "scene1016_chest_1541",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_chest_1541.png",
+"image_size_m": [2.0, 2.0],
+"kind": "chest",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_chest_1541.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.90234375],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220912_1541_21.png",
+"source_sha256": "889fb7059b41031b71f2a3511181ce42195723b735702e9411f5419569b5ec10",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 21.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "chest"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjhwo"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_2l5or")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_palsl"]
+_surfaces = [{
+"aabb": AABB(-1, 3.8146972e-08, 0, 2, 1.04, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 30, 5, 63, 0, 0, 128, 63, 184, 30, 5, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 184, 30, 133, 63, 0, 0, 0, 0, 0, 0, 128, 191, 10, 215, 35, 51, 0, 0, 0, 0, 0, 0, 128, 63, 10, 215, 35, 51, 0, 0, 0, 0, 0, 0, 128, 63, 184, 30, 133, 63, 0, 0, 0, 0)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nvfu7"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_2l5or")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_kyf42"]
+_surfaces = [{
+"aabb": AABB(-1, -0.96, 0, 2, 0.96000004, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 184, 30, 5, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 184, 30, 5, 63),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 10, 215, 35, 51, 0, 0, 0, 0, 0, 0, 128, 191, 143, 194, 117, 191, 0, 0, 0, 0, 0, 0, 128, 63, 143, 194, 117, 191, 0, 0, 0, 0, 0, 0, 128, 63, 10, 215, 35, 51, 0, 0, 0, 0)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vxnqc"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xbgo5"]
+size = Vector3(2, 2, 2)
+
+[node name="scene1016_chest_1541" type="Node3D" unique_id=1663794771]
+script = ExtResource("1_hskrt")
+definition = SubResource("Resource_5gioi")
+
+[node name="ChestLid" type="MeshInstance3D" parent="." unique_id=1537888800]
+transform = Transform3D(1, 0, 0, 0, 0.92718387, 0.37460658, 0, -0.37460658, 0.92718387, 0, 0.7090059, -0.28645697)
+material_override = SubResource("StandardMaterial3D_hjhwo")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_palsl")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=223961519]
+transform = Transform3D(1, 0, 0, 0, 0.92718387, 0.37460658, 0, -0.37460658, 0.92718387, 0, 0.7090059, -0.28645697)
+material_override = SubResource("StandardMaterial3D_nvfu7")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_kyf42")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=163986141]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=2073585060]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_vxnqc")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1454783500]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1182484669]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_xbgo5")

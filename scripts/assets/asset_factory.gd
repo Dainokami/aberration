@@ -4,11 +4,17 @@ extends RefCounted
 
 static func make_asset(definition: PlaceableDefinition) -> Node3D:
 	var root := Node3D.new()
-	if definition.behaviour != PlaceableDefinition.Behaviour.DECORATION:
+	if not definition.mechanism.is_empty():
+		root.set_script(load("res://scripts/runtime/scene_mechanism.gd"))
+		root.set("definition", definition)
+	elif definition.behaviour != PlaceableDefinition.Behaviour.DECORATION:
 		root.set_script(load("res://scripts/runtime/gameplay_prop.gd"))
 		root.set("definition", definition)
 	root.name = definition.asset_id
-	if definition.carrier == PlaceableDefinition.Carrier.MULTI_FACE:
+	if definition.mechanism == "chest":
+		root.add_child(_chest_slice(definition, 0.0, 0.52, true))
+		root.add_child(_chest_slice(definition, 0.52, 1.0, false))
+	elif definition.carrier == PlaceableDefinition.Carrier.MULTI_FACE:
 		var visual := _multi_face(definition)
 		visual.name = "Art"
 		root.add_child(visual)
@@ -22,6 +28,9 @@ static func make_asset(definition: PlaceableDefinition) -> Node3D:
 	else:
 		var visual := _visual(definition, definition.source_image)
 		visual.name = "Art"
+		if not definition.spatial_cells.is_empty() and definition.mechanism != "fruit_tree" \
+				and definition.carrier != PlaceableDefinition.Carrier.WALL:
+			visual.position += Vector3(definition.collision_offset.x, 0, definition.collision_offset.z)
 		root.add_child(visual)
 	if not definition.foreground_image.is_empty():
 		var front := _visual(definition, definition.foreground_image)
@@ -30,7 +39,7 @@ static func make_asset(definition: PlaceableDefinition) -> Node3D:
 		root.add_child(front)
 		if definition.fade_foreground:
 			front.set_script(load("res://scripts/assets/foreground_fade.gd"))
-	if definition.collision != PlaceableDefinition.Collision.NONE:
+	if definition.collision != PlaceableDefinition.Collision.NONE and definition.spatial_cells.is_empty():
 		var body := StaticBody3D.new()
 		body.name = "ProxyCollision"
 		var shape_node := CollisionShape3D.new()
@@ -48,8 +57,24 @@ static func make_asset(definition: PlaceableDefinition) -> Node3D:
 		shape_node.position = definition.collision_offset + Vector3(0, definition.collision_size.y * 0.5, 0)
 		body.add_child(shape_node)
 		root.add_child(body)
+	if not definition.spatial_cells.is_empty():
+		for index in definition.spatial_cells.size():
+			var body: CollisionObject3D = StaticBody3D.new() \
+				if definition.collision != PlaceableDefinition.Collision.NONE else Area3D.new()
+			body.name = "SpatialCell_%d" % index
+			body.collision_layer = 1 if body is StaticBody3D else 4
+			body.collision_mask = 0
+			var shape_node := CollisionShape3D.new()
+			shape_node.name = "Shape"
+			var shape := BoxShape3D.new()
+			shape.size = definition.cell_size
+			shape_node.shape = shape
+			shape_node.position = definition.spatial_cells[index] + Vector3.UP * shape.size.y * 0.5
+			body.add_child(shape_node)
+			root.add_child(body)
 	if definition.behaviour in [PlaceableDefinition.Behaviour.CHEST,
-			PlaceableDefinition.Behaviour.BREAKABLE, PlaceableDefinition.Behaviour.CLIMBABLE]:
+			PlaceableDefinition.Behaviour.BREAKABLE, PlaceableDefinition.Behaviour.CLIMBABLE] \
+			or not definition.mechanism.is_empty():
 		var area := Area3D.new()
 		area.name = "InteractionArea"
 		area.collision_layer = 4
@@ -77,6 +102,37 @@ static func instantiate_asset(definition: PlaceableDefinition) -> Node3D:
 			if root != null:
 				return root
 	return make_asset(definition)
+
+static func _chest_slice(d: PlaceableDefinition, first: float, last: float, lid: bool) -> MeshInstance3D:
+	var node := MeshInstance3D.new()
+	node.name = "ChestLid" if lid else "Art"
+	var cut := 0.52
+	var origin_y := (d.pivot.y - cut) * d.image_size.y
+	node.basis = d.profile.camera_basis()
+	node.position = node.basis * Vector3(0, origin_y, 0)
+	var vertices := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	for uv in [Vector2(0,first),Vector2(0,last),Vector2(1,last),Vector2(1,first)]:
+		vertices.append(Vector3((uv.x - d.pivot.x) * d.image_size.x,
+			(cut - uv.y) * d.image_size.y, 0))
+		uvs.append(uv)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = PackedInt32Array([0,1,2,0,2,3])
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	node.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = load(d.source_image)
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	material.alpha_scissor_threshold = 0.15
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	node.material_override = material
+	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return node
 
 static func _multi_face(d: PlaceableDefinition) -> Node3D:
 	var root := Node3D.new()

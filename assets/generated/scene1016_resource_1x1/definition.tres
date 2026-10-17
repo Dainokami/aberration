@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_is1tl"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_m4cpj"]
+
+[resource]
+script = ExtResource("2_m4cpj")
+asset_id = "scene1016_resource_1x1"
+display_name = "自然资源簇·岩石/海洋·1x1"
+category = "自然资源簇"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_resource_1x1.png"
+scene_path = "res://assets/generated/scene1016_resource_1x1/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_resource_1x1/thumbnail.png"
+image_size = Vector2(2, 2)
+volume_size = Vector3(2, 2, 2)
+collision_size = Vector3(2, 2, 2)
+profile = ExtResource("1_is1tl")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "自然资源簇",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "自然资源簇·岩石/海洋·1x1",
+"ecosystems": ["rock", "ocean"],
+"id": "scene1016_resource_1x1",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_resource_1x1.png",
+"image_size_m": [2.0, 2.0],
+"kind": "resource",
+"layout": [1.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_resource_1x1.png",
+"original_pixels": [256.0, 256.0],
+"output_pixels": [256.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 1.0],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "ziranziyuancu_1x1.png",
+"source_sha256": "d1a4de1a0d43ec62c8342335ca30d7190436e1d4b23e3ce82e4af609d7c66052",
+"spatial_cells_m": [[0.0, 0.0, 0.0]],
+"spec_row": 19.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0)])
+mechanism = "resource"
+ecosystems = PackedStringArray("rock", "ocean")

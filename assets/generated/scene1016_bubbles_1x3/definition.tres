@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_02sdj"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_frp0w"]
+
+[resource]
+script = ExtResource("2_frp0w")
+asset_id = "scene1016_bubbles_1x3"
+display_name = "浮升气泡柱·海洋·1x3"
+category = "浮升气泡柱"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x3.png"
+scene_path = "res://assets/generated/scene1016_bubbles_1x3/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_bubbles_1x3/thumbnail.png"
+image_size = Vector2(2, 6)
+pivot = Vector2(0.5, 0.99869794)
+volume_size = Vector3(2, 6, 6)
+collision_size = Vector3(2, 6, 6)
+collision_offset = Vector3(0, 0, 2)
+profile = ExtResource("1_02sdj")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "浮升气泡柱",
+"cell_size_m": [2.0, 6.0, 2.0],
+"display_name": "浮升气泡柱·海洋·1x3",
+"ecosystems": ["ocean"],
+"id": "scene1016_bubbles_1x3",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_bubbles_1x3.png",
+"image_size_m": [2.0, 6.0],
+"kind": "bubbles",
+"layout": [1.0, 3.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_bubbles_1x3.png",
+"original_pixels": [256.0, 768.0],
+"output_pixels": [256.0, 768.0],
+"parameters": {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+},
+"pivot": [0.5, 0.9986979166666666],
+"requires_seabed": true,
+"solid_collision": false,
+"source_directory": "场景物件美术资产_叶子",
+"source_file": "fushengqipaozhu_1x3.png",
+"source_sha256": "c10719d72b3405dea83f27fcea001bf989b6a2549ccfd831a4554e1a9a1a65cf",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [0.0, 0.0, 2.0], [0.0, 0.0, 4.0]],
+"spec_row": 17.0,
+"view": "竖向画布；地面布局1×3"
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(0, 0, 2), Vector3(0, 0, 4)])
+cell_size = Vector3(2, 6, 2)
+mechanism = "bubbles"
+ecosystems = PackedStringArray("ocean")
+requires_seabed = true
+mechanism_parameters = {
+"oxygen_per_second": 10.0,
+"rise_speed_mps": 1.5
+}

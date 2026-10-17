@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/scene_mechanism.gd" id="1_ogak4"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_7vy2j"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_hgepx"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261016/scene1016_remains_1548.png" id="4_nopq3"]
+
+[sub_resource type="Resource" id="Resource_urukm"]
+script = ExtResource("3_hgepx")
+asset_id = "scene1016_remains_1548"
+display_name = "散落遗骸·沙漠·1548"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1548.png"
+scene_path = "res://assets/generated/scene1016_remains_1548/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1548/thumbnail.png"
+image_size = Vector2(4, 2)
+pivot = Vector2(0.5, 0.94921875)
+volume_size = Vector3(4, 2, 2)
+collision_size = Vector3(4, 2, 2)
+collision_offset = Vector3(1, 0, 0)
+profile = ExtResource("2_7vy2j")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·沙漠·1548",
+"ecosystems": ["desert"],
+"id": "scene1016_remains_1548",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1548.png",
+"image_size_m": [4.0, 2.0],
+"kind": "remains",
+"layout": [2.0, 1.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1548.png",
+"original_pixels": [512.0, 256.0],
+"output_pixels": [512.0, 256.0],
+"parameters": {},
+"pivot": [0.5, 0.94921875],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016221100_1548_21.png",
+"source_sha256": "9d27be44291ddc2f9b585345271d37e71428100fadef610e8b5a5a179925eaa8",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0)])
+mechanism = "remains"
+ecosystems = PackedStringArray("desert")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_igsqt"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_nopq3")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_2d6ca"]
+_surfaces = [{
+"aabb": AABB(-2, -0.09416711, -0.71116716, 4, 1.8543677, 0.74921316),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 0, 192, 65, 78, 225, 63, 13, 15, 54, 191, 0, 0, 0, 192, 176, 218, 192, 189, 26, 214, 27, 61, 0, 0, 0, 64, 176, 218, 192, 189, 26, 214, 27, 61, 0, 0, 0, 64, 65, 78, 225, 63, 13, 15, 54, 191)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1hvtc"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_08l3v"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_riurh"]
+size = Vector3(4, 2, 2)
+
+[node name="scene1016_remains_1548" type="Node3D" unique_id=212479055]
+script = ExtResource("1_ogak4")
+definition = SubResource("Resource_urukm")
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=398444773]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+material_override = SubResource("StandardMaterial3D_igsqt")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_2d6ca")
+
+[node name="SpatialCell_0" type="Area3D" parent="." unique_id=1038285354]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_0" unique_id=1720517642]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_1hvtc")
+
+[node name="SpatialCell_1" type="Area3D" parent="." unique_id=1965907091]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="SpatialCell_1" unique_id=915048549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+shape = SubResource("BoxShape3D_08l3v")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=1357503376]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=1120616307]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0)
+shape = SubResource("BoxShape3D_riurh")

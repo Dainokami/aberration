@@ -42,11 +42,11 @@ func check_data() -> void:
 	fork.set_layer(cell, 3, {"tile_id": "rock"})
 	check(data.clone_data() == before, "edits never mutate shared columns")
 	check(not fork.is_surface_exposed(cell, 2)
-		and fork.get_attachment(cell, "liquid", 2).get("tile_id") == "water"
+		and data.is_water_layer(cell, 3)
 		and fork.surface_view(2).cell_exists(cell) == false,
-		"covered attachments retained but absent from surface view")
+		"solid cover hides seabed while original fork retains independent water")
 	fork.remove_layer(cell, 3)
-	check(fork.surface_view(2).tile_id(cell) == "water"
+	check(fork.surface_view(2).tile_id(cell) == "grass"
 		and fork.surface_view(2).overlay_tile_id(cell) == "decal_corruption"
 		and fork.surface_view(6).tile_id(cell) == "rock",
 		"separated exposed surfaces keep independent materials")
@@ -60,9 +60,10 @@ func check_data() -> void:
 		destination.restore_data(stamped["snapshot"])
 		var target := Vector2i(2, 2) + prefab.rotate_cell(cell, 1)
 		check(destination.get_layer(target, 2).get("rotation") == 2
-			and not destination.layer_exists(target, 3)
-			and destination.get_attachment(target, "liquid", 2).get("rotation") == 1,
-			"prefab rotation preserves holes and per-surface attachments")
+			and destination.is_water_layer(target, 3)
+			and destination.get_layer(target, 3).get("rotation") == 1
+			and not destination.layer_exists(target, 4),
+			"prefab rotation preserves water blocks and air gaps")
 	var legacy := LevelData.new()
 	legacy.setup_blank(Vector2i.ONE)
 	legacy.columns = [{"layers": [{"tile_id": "grass"}, {"tile_id": "rock"}],
@@ -138,7 +139,7 @@ func check_rendering() -> void:
 	var next := Vector2i(2, 1)
 	var prop_cell := Vector2i(1, 2)
 	data.set_layer(cell, 0, {"tile_id": "grass"})
-	data.set_layer(cell, 0, {"tile_id": "water"})
+	data.set_layer(cell, 1, {"tile_id": "water"})
 	data.set_layer(cell, 0, {"tile_id": "decal_corruption"})
 	data.set_layer(cell, 3, {"tile_id": "rock"})
 	data.set_layer(next, 0, {"tile_id": "rock"})

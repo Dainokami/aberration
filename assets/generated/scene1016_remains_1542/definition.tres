@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_rdgjd"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_byd7f"]
+
+[resource]
+script = ExtResource("2_byd7f")
+asset_id = "scene1016_remains_1542"
+display_name = "散落遗骸·沙漠·1542"
+category = "散落遗骸"
+source_image = "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1542.png"
+scene_path = "res://assets/generated/scene1016_remains_1542/asset.tscn"
+thumbnail_path = "res://assets/generated/scene1016_remains_1542/thumbnail.png"
+image_size = Vector2(4, 4)
+pivot = Vector2(0.5, 0.67578125)
+volume_size = Vector3(4, 2, 4)
+collision_size = Vector3(4, 2, 4)
+collision_offset = Vector3(1, 0, 1)
+profile = ExtResource("1_rdgjd")
+generator_version = 4
+source_manifest = "res://assets/derived_art/scene_pack_20261016/manifest.json"
+preparation = {
+"category": "散落遗骸",
+"cell_size_m": [2.0, 2.0, 2.0],
+"display_name": "散落遗骸·沙漠·1542",
+"ecosystems": ["desert"],
+"id": "scene1016_remains_1542",
+"image": "res://assets/derived_art/scene_pack_20261016/scene1016_remains_1542.png",
+"image_size_m": [4.0, 4.0],
+"kind": "remains",
+"layout": [2.0, 2.0],
+"original": "res://assets/source_art/scene_pack_20261016/scene1016_remains_1542.png",
+"original_pixels": [512.0, 512.0],
+"output_pixels": [512.0, 512.0],
+"parameters": {},
+"pivot": [0.5, 0.67578125],
+"requires_seabed": false,
+"solid_collision": false,
+"source_directory": "场景素材",
+"source_file": "微信图片_20261016220928_1542_21.png",
+"source_sha256": "a1a3db580c80be61c6ed7addabbf89f9f217b16638163d78b8f381662f87c87d",
+"spatial_cells_m": [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0], [2.0, 0.0, 2.0]],
+"spec_row": 18.0,
+"view": ""
+}
+spatial_cells = Array[Vector3]([Vector3(0, 0, 0), Vector3(2, 0, 0), Vector3(0, 0, 2), Vector3(2, 0, 2)])
+mechanism = "remains"
+ecosystems = PackedStringArray("desert")
