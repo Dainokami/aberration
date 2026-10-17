@@ -70,6 +70,7 @@ func _build_level() -> void:
 
 	_create_box("Fence_A", Vector3(4.0, 0.65, 0.22), Vector3(-4.8, 0.38, 2.2), COLOR_WOOD, Vector3(0.0, 12.0, 0.0))
 	_create_box("Fence_B", Vector3(3.4, 0.65, 0.22), Vector3(4.6, 0.38, 1.9), COLOR_WOOD, Vector3(0.0, -18.0, 0.0))
+	LimbField.scatter(self)
 
 
 func _create_ramp(node_name: String, width: float, rise: float, run: float, south_lip: Vector3, color: Color) -> void:

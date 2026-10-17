@@ -56,8 +56,10 @@ func _ready() -> void:
 	builder.level_data = data
 	add_child(builder)
 	builder.rebuild()
+	_setup_interaction_course()
 	_connect_props()
 	_setup_player()
+	LimbField.scatter_ahead(self, spawn_position)
 	_setup_camera()
 	_setup_ui(requested)
 	if testing:
@@ -515,3 +517,31 @@ func run_physics_checks() -> void:
 		failures.append("cliff_block")
 	print("EDITOR LEVEL TEST FAILURES: ", failures)
 	get_tree().quit(0 if failures.is_empty() else 1)
+
+
+func _setup_interaction_course() -> void:
+	var fluid: Array[Vector2i] = [Vector2i(12, 12), Vector2i(13, 12), Vector2i(12, 13), Vector2i(13, 13), Vector2i(12, 14), Vector2i(13, 14)]
+	var desert: Array[Vector2i] = [Vector2i(12, 10), Vector2i(13, 10)]
+	_paint_cells(fluid, PackedStringArray(["fluid"]), Color(0.35, 0.72, 0.95, 0.45))
+	_paint_cells(desert, PackedStringArray(["desert", "hard"]), Color(0.93, 0.76, 0.38, 0.5))
+	var pool := Vector2i(13, 14)
+	if not data.cell_exists(pool) or data.stair_at(pool) >= 0:
+		return
+	var prop := AffordanceProp.new()
+	prop.kind = "destructible_soft"
+	prop.box_size = Vector3(0.7, 0.45, 0.7)
+	prop.max_health = 22
+	prop.position = data.world_center(pool)
+	add_child(prop)
+	prop.collision_layer = 0
+	prop.collision_mask = 0
+
+
+func _paint_cells(cells: Array[Vector2i], zone_tags: PackedStringArray, tint: Color) -> void:
+	for cell in cells:
+		if not data.cell_exists(cell) or data.stair_at(cell) >= 0:
+			continue
+		var zone := SurfaceZone.new()
+		zone.position = data.world_center(cell) + Vector3(0.0, 0.4, 0.0)
+		add_child(zone)
+		zone.setup(Vector3(LevelData.CELL_SIZE, 1.0, LevelData.CELL_SIZE), zone_tags, tint)

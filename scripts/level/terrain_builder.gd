@@ -36,6 +36,7 @@ var _raster_cache: Dictionary = {}
 var _surface_views: Dictionary = {}
 var _object_nodes: Dictionary = {}
 var _object_signatures: Dictionary = {}
+var _affordance_nodes: Dictionary = {}
 var _applied_slice_limit := -1
 var detail_renderer: DetailRenderer
 
@@ -65,6 +66,7 @@ func rebuild() -> void:
 	_surface_views.clear()
 	_object_nodes.clear()
 	_object_signatures.clear()
+	_affordance_nodes.clear()
 	_applied_slice_limit = -1
 	_built_bounds = level_data.map_bounds()
 	_built_data = level_data
@@ -124,6 +126,7 @@ func _build_chunk(chunk: Vector2i) -> void:
 	for stair in level_data.stairs:
 		if _chunk_for(stair["cell"]) == chunk:
 			_build_stair(stair)
+	_mark_limb_surfaces(_build_region)
 	var nodes: Array[Node] = []
 	for i in range(first_child, generated.get_child_count()):
 		var node := generated.get_child(i)
@@ -222,6 +225,9 @@ func _build_objects() -> void:
 			continue
 		if is_instance_valid(previous):
 			previous.free()
+		if is_instance_valid(_affordance_nodes.get(id)):
+			(_affordance_nodes[id] as Node).free()
+		_affordance_nodes.erase(id)
 		var object := AssetFactory.instantiate_asset(definition)
 		if definition.fade_when_occluding and object.get_script() == null:
 			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
@@ -240,6 +246,7 @@ func _build_objects() -> void:
 		generated.add_child(object)
 		_object_nodes[id] = object
 		_object_signatures[id] = signature
+		_bind_affordance(object, definition.asset_id)
 		if not build_collision:
 			for collision in object.find_children("*", "CollisionObject3D", true, false):
 				collision.collision_layer = 0
@@ -250,6 +257,9 @@ func _build_objects() -> void:
 		var object: Node3D = _object_nodes[id]
 		if is_instance_valid(object):
 			object.free()
+		if is_instance_valid(_affordance_nodes.get(id)):
+			(_affordance_nodes[id] as Node).free()
+		_affordance_nodes.erase(id)
 		_object_nodes.erase(id)
 		_object_signatures.erase(id)
 
@@ -258,6 +268,33 @@ func refresh_objects() -> void:
 	if slice_layer_limit >= 0:
 		for node: Node3D in _object_nodes.values():
 			_set_slice_visible(node, int(node.get_meta("terrain_layer", -1)) <= slice_layer_limit)
+		for node: Node3D in _affordance_nodes.values():
+			_set_slice_visible(node, int(node.get_meta("terrain_layer", -1)) <= slice_layer_limit)
+
+func _bind_affordance(object: Node3D, asset_id: String) -> void:
+	if Engine.is_editor_hint() or not build_collision:
+		return
+	var kind := ""
+	var health := 1
+	match asset_id:
+		"demo_rock":
+			kind = "pushable"
+		"demo_tree", "demo_fence":
+			kind = "destructible_hard"
+			health = 40
+		"demo_grass":
+			kind = "destructible_soft"
+			health = 16
+		_:
+			return
+	var prop := AffordanceProp.new()
+	prop.configure_host(object, kind, health)
+	prop.position = object.position
+	prop.rotation = object.rotation
+	prop.set_meta("terrain_layer", object.get_meta("terrain_layer"))
+	generated.add_child(prop)
+	_affordance_nodes[str(object.get_meta("object_id", ""))] = prop
+
 
 func rebuild_details() -> void:
 	if not is_instance_valid(detail_renderer) or detail_renderer.get_parent() != generated:
@@ -729,6 +766,86 @@ func _build_slope_art(start: Vector3, end: Vector3, bottom: float,
 		node.set_meta("terrain_layer", layer)
 		node.set_meta("slope_side", true)
 		generated.add_child(node)
+
+func _mark_limb_surfaces(bounds: Rect2i) -> void:
+	if level_data == null or generated == null or Engine.is_editor_hint() or not build_collision:
+		return
+	for stair in level_data.stairs:
+		var low: Vector2i = stair["cell"]
+		if not bounds.has_point(low):
+			continue
+		var direction := int(stair.get("direction", 0)) % 4
+		var high: Vector2i = low + LevelData.DIRS[direction]
+		var layer := int(stair.get("layer", level_data.top_layer(low)))
+		if not level_data.layer_exists(low, layer) or not level_data.layer_exists(high, layer + 1):
+			continue
+		var low_center := level_data.world_center(low, layer)
+		var high_center := level_data.world_center(high, layer + 1)
+		var span := high_center.y - low_center.y
+		var stair_center := (low_center + high_center) * 0.5
+		stair_center.y = low_center.y + span * 0.5 + 0.45
+		var stair_size := Vector3(LevelData.CELL_SIZE, span + 1.3, LevelData.CELL_SIZE * 2.0)
+		if direction % 2 == 1:
+			stair_size = Vector3(LevelData.CELL_SIZE * 2.0, span + 1.3, LevelData.CELL_SIZE)
+		_mark_surface(stair_center, PackedStringArray(["hard"]), stair_size, layer + 1)
+	for y in range(bounds.position.y, bounds.end.y):
+		for x in range(bounds.position.x, bounds.end.x):
+			var cell := Vector2i(x, y)
+			for layer in level_data.exposed_layers(cell):
+				if level_data.stair_at(cell, layer) >= 0:
+					continue
+				var center := level_data.world_center(cell, layer)
+				_mark_surface(center + Vector3(0.0, 0.45, 0.0), _surface_tags_for_cell(cell, layer),
+					Vector3(LevelData.CELL_SIZE, 1.2, LevelData.CELL_SIZE), layer)
+				for direction in 4:
+					var neighbor: Vector2i = cell + LevelData.DIRS[direction]
+					for lower in level_data.exposed_layers(neighbor):
+						if lower >= layer or level_data.stair_at(neighbor, lower) >= 0:
+							continue
+						var solid_wall := true
+						for wall_layer in range(lower + 1, layer + 1):
+							if not level_data.has_terrain_volume(cell, wall_layer):
+								solid_wall = false
+								break
+						if not solid_wall:
+							continue
+						var offset: Vector2i = LevelData.DIRS[direction]
+						var face := center + Vector3(offset.x, 0.0, offset.y) * LevelData.CELL_SIZE * 0.5
+						face.y = level_data.surface_y(lower) + 1.0
+						_mark_climb(face, center.y, center + Vector3(0.0, 0.08, 0.0), layer)
+
+
+func _surface_tags_for_cell(cell: Vector2i, layer: int) -> PackedStringArray:
+	var surface := _surface(layer)
+	var tile := TileRegistry.find(surface.tile_id(cell))
+	if tile != null and tile.is_water():
+		return PackedStringArray(["fluid"])
+	if surface.tile_id(cell) == TileRegistry.BUILTIN_SAND:
+		return PackedStringArray(["desert", "hard"])
+	return PackedStringArray(["hard"])
+
+
+func _mark_surface(center: Vector3, zone_tags: PackedStringArray,
+		size := Vector3(LevelData.CELL_SIZE, 1.2, LevelData.CELL_SIZE), layer := -1) -> void:
+	var zone := SurfaceZone.new()
+	zone.tags = zone_tags
+	zone.bind_volume(size)
+	zone.position = center
+	zone.set_meta("limb_marker", true)
+	zone.set_meta("terrain_layer", layer)
+	generated.add_child(zone)
+
+
+func _mark_climb(face: Vector3, top_y: float, onto: Vector3, layer: int) -> void:
+	var prop := AffordanceProp.new()
+	prop.configure_marker("climbable")
+	prop.ledge_height = top_y
+	prop.ledge_point = onto
+	prop.position = face
+	prop.set_meta("limb_marker", true)
+	prop.set_meta("terrain_layer", layer)
+	generated.add_child(prop)
+
 
 func _build_grid() -> void:
 	var material := StandardMaterial3D.new()
