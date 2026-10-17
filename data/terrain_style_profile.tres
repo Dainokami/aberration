@@ -4,9 +4,7 @@
 
 [resource]
 script = ExtResource("1")
-regular_mask_directory = "res://assets/source_art/terrain_handoff_v02/masks/regular"
 irregular_mask_directory = "res://assets/source_art/terrain_handoff_v02/masks/irregular"
-use_irregular_masks = true
 irregular_seed = 20261012
 use_soft_rims = true
 use_shore_foam = true

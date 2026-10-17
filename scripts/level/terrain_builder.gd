@@ -356,14 +356,14 @@ func _build_cell(cell: Vector2i, surface: LevelData) -> void:
 		var transition_mask_info := {}
 		if lower != null:
 			transition_mask_info = TerrainTopology.mask_info(
-				int(transition["bits"]), cell, style_profile, true)
+				int(transition["bits"]), cell, style_profile)
 			transition_turns = int(transition_mask_info["uv_turns"])
 		var rotation_turns := int(cell_data.get("rotation", 0))
-		var mask_path: String = transition_mask_info.get("path", "")
+		var mask_key: String = transition_mask_info.get("key", "")
 		var lower_id := lower.tile_id if lower != null else ""
 		var key := "%s|%d|%d|%s|%s|%d" % [
 			tile.tile_id, elevation, rotation_turns,
-			lower_id, mask_path, transition_turns]
+			lower_id, mask_key, transition_turns]
 		if not _top_groups.has(key):
 			_top_groups[key] = {
 				"tile": tile,
@@ -390,10 +390,10 @@ func _build_cell(cell: Vector2i, surface: LevelData) -> void:
 			if surface.top_layer(neighbor) == elevation \
 					and surface.overlay_tile_id(neighbor) == overlay_id:
 				bits |= TerrainTopology.BITS[i]
-		var mask := TerrainTopology.mask_info(bits, cell, style_profile, true)
+		var mask := TerrainTopology.mask_info(bits, cell, style_profile)
 		var overlay_key := "%s|%d|%d|%s|%d" % [
 			overlay_id, elevation, int(overlay_record.get("rotation", 0)),
-			mask["path"], int(mask["uv_turns"])]
+			mask["key"], int(mask["uv_turns"])]
 		if not _overlay_groups.has(overlay_key):
 			_overlay_groups[overlay_key] = {
 				"tile": TileRegistry.find(overlay_id),
@@ -409,14 +409,14 @@ func _build_cell(cell: Vector2i, surface: LevelData) -> void:
 
 func _build_top_groups() -> void:
 	_build_blended_top_groups()
-	var full_mask := _load_mask(style_profile.regular_mask_path(255))
+	var full_mask := TerrainTopology.full_texture()
 	for group: Dictionary in _top_groups.values():
 		var tile: TileDefinition = group["tile"]
 		var lower: TileDefinition = group["lower"]
 		var mask_info: Dictionary = group["mask_info"]
 		var transition_texture: Texture2D = null
 		if lower != null:
-			transition_texture = _load_mask(mask_info["path"])
+			transition_texture = TerrainTopology.mask_texture(mask_info)
 		var material := TerrainMaterials.top_material(
 			tile,
 			lower,
@@ -494,7 +494,7 @@ func _build_overlays() -> void:
 			tile,
 			level_data.terrain_tint(tile.tile_id),
 			int(group["rotation_turns"]),
-			_load_mask(group["mask"]["path"]), int(group["mask"]["uv_turns"]))
+			TerrainTopology.mask_texture(group["mask"]), int(group["mask"]["uv_turns"]))
 		overlay.set_meta("terrain_cells", group["cells"])
 		overlay.set_meta("terrain_tile", tile.tile_id)
 		overlay.set_meta("terrain_overlay", true)
@@ -658,11 +658,6 @@ func _build_shore_foam() -> void:
 			foam.set_meta("water_level", int(group["water_level"]))
 			foam.set_meta("terrain_layer", int(group["water_level"]))
 			generated.add_child(foam)
-
-func _load_mask(path: String) -> Texture2D:
-	if not path.is_empty() and ResourceLoader.exists(path):
-		return load(path) as Texture2D
-	return TerrainTransition.ensure_default_mask()
 
 func _build_stair(stair: Dictionary) -> void:
 	var low: Vector2i = stair["cell"]
@@ -954,7 +949,7 @@ func _apply_slice_visibility() -> void:
 			null,
 			null,
 			0,
-			_load_mask(style_profile.regular_mask_path(255)),
+			TerrainTopology.full_texture(),
 			level_data.terrain_tint(tile_id),
 			tile.tint_default(),
 			int(group["turns"]))

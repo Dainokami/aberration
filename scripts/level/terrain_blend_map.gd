@@ -5,7 +5,6 @@ extends RefCounted
 const MAX_TERRAIN_PAGES := 255
 const MAX_LAYER_SIZE := 2048
 
-static var _mask_cache: Dictionary = {}
 static var _library_cache: Dictionary = {}
 static var _pattern_cache: Dictionary = {}
 
@@ -104,7 +103,7 @@ static func cell_terrain_ids(data: LevelData, cell: Vector2i) -> PackedStringArr
 
 static func clear_cache() -> void:
 	_library_cache.clear()
-	_mask_cache.clear()
+	TerrainTopology.clear_mask_cache()
 	_pattern_cache.clear()
 
 ## Shared only for one build/update: overlapping chunk halos rasterize a cell once.
@@ -139,11 +138,13 @@ static func _paint_cell(index_image: Image, weight_image: Image,
 			cell - data.map_origin, pixels_per_cell, upper_page)
 		return
 	var bits := _overlay_bits(data, cell, upper)
-	var mask_info := TerrainTopology.mask_info(bits, cell, style, true)
-	var mask := _mask_image(mask_info["path"])
+	var mask_info := TerrainTopology.mask_info(bits, cell, style)
+	var mask := TerrainTopology.mask_image(mask_info)
+	if mask == null:
+		return
 	var turns := int(mask_info["uv_turns"])
 	var pattern := "%d|%s|%s|%d|%d" % [
-		upper_page, str(lower_neighbors), mask_info["path"], turns, pixels_per_cell]
+		upper_page, str(lower_neighbors), mask_info["key"], turns, pixels_per_cell]
 	var rect := Rect2i((cell - data.map_origin) * pixels_per_cell,
 		Vector2i.ONE * pixels_per_cell)
 	if _pattern_cache.has(pattern):
@@ -376,16 +377,6 @@ static func _library_cache_key(tiles: Array[TileDefinition]) -> String:
 
 static func _tile_id_ascending(a: TileDefinition, b: TileDefinition) -> bool:
 	return a.tile_id < b.tile_id
-
-static func _mask_image(path: String) -> Image:
-	if _mask_cache.has(path):
-		return _mask_cache[path]
-	var texture := load(path) as Texture2D if ResourceLoader.exists(path) else null
-	var image := texture.get_image() if texture != null else null
-	if image != null and image.is_compressed():
-		image.decompress()
-	_mask_cache[path] = image
-	return image
 
 static func _sample_mask(image: Image, uv: Vector2) -> float:
 	if image == null or image.is_empty():
