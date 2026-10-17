@@ -124,19 +124,20 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 
 	plugin.tabs.current_tab = 0
 	plugin.mode_select.selected = 0
-	plugin.height_select.selected = 2
+	plugin.active_layer = 1
 	plugin.tile_list.select(0)
 	plugin.touched.clear()
 	plugin._begin_stroke()
 	plugin._paint(cell)
 	plugin._commit_stroke("美术测试抬高支撑")
-	suite.check(map.details[0]["position"].y == 6 and map.details[0]["anchor_layer"] == 2,
-		"terrain growth carries detail top anchors")
+	suite.check(map.details == painted and builder.detail_renderer.groups.is_empty(),
+		"terrain cover retains detail anchors and skips their rendered batches")
 	history.undo()
 	suite.check(map.details == painted and map.top_layer(cell) == 0,
 		"terrain undo restores details together with the column")
 	history.redo()
 	plugin.mode_select.selected = 2
+	plugin.active_layer = 0
 	plugin.erase_select.selected = 0
 	plugin.touched.clear()
 	plugin.last_stroke_cell = Vector2i(-999, -999)
@@ -145,17 +146,17 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin._commit_stroke("美术测试擦除支撑")
 	suite.check(map.details.is_empty(), "terrain erase removes details on the deleted top")
 	history.undo()
-	suite.check(map.details.size() == 1 and map.details[0]["anchor_layer"] == 2,
+	suite.check(map.details.size() == 1 and map.details[0]["anchor_layer"] == 0,
 		"terrain erase undo restores removed detail anchors")
 
 	# A slice cap must block decoration placement instead of placing on an invisible top.
 	plugin.tabs.current_tab = 5
 	tool.mode.selected = 0
-	builder.set_slice_layer(1)
+	builder.set_slice_layer(0)
 	await plugin.get_tree().physics_frame
 	await plugin.get_tree().physics_frame
 	var slice_before := map.clone_data()
-	click(plugin, camera, camera.unproject_position(map.world_center(cell, 1)))
+	click(plugin, camera, camera.unproject_position(map.world_center(cell, 0)))
 	suite.check(map.clone_data() == slice_before and plugin.status.text.contains("切片"),
 		"actual detail input rejects temporary slice caps")
 	builder.set_slice_layer(-1)
@@ -196,7 +197,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = old_data
 	plugin.tabs.current_tab = 0
 	plugin.mode_select.selected = 0
-	plugin.height_select.selected = 0
+	plugin.active_layer = 0
 	plugin._make_preview()
 	viewport.queue_free()
 	await plugin.get_tree().process_frame

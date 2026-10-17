@@ -82,6 +82,40 @@ func render() -> void:
 					attachments.set_layer(cell, 1, {"tile_id": "decal_corruption"})
 	set_map(attachments, Vector3(11, 15, 22), Vector3(0, 2, 0))
 	await capture("attachments", "Water over sand support; masked overlay over raised grass")
+
+	var floating := LevelData.new()
+	floating.setup_blank(Vector2i(6, 5))
+	for y in 5:
+		for x in 6:
+			floating.set_layer(Vector2i(x, y), 0, {"tile_id": "painted_grass"})
+	for y in range(1, 3):
+		for x in range(1, 5):
+			floating.set_layer(Vector2i(x, y), 3, {"tile_id": "painted_grass"})
+	var water := Vector2i(1, 3)
+	var overlay := Vector2i(3, 3)
+	var prop := Vector2i(4, 3)
+	var detail := Vector2i(2, 3)
+	floating.set_layer(water, 0, {"tile_id": "water"})
+	floating.set_layer(overlay, 0, {"tile_id": "decal_corruption"})
+	floating.objects.append(ObjectRules.anchor_record(floating, {"id": "under_bridge",
+		"definition": "res://assets/generated/painted_rock/definition.tres",
+		"position": floating.world_center(prop, 0), "scale": 1.0, "yaw": 0.0}))
+	var detail_set := load("res://data/details/painted_upright.tres") as DetailSet
+	floating.details.append(DetailRules.make_record(floating, detail_set.resource_path,
+		str(detail_set.variants[0]["id"]), floating.world_center(detail, 0), "under_bridge_detail"))
+	set_map(floating, Vector3(13, 11, 22), Vector3(0, 4, 0))
+	await capture("floating", "Floating bridge: layers 1 and 2 are air\nLower exposed surfaces keep their water, overlay, rock and detail.")
+	for cell in [water, overlay, prop, detail]:
+		floating.set_layer(cell, 1, {"tile_id": "sand"})
+	terrain.rebuild_cells([water, overlay, prop, detail])
+	await capture("covered", "Immediate cover hides the four lower attachments\nTheir saved records and original anchors remain intact.")
+	for cell in [water, overlay, prop, detail]:
+		floating.remove_layer(cell, 1)
+	terrain.rebuild_cells([water, overlay, prop, detail])
+	await capture("restored", "Removing the cover restores the same lower content\nThe floating bridge stays at its original height.")
+	camera.position = Vector3(13, 3.8, 22)
+	camera.look_at(Vector3(0, 4, 0))
+	await capture("underside", "Air below the bridge is open; floating blocks have solid bottom faces.")
 	print("STACKED RENDER FAILURES: ", errors)
 	quit(0 if errors.is_empty() else 1)
 

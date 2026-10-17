@@ -33,6 +33,10 @@ var _built_grid_origin := Vector2.ZERO
 var _built_stairs: Array[Dictionary] = []
 var _used_blends: Dictionary = {}
 var _raster_cache: Dictionary = {}
+var _surface_views: Dictionary = {}
+var _object_nodes: Dictionary = {}
+var _object_signatures: Dictionary = {}
+var _applied_slice_limit := -1
 var detail_renderer: DetailRenderer
 
 func _ready() -> void:
@@ -58,13 +62,20 @@ func rebuild() -> void:
 	_chunk_nodes.clear()
 	_blend_resources.clear()
 	_raster_cache.clear()
+	_surface_views.clear()
+	_object_nodes.clear()
+	_object_signatures.clear()
+	_applied_slice_limit = -1
 	_built_bounds = level_data.map_bounds()
 	_built_data = level_data
 	_built_grid_origin = level_data.grid_world_origin
 	var chunks := {}
-	for y in range(_built_bounds.position.y, _built_bounds.end.y):
-		for x in range(_built_bounds.position.x, _built_bounds.end.x):
-			chunks[_chunk_for(Vector2i(x, y))] = true
+	for index in level_data.columns.size():
+		if (level_data.columns[index].get("layers", []) as Array).is_empty():
+			continue
+		var cell := level_data.map_origin + Vector2i(
+			index % level_data.map_size.x, index / level_data.map_size.x)
+		chunks[_chunk_for(cell)] = true
 	for chunk: Vector2i in chunks:
 		_build_chunk(chunk)
 	_raster_cache.clear()
@@ -78,6 +89,11 @@ func rebuild() -> void:
 
 func _chunk_for(cell: Vector2i) -> Vector2i:
 	return Vector2i(floori(float(cell.x) / CHUNK_SIZE), floori(float(cell.y) / CHUNK_SIZE))
+
+func _surface(layer: int) -> LevelData:
+	if not _surface_views.has(layer):
+		_surface_views[layer] = level_data.surface_view(layer)
+	return _surface_views[layer]
 
 func _build_chunk(chunk: Vector2i) -> void:
 	_current_chunk = chunk
@@ -95,9 +111,11 @@ func _build_chunk(chunk: Vector2i) -> void:
 		for x in range(_build_region.position.x, _build_region.end.x):
 			var cell := Vector2i(x, y)
 			if level_data.cell_exists(cell):
-				if level_data.stair_at(cell) < 0:
-					_build_cell(cell)
-				elif build_collision:
+				for layer in level_data.exposed_layers(cell):
+					if level_data.stair_at(cell, layer) < 0:
+						_build_cell(cell, _surface(layer))
+				_build_bottoms(cell)
+				if build_collision:
 					_build_side_collisions(cell)
 	_build_top_groups()
 	_build_overlays()
@@ -121,6 +139,7 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 			or _built_grid_origin != level_data.grid_world_origin:
 		rebuild()
 		return
+	_surface_views.clear()
 	var bounds := level_data.map_bounds()
 	var bounds_changed := bounds != _built_bounds
 	var dirty := {}
@@ -134,11 +153,8 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 		var candidates := {}
 		for chunk: Vector2i in _chunk_nodes:
 			candidates[chunk] = true
-		var first := _chunk_for(bounds.position)
-		var last := _chunk_for(bounds.end - Vector2i.ONE)
-		for y in range(first.y, last.y + 1):
-			for x in range(first.x, last.x + 1):
-				candidates[Vector2i(x, y)] = true
+		for chunk: Vector2i in dirty:
+			candidates[chunk] = true
 		for chunk: Vector2i in candidates:
 			var region := Rect2i(chunk * CHUNK_SIZE, Vector2i.ONE * CHUNK_SIZE)
 			if not _chunk_nodes.has(chunk) \
@@ -174,7 +190,7 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 		_build_chunk(chunk)
 	_raster_cache.clear()
 	for node in generated.get_children():
-		if node.has_meta("object_id") or node.name == "SpawnMarker" \
+		if node.name == "SpawnMarker" \
 				or (bounds_changed and node.has_meta("terrain_grid")):
 			node.free()
 	if bounds_changed and show_grid:
@@ -186,10 +202,26 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 	_apply_slice_visibility()
 
 func _build_objects() -> void:
+	var wanted := {}
+	var definitions := {}
+	var visibility := {}
 	for record in level_data.objects:
-		var definition := ObjectRules.definition(record)
+		var id := str(record.get("id", ""))
+		var path := str(record.get("definition", ""))
+		if not definitions.has(path):
+			definitions[path] = ObjectRules.definition(record)
+		if ObjectRules.is_hidden(level_data, record, visibility):
+			continue
+		var definition: PlaceableDefinition = definitions[path]
 		if definition == null or not definition.validate_asset().is_empty():
 			continue
+		wanted[id] = true
+		var signature := hash([record, build_collision])
+		var previous: Node3D = _object_nodes.get(id)
+		if is_instance_valid(previous) and _object_signatures.get(id) == signature:
+			continue
+		if is_instance_valid(previous):
+			previous.free()
 		var object := AssetFactory.instantiate_asset(definition)
 		if definition.fade_when_occluding and object.get_script() == null:
 			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
@@ -206,10 +238,26 @@ func _build_objects() -> void:
 			"anchor_layer",
 			level_data.elevation(level_data.world_to_cell(object.position)))))
 		generated.add_child(object)
+		_object_nodes[id] = object
+		_object_signatures[id] = signature
 		if not build_collision:
 			for collision in object.find_children("*", "CollisionObject3D", true, false):
 				collision.collision_layer = 0
 				collision.collision_mask = 0
+	for id: String in _object_nodes.keys():
+		if wanted.has(id):
+			continue
+		var object: Node3D = _object_nodes[id]
+		if is_instance_valid(object):
+			object.free()
+		_object_nodes.erase(id)
+		_object_signatures.erase(id)
+
+func refresh_objects() -> void:
+	_build_objects()
+	if slice_layer_limit >= 0:
+		for node: Node3D in _object_nodes.values():
+			_set_slice_visible(node, int(node.get_meta("terrain_layer", -1)) <= slice_layer_limit)
 
 func rebuild_details() -> void:
 	if not is_instance_valid(detail_renderer) or detail_renderer.get_parent() != generated:
@@ -238,34 +286,34 @@ func _prepare_multi_blend_levels() -> void:
 	for y in range(sample_region.position.y, sample_region.end.y):
 		for x in range(sample_region.position.x, sample_region.end.x):
 			var cell := Vector2i(x, y)
-			if not level_data.cell_exists(cell) or level_data.stair_at(cell) >= 0:
-				continue
-			var elevation := level_data.elevation(cell)
-			if not terrain_by_level.has(elevation):
-				terrain_by_level[elevation] = {}
-			terrain_by_level[elevation][level_data.tile_id(cell)] = true
+			for elevation in level_data.exposed_layers(cell):
+				if level_data.stair_at(cell, elevation) >= 0:
+					continue
+				if not terrain_by_level.has(elevation):
+					terrain_by_level[elevation] = {}
+				terrain_by_level[elevation][_surface(elevation).tile_id(cell)] = true
 	for elevation: int in terrain_by_level:
 		var terrain_ids: Dictionary = terrain_by_level[elevation]
 		if terrain_ids.size() > 1:
 			_multi_blend_levels[elevation] = true
 			_blend_groups[elevation] = []
 
-func _build_cell(cell: Vector2i) -> void:
-	var cell_data := level_data.get_cell(cell)
-	var tile := TileRegistry.find(level_data.tile_id(cell))
+func _build_cell(cell: Vector2i, surface: LevelData) -> void:
+	var cell_data := surface.get_cell(cell)
+	var tile := TileRegistry.find(surface.tile_id(cell))
 	if tile == null:
 		tile = TileRegistry.find("grass")
 	var top := Node3D.new()
 	top.name = "Top_%d_%d" % [cell.x, cell.y]
-	top.position = level_data.world_center(cell)
+	top.position = surface.world_center(cell)
 	top.set_meta("terrain_cell", cell)
-	var elevation := level_data.elevation(cell)
+	var elevation := surface.elevation(cell)
 	top.set_meta("terrain_layer", elevation)
 	if _multi_blend_levels.has(elevation):
 		_blend_groups[elevation].append(cell)
-		top.set_meta("blend_terrains", TerrainBlendMapClass.cell_terrain_ids(level_data, cell))
+		top.set_meta("blend_terrains", TerrainBlendMapClass.cell_terrain_ids(surface, cell))
 	else:
-		var transition := TerrainTopology.transition_info(level_data, cell)
+		var transition := TerrainTopology.transition_info(surface, cell)
 		var lower: TileDefinition = transition.get("lower") as TileDefinition
 		var transition_turns := 0
 		var transition_mask_info := {}
@@ -296,14 +344,14 @@ func _build_cell(cell: Vector2i) -> void:
 			top.set_meta("transition_bits", int(transition["bits"]))
 			top.set_meta("transition_kind", transition_mask_info["kind"])
 			top.set_meta("transition_variant", transition_mask_info["variant"])
-	var overlay_id := level_data.overlay_tile_id(cell)
+	var overlay_id := surface.overlay_tile_id(cell)
 	if not overlay_id.is_empty():
-		var overlay_record := level_data.get_attachment(cell, "overlay")
+		var overlay_record := surface.get_attachment(cell, "overlay")
 		var bits := 0
 		for i in TerrainTopology.VECTORS.size():
 			var neighbor: Vector2i = cell + TerrainTopology.VECTORS[i]
-			if level_data.top_layer(neighbor) == elevation \
-					and level_data.overlay_tile_id(neighbor) == overlay_id:
+			if surface.top_layer(neighbor) == elevation \
+					and surface.overlay_tile_id(neighbor) == overlay_id:
 				bits |= TerrainTopology.BITS[i]
 		var mask := TerrainTopology.mask_info(bits, cell, style_profile, true)
 		var overlay_key := "%s|%d|%d|%s|%d" % [
@@ -321,7 +369,6 @@ func _build_cell(cell: Vector2i) -> void:
 	generated.add_child(top)
 	if build_collision:
 		_add_top_collision(top)
-		_build_side_collisions(cell)
 
 func _build_top_groups() -> void:
 	_build_blended_top_groups()
@@ -343,7 +390,7 @@ func _build_top_groups() -> void:
 			level_data.terrain_tint(lower.tile_id) if lower != null else tile.tint_default(),
 			int(group["rotation_turns"]))
 		var mesh := TerrainEdgeBuilder.make_top_group_mesh(
-			level_data, group["cells"], tile, style_profile.corner_segments,
+			_surface(int(group["elevation"])), group["cells"], tile, style_profile.corner_segments,
 			style_profile.top_surface_offset_m)
 		if mesh == null:
 			continue
@@ -369,14 +416,14 @@ func _build_blended_top_groups() -> void:
 		var key := Vector3i(_current_chunk.x, elevation, _current_chunk.y)
 		var blend: Dictionary = _blend_resources.get(key, {})
 		if blend.is_empty():
-			var blend_data := level_data.region_view(_build_region.grow(2))
+			var blend_data := _surface(elevation).region_view(_build_region.grow(2))
 			blend = TerrainBlendMapClass.build(blend_data, elevation, style_profile, _raster_cache)
 			blend["region"] = blend_data.map_bounds()
 			_blend_resources[key] = blend
 		_used_blends[key] = true
 		var material := TerrainMaterials.blended_top_material(blend)
 		var mesh := TerrainEdgeBuilder.make_blended_top_mesh(
-			level_data, cells, style_profile.corner_segments,
+			_surface(elevation), cells, style_profile.corner_segments,
 			style_profile.top_surface_offset_m)
 		if mesh == null:
 			continue
@@ -396,7 +443,7 @@ func _build_overlays() -> void:
 		if tile == null:
 			continue
 		var mesh := TerrainEdgeBuilder.make_overlay_mesh(
-			level_data,
+			_surface(int(group["elevation"])),
 			group["cells"],
 			style_profile.corner_segments,
 			style_profile.top_surface_offset_m + 0.018)
@@ -433,6 +480,7 @@ func refresh_blend_cells(changed_cells: Array[Vector2i]) -> bool:
 			if level_data.cell_exists(neighbor) and level_data.top_layer(neighbor) == elevation \
 					and not _blend_resources.has(Vector3i(neighbor_chunk.x, elevation, neighbor_chunk.y)):
 				return false
+	_surface_views.clear()
 	_update_blend_pixels(changed_cells)
 	return true
 
@@ -448,17 +496,19 @@ func _update_blend_pixels(changed_cells: Array[Vector2i]) -> void:
 		if dirty.is_empty():
 			continue
 		TerrainBlendMapClass.update(
-			blend, level_data.region_view(blend["region"]), key.y, style_profile, dirty, cache)
+			blend, _surface(key.y).region_view(blend["region"]), key.y, style_profile, dirty, cache)
 
 func _add_top_collision(top: Node3D) -> void:
 	var body := StaticBody3D.new()
 	body.set_meta("terrain_cell", top.get_meta("terrain_cell"))
 	body.set_meta("terrain_layer", top.get_meta("terrain_layer"))
+	body.set_meta("slice_cap", top.get_meta("slice_cap", false))
 	var shape := CollisionShape3D.new()
 	var cell: Vector2i = top.get_meta("terrain_cell")
-	var tile := TileRegistry.find(level_data.tile_id(cell))
+	var layer := int(top.get_meta("terrain_layer"))
+	var tile := TileRegistry.find(level_data.solid_tile_id(cell, layer))
 	var polygon := TerrainEdgeBuilder._top_polygon(level_data, cell, tile,
-		style_profile.corner_segments)
+		style_profile.corner_segments, layer)
 	var prism := ConvexPolygonShape3D.new()
 	var points := PackedVector3Array()
 	for point in polygon:
@@ -470,8 +520,13 @@ func _add_top_collision(top: Node3D) -> void:
 	top.add_child(body)
 
 func _build_side_collisions(cell: Vector2i) -> void:
-	for layer in level_data.support_top_layer(cell) + 1:
+	for layer in level_data.layer_count(cell):
+		if not level_data.has_terrain_volume(cell, layer):
+			continue
 		var faces := PackedVector3Array()
+		if not level_data.has_terrain_volume(cell, layer - 1):
+			faces.append_array(TerrainEdgeBuilder.make_bottom_mesh(
+				level_data, cell, layer, style_profile.corner_segments).get_faces())
 		for path in TerrainEdgeBuilder.exposed_layer_paths(
 				level_data, cell, layer, style_profile.corner_segments):
 			var mesh := TerrainEdgeBuilder.make_cliff_mesh(path,
@@ -490,6 +545,25 @@ func _build_side_collisions(cell: Vector2i) -> void:
 		collision.shape = shape
 		body.add_child(collision)
 		generated.add_child(body)
+
+func _build_bottoms(cell: Vector2i) -> void:
+	for layer in level_data.layer_count(cell):
+		if not level_data.has_terrain_volume(cell, layer) \
+				or level_data.has_terrain_volume(cell, layer - 1):
+			continue
+		var tile := TileRegistry.find(level_data.solid_tile_id(cell, layer))
+		if tile == null:
+			continue
+		var bottom := MeshInstance3D.new()
+		bottom.name = "Bottom"
+		bottom.mesh = TerrainEdgeBuilder.make_bottom_mesh(
+			level_data, cell, layer, style_profile.corner_segments)
+		bottom.material_override = TerrainMaterials.cliff_material(
+			tile, level_data.terrain_tint(tile.tile_id))
+		bottom.set_meta("terrain_cell", cell)
+		bottom.set_meta("terrain_layer", layer)
+		bottom.set_meta("terrain_bottom", true)
+		generated.add_child(bottom)
 
 func _build_cliffs_and_rims() -> void:
 	for group in TerrainEdgeBuilder.cliff_groups(level_data, _build_region,
@@ -557,14 +631,15 @@ func _build_stair(stair: Dictionary) -> void:
 	var low: Vector2i = stair["cell"]
 	var direction: int = int(stair["direction"]) % 4
 	var vector: Vector2i = LevelData.DIRS[direction]
-	var low_height := level_data.world_center(low).y
-	var low_center := level_data.world_center(low)
-	var high_center := level_data.world_center(low + vector)
+	var layer := int(stair.get("layer", level_data.top_layer(low)))
+	var low_height := level_data.surface_y(layer)
+	var low_center := level_data.world_center(low, layer)
+	var high_center := level_data.world_center(low + vector, layer + 1)
 	var center := (low_center + high_center) * 0.5
 	var run_vector := Vector3(vector.x, 0.0, vector.y)
 	var run_start := low_center - run_vector * LevelData.CELL_SIZE * 0.5
 	var run_end := high_center + run_vector * LevelData.CELL_SIZE * 0.5
-	var tile := TileRegistry.find(level_data.solid_tile_id(low + vector))
+	var tile := TileRegistry.find(level_data.solid_tile_id(low + vector, layer + 1))
 	var step_material: Material = stair_material
 	var top_material: Material
 	if tile != null and tile.art_set != null:
@@ -583,7 +658,7 @@ func _build_stair(stair: Dictionary) -> void:
 		var step := _box("StairVisual_%02d" % i, pos, size, step_material, false)
 		step.set_meta("stair_step", i)
 		step.set_meta("stair_low_cell", low)
-		step.set_meta("terrain_layer", level_data.elevation(low))
+		step.set_meta("terrain_layer", layer + 1)
 		if top_material != null:
 			var top := MeshInstance3D.new()
 			top.name = "StairTop_%02d" % i
@@ -592,10 +667,10 @@ func _build_stair(stair: Dictionary) -> void:
 			top.mesh = plane
 			top.material_override = top_material
 			top.position = pos + Vector3.UP * (thickness * 0.5 + 0.003)
-			top.set_meta("terrain_layer", level_data.elevation(low))
+			top.set_meta("terrain_layer", layer + 1)
 			generated.add_child(top)
 	if tile != null and tile.art_set != null and not tile.art_set.slope_side_path.is_empty():
-		_build_slope_art(run_start, run_end, low_height, tile, level_data.elevation(low))
+		_build_slope_art(run_start, run_end, low_height, tile, layer + 1)
 	if not build_collision:
 		return
 	var body := StaticBody3D.new()
@@ -615,7 +690,7 @@ func _build_stair(stair: Dictionary) -> void:
 	body.position.y = low_height
 	body.rotation.y = -float(direction) * PI * 0.5
 	body.set_meta("terrain_cell", low)
-	body.set_meta("terrain_layer", level_data.elevation(low))
+	body.set_meta("terrain_layer", layer + 1)
 	body.set_meta("stair_low_cell", low)
 	generated.add_child(body)
 
@@ -676,7 +751,7 @@ func _build_grid() -> void:
 		line.set_meta("terrain_grid", true)
 
 func _build_spawn_marker() -> void:
-	if not level_data.in_bounds(level_data.spawn_cell) or not level_data.cell_exists(level_data.spawn_cell):
+	if not level_data.is_surface_exposed(level_data.spawn_cell, level_data.spawn_layer):
 		return
 	var marker := MeshInstance3D.new()
 	marker.name = "SpawnMarker"
@@ -690,7 +765,8 @@ func _build_spawn_marker() -> void:
 	material.emission_enabled = true
 	material.emission = Color("#ff772f")
 	marker.material_override = material
-	marker.position = level_data.world_center(level_data.spawn_cell) + Vector3(0, 0.12, 0)
+	marker.position = level_data.world_center(level_data.spawn_cell, level_data.spawn_layer) \
+		+ Vector3(0, 0.12, 0)
 	marker.set_meta("terrain_layer", level_data.spawn_layer)
 	generated.add_child(marker)
 
@@ -704,6 +780,9 @@ func _apply_slice_visibility() -> void:
 		return
 	if is_instance_valid(detail_renderer):
 		detail_renderer.set_slice_layer(slice_layer_limit)
+	if slice_layer_limit < 0 and _applied_slice_limit < 0:
+		return
+	_applied_slice_limit = slice_layer_limit
 	if is_instance_valid(_slice_caps):
 		_slice_caps.free()
 	_slice_caps = null
@@ -721,8 +800,12 @@ func _apply_slice_visibility() -> void:
 	for y in level_data.map_size.y:
 		for x in level_data.map_size.x:
 			var cell := level_data.map_origin + Vector2i(x, y)
-			if not level_data.layer_exists(cell, slice_layer_limit) \
-					or level_data.top_layer(cell) <= slice_layer_limit:
+			if not level_data.layer_exists(cell, slice_layer_limit):
+				continue
+			var stair := level_data.stair_at(cell, slice_layer_limit)
+			var cut_stair := stair >= 0 and int(level_data.stairs[stair].get(
+				"layer", level_data.top_layer(level_data.stairs[stair]["cell"]))) + 1 > slice_layer_limit
+			if level_data.is_surface_exposed(cell, slice_layer_limit) and not cut_stair:
 				continue
 			var tile_id := level_data.solid_tile_id(cell, slice_layer_limit)
 			var turns := int(level_data.get_layer(cell, slice_layer_limit).get("rotation", 0))
@@ -764,6 +847,9 @@ func _apply_slice_visibility() -> void:
 		_slice_caps.add_child(cap)
 
 func _set_slice_visible(node: Node, visible: bool) -> void:
+	if node.has_meta("slice_visible") and node.get_meta("slice_visible") == visible:
+		return
+	node.set_meta("slice_visible", visible)
 	if node is Node3D:
 		(node as Node3D).visible = visible
 	for body in node.find_children("*", "CollisionObject3D", true, false):
@@ -785,6 +871,7 @@ func _add_slice_cap_collision(cell: Vector2i, layer: int) -> void:
 	body.position = level_data.world_center(cell, layer)
 	body.set_meta("terrain_cell", cell)
 	body.set_meta("terrain_layer", layer)
+	body.set_meta("slice_cap", true)
 	_add_top_collision(body)
 	_slice_caps.add_child(body)
 

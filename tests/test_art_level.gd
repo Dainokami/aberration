@@ -37,6 +37,7 @@ func run() -> void:
 		"root", root_rock["position"] + Vector3.UP * 2)
 	data.objects.append(upper)
 	var cliff := Vector2i(1, 1)
+	data.set_layer(cliff, 1, {"tile_id": "rock"})
 	data.set_layer(cliff, 2, {"tile_id": "rock"})
 	var wall := ObjectRules.wall_anchor(data, record(data, "wall", WALL, cliff), cliff, 1, 2)
 	data.objects.append(wall)
@@ -58,7 +59,8 @@ func run() -> void:
 	check(not ObjectRules.validate_all(cycle).is_empty(), "support cycle rejected")
 	var hidden_wall := data.fork_for_edit()
 	hidden_wall.set_layer(cliff + Vector2i(0, 1), 1, {"tile_id": "grass"})
-	check(not ObjectRules.validate_all(hidden_wall).is_empty(), "buried wall cannot pass terrain validation")
+	check(ObjectRules.validate_all(hidden_wall).is_empty() and ObjectRules.is_hidden(hidden_wall, wall),
+		"buried wall remains valid saved data and is hidden by its neighboring block")
 	var invalid := data.fork_for_edit()
 	invalid.objects.append(invalid.objects[0].duplicate(true))
 	invalid.objects[1]["definition"] = "res://missing_object_definition.tres"
@@ -111,7 +113,7 @@ func run() -> void:
 	v6.erase("details")
 	candidate.restore_data(v6)
 	check(candidate.objects[0]["position"] == root_rock["position"] \
-		and candidate.details.is_empty() and candidate.format_version == 7,
+		and candidate.details.is_empty() and candidate.format_version == 8,
 		"v6 migration adds empty details without lifting already migrated terrain")
 	var output := "user://art_level_roundtrip.tres"
 	check(ResourceSaver.save(data, output) == OK, "v7 map saves")

@@ -15,7 +15,6 @@ func run() -> void:
 	check(old != null and old.objects.is_empty(), "v1 compatibility")
 	var map := load("res://data/levels/objects_acceptance.tres") as LevelData
 	check(map != null and map.validate().is_empty(), "v2 map valid")
-	check(map.objects.size() == 12, "two camps have twelve objects")
 	var snapshot := map.clone_data()
 	var path := "user://v2_roundtrip.tres"
 	check(ResourceSaver.save(map, path) == OK, "save")
@@ -32,6 +31,14 @@ func run() -> void:
 	var prefab := load("res://data/prefabs/demo_camp.tres") as LevelPrefab
 	var empty := LevelData.new()
 	empty.setup_blank()
+	var two_camps := empty.fork_for_edit()
+	for anchor in [Vector2i(1, 1), Vector2i(9, 1)]:
+		var result := prefab.stamp(two_camps, anchor, 0)
+		if result["error"].is_empty():
+			two_camps.restore_data(result["snapshot"])
+	check(not prefab.fragment.objects.is_empty()
+		and two_camps.objects.size() == prefab.fragment.objects.size() * 2,
+		"two camp stamps preserve exactly two copies of prefab objects")
 	var before := empty.clone_data()
 	for rotation in 4:
 		var result := prefab.stamp(empty, Vector2i(3, 3), rotation)

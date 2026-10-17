@@ -12,8 +12,40 @@ static func anchor_record(data: LevelData, record: Dictionary) -> Dictionary:
 	var cell := data.world_to_cell(result.get("position", Vector3.ZERO))
 	result["anchor_kind"] = "top"
 	result["anchor_cell"] = cell
-	result["anchor_layer"] = data.top_layer(cell)
+	result["anchor_layer"] = data.layer_at_surface(result.get("position", Vector3.ZERO))
 	return result
+
+## Covered content remains in LevelData, but is not instantiated or collidable.
+## Host attachments follow their root's visibility, independent of record order.
+static func is_hidden(data: LevelData, record: Dictionary, cache: Dictionary = {}) -> bool:
+	var id := str(record.get("id", ""))
+	if cache.has(id):
+		return cache[id]
+	var root := record
+	var seen := {}
+	while not str(root.get("support_id", "")).is_empty():
+		var parent_id := str(root["support_id"])
+		if seen.has(parent_id):
+			return true
+		seen[parent_id] = true
+		root = find_record(data, parent_id)
+		if root.is_empty():
+			return true
+	var cell: Vector2i = root.get("anchor_cell", Vector2i(-999, -999))
+	var layer := int(root.get("anchor_layer", -1))
+	var hidden := not data.layer_exists(cell, layer)
+	if str(root.get("anchor_kind", "top")) == "wall":
+		var direction := int(root.get("wall_direction", 0))
+		hidden = hidden or data.has_terrain_volume(cell + LevelData.DIRS[posmod(direction, 4)], layer)
+	else:
+		hidden = hidden or not data.is_surface_exposed(cell, layer)
+		if not hidden:
+			for covered in covered_cells(data, root):
+				if not data.is_surface_exposed(covered, layer):
+					hidden = true
+					break
+	cache[id] = hidden
+	return hidden
 
 static func find_record(data: LevelData, id: String) -> Dictionary:
 	for record in data.objects:
@@ -74,21 +106,20 @@ static func support_error(data: LevelData, record: Dictionary) -> String:
 	if d.carrier != PlaceableDefinition.Carrier.WALL and kind in ["wall", "object_wall"]:
 		return "此物件需要顶面支撑"
 	if kind == "top":
-		if cell != data.world_to_cell(position) or not data.cell_exists(cell) or data.stair_at(cell) >= 0:
+		if cell != data.world_to_cell(position) or not data.layer_exists(cell, layer) \
+				or data.stair_at(cell, layer) >= 0:
 			return "物件落地点必须是普通地块"
-		if absf(position.y - data.world_center(cell).y) > 0.02:
+		if absf(position.y - data.surface_y(layer)) > 0.02:
 			return "物件悬空或埋入地面，请移动到有效地块"
-		if layer != data.top_layer(cell):
-			return "物件层锚点与落地点不一致"
 		for covered in covered_cells(data, record):
-			if not data.cell_exists(covered) or data.stair_at(covered) >= 0 or data.elevation(covered) != layer:
+			if not data.layer_exists(covered, layer) or data.stair_at(covered, layer) >= 0:
 				return "碰撞占地越界、跨高差、跨阶梯或缺少地面支撑"
 	elif kind == "wall":
 		var direction := int(record.get("wall_direction", -1))
 		if direction < 0 or direction > 3 or not data.layer_exists(cell, layer):
 			return "墙面附件的支撑层不存在"
-		if data.layer_exists(cell + LevelData.DIRS[direction], layer) or data.stair_at(cell) >= 0:
-			return "该侧壁被相邻地块或阶梯遮住"
+		if data.stair_at(cell, layer) >= 0:
+			return "阶梯侧壁不能承托墙面附件"
 		var expected := wall_anchor(data, record, cell, layer, direction,
 			record.get("wall_offset", Vector2.ZERO))
 		if not position.is_equal_approx(expected["position"]) \
@@ -243,11 +274,15 @@ static func covered_cells(data: LevelData, record: Dictionary) -> Array[Vector2i
 			result.append(Vector2i(x, y))
 	return result
 
-static func validate_record(data: LevelData, record: Dictionary, ignore_id := "") -> String:
+static func validate_record(data: LevelData, record: Dictionary, ignore_id := "",
+		visibility: Dictionary = {}, check_assets := true, assets: Dictionary = {}) -> String:
 	var d := definition(record)
 	if d == null:
 		return "物件定义缺失"
-	if not d.validate_asset().is_empty() or not ResourceLoader.exists(d.scene_path):
+	var path := str(record.get("definition", ""))
+	if check_assets and not assets.has(path):
+		assets[path] = d.validate_asset().is_empty() and ResourceLoader.exists(d.scene_path)
+	if check_assets and not bool(assets[path]):
 		return "物件源图、相机或生成场景缺失/无效"
 	var scale_value := float(record.get("scale", 1.0))
 	if not is_finite(scale_value) or scale_value < 0.25 or scale_value > 4:
@@ -260,16 +295,20 @@ static func validate_record(data: LevelData, record: Dictionary, ignore_id := ""
 	var error := support_error(data, record)
 	if not error.is_empty():
 		return error
+	if is_hidden(data, record, visibility):
+		return ""
 	if d.collision != PlaceableDefinition.Collision.NONE:
 		var rect := bounds(data, record)
 		var bottom := position.y + d.collision_offset.y * scale_value
 		var top := bottom + d.collision_size.y * scale_value
 		if data.in_bounds(data.spawn_cell):
-			var spawn := data.world_center(data.spawn_cell)
+			var spawn := data.world_center(data.spawn_cell, data.spawn_layer)
 			if bottom < spawn.y + 1.7 and top > spawn.y and rect.grow(0.35).has_point(Vector2(spawn.x, spawn.z)):
 				return "阻挡物压住玩家出生点"
 		for other in data.objects:
 			if str(other.get("id", "")) == ignore_id:
+				continue
+			if is_hidden(data, other, visibility):
 				continue
 			var other_d := definition(other)
 			if other_d == null or other_d.collision == PlaceableDefinition.Collision.NONE:
@@ -282,13 +321,15 @@ static func validate_record(data: LevelData, record: Dictionary, ignore_id := ""
 				return "与已有阻挡物的保守包围框重叠"
 	return ""
 
-static func validate_all(data: LevelData) -> PackedStringArray:
+static func validate_all(data: LevelData, check_assets := true) -> PackedStringArray:
 	var errors := PackedStringArray()
 	var ids := {}
 	# ResourceLoader's cache is weak. Generated scenes embed their own definitions,
 	# so repeatedly loading a definition during pairwise checks can reparse its
 	# .tres file each time. Retain each definition for this validation pass only.
 	var definitions := {}
+	var visibility := {}
+	var assets := {}
 	for record in data.objects:
 		var path := str(record.get("definition", ""))
 		if not definitions.has(path):
@@ -298,7 +339,7 @@ static func validate_all(data: LevelData) -> PackedStringArray:
 		if id.is_empty() or ids.has(id):
 			errors.append("物件 ID 为空或重复")
 		ids[id] = true
-		var error := validate_record(data, record, id)
+		var error := validate_record(data, record, id, visibility, check_assets, assets)
 		if not error.is_empty():
 			errors.append("物件 %s：%s" % [id.left(6), error])
 	return errors

@@ -69,17 +69,18 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = map
 	plugin.builder.level_data = map
 	plugin.mode_select.selected = 0
-	plugin.height_select.selected = 2
+	plugin.active_layer = 2
 	plugin.tile_turns = 1
 	var before_replace := map.clone_data()
 	plugin.touched.clear()
 	plugin._paint_single(Vector2i(4, 4), 0)
 	plugin._commit_external(before_replace, map.clone_data(), "Replace height and rotation")
 	suite.check(map.elevation(Vector2i(4, 4)) == 2 and map.get_cell(Vector2i(4, 4))["rotation"] == 1,
-		"replace existing ground changes height and rotation")
-	suite.check(is_equal_approx(map.objects[0]["position"].y, 6.0),
-		"supported tree follows replacement height")
-	var rotated_top := _top_visual(plugin.builder, Vector2i(4, 4))
+		"floating placement stores its own height and rotation")
+	suite.check(is_equal_approx(map.objects[0]["position"].y, 2.0)
+		and not map.layer_exists(Vector2i(4, 4), 1),
+		"floating placement retains lower tree height and an empty gap")
+	var rotated_top := _top_visual(plugin.builder, Vector2i(4, 4), 2)
 	suite.check((rotated_top.material_override as ShaderMaterial).get_shader_parameter("art_turns") == 1,
 		"rotated ground material uses stored rotation")
 	plugin._update_preview(Vector2i(4, 4))
@@ -202,7 +203,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.tile_list.select(forest_index)
 	plugin.mode_select.selected = 0
 	plugin.brush_select.selected = 1
-	plugin.height_select.selected = 0
+	plugin.active_layer = 1
 	plugin.tile_turns = 0
 	var center := Vector2i(8, 8)
 	performance_map.stairs.append({"cell": center, "direction": 1})
@@ -234,7 +235,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	suite.check(painted_atomically,
 		"3x3 brush commits all nine cells together")
 	suite.check(plugin.builder.generated == generated_before,
-		"flat paint keeps generated geometry and refreshes only dirty blend pixels")
+		"plane placement retains the generated root and rebuilds affected chunks")
 	suite.check(paint_usec < 250000,
 		"3x3 dirty blend refresh stays below 250ms (%dus)" % paint_usec)
 	var performance_history: UndoRedo = plugin.get_undo_redo().get_history_undo_redo(
@@ -267,6 +268,7 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = expansion_map
 	plugin.builder.level_data = expansion_map
 	plugin.builder.rebuild()
+	plugin.active_layer = 0
 	plugin.brush_select.selected = 1
 	plugin._begin_stroke()
 	plugin.touched.clear()
@@ -303,15 +305,16 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 		and expansion_map.tile_id(Vector2i(-2, 0)) == "ground_forest",
 		"one redo reapplies expansion and paint")
 	plugin.current_path = previous_path
-	plugin.height_select.selected = 0
+	plugin.active_layer = 0
 	plugin.tile_turns = 0
 	plugin.data = original
 	plugin.builder.level_data = original
 	plugin.builder.rebuild()
 	tools.reset()
 
-func _top_visual(builder: TerrainBuilder, cell: Vector2i) -> MeshInstance3D:
+func _top_visual(builder: TerrainBuilder, cell: Vector2i, layer := -1) -> MeshInstance3D:
 	for child in builder.generated.get_children():
-		if child is MeshInstance3D and cell in child.get_meta("terrain_cells", []):
+		if child is MeshInstance3D and cell in child.get_meta("terrain_cells", []) \
+				and (layer < 0 or child.get_meta("terrain_layer", -1) == layer):
 			return child
 	return null

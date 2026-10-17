@@ -85,7 +85,7 @@ static func make_layer_top_mesh(data: LevelData, cells: Array, layer: int,
 	var half := LevelData.CELL_SIZE * 0.5
 	for cell: Vector2i in cells:
 		var points := _top_polygon(data, cell,
-			TileRegistry.find(data.solid_tile_id(cell)), corner_segments)
+			tile, corner_segments, layer)
 		var indices := Geometry2D.triangulate_polygon(points)
 		var center := data.world_center(cell, layer) \
 			+ Vector3(0, surface_offset, 0)
@@ -99,18 +99,29 @@ static func make_layer_top_mesh(data: LevelData, cells: Array, layer: int,
 	return tool.commit()
 
 static func _top_polygon(data: LevelData, cell: Vector2i,
-		tile: TileDefinition, corner_segments: int) -> PackedVector2Array:
+		tile: TileDefinition, corner_segments: int, layer := -1) -> PackedVector2Array:
 	var half := LevelData.CELL_SIZE * 0.5
-	# Attachments share their support's outline. A column keeps one outline
-	# through all layers, and any occupied neighbor requires a flush join at
-	# the common base; rounding against a lower neighbor would leave a crack.
-	var solid := TileRegistry.find(data.solid_tile_id(cell))
-	var radius := clampf((solid if solid != null else tile).corner_radius_m,
+	# Contiguous runs share one contour; air separates independent silhouettes.
+	# Any overlapping neighbor needs a flush join throughout that run.
+	var first := data.top_layer(cell) if layer < 0 else layer
+	var last := first
+	while data.layer_exists(cell, first - 1):
+		first -= 1
+	while data.layer_exists(cell, last + 1):
+		last += 1
+	var solid := TileRegistry.find(data.solid_tile_id(cell, last))
+	var outline := solid if solid != null else tile
+	var radius := clampf(outline.corner_radius_m if outline != null else 0.0,
 		0.0, half * 0.9)
 	var exposed := []
 	for direction in 4:
 		var neighbor: Vector2i = cell + LevelData.DIRS[direction]
-		exposed.append(not data.cell_exists(neighbor))
+		var connected := false
+		for height in range(first, last + 1):
+			if data.has_terrain_volume(neighbor, height):
+				connected = true
+				break
+		exposed.append(not connected)
 	var points := PackedVector2Array()
 	_append_top_corner(points, Vector2(-half + radius, -half + radius),
 		PI, PI * 1.5, exposed[3] and exposed[0], radius, corner_segments,
@@ -143,13 +154,14 @@ static func _top_mesh_from_polygon(points: PackedVector2Array,
 	tool.generate_normals()
 	return tool.commit()
 
-## The column silhouette belongs to its top block. Every side layer shares that
-## contour, so replacing a middle material cannot create a geometric seam.
+## Side faces are culled against actual occupancy, including holes.
 static func exposed_layer_paths(data: LevelData, cell: Vector2i, layer: int,
 		segments: int) -> Array[PackedVector2Array]:
-	var tile := TileRegistry.find(data.solid_tile_id(cell))
-	var points := _top_polygon(data, cell, tile, segments)
-	if data.stair_at(cell) >= 0:
+	if not data.has_terrain_volume(cell, layer):
+		return []
+	var tile := TileRegistry.find(data.solid_tile_id(cell, layer))
+	var points := _top_polygon(data, cell, tile, segments, layer)
+	if data.stair_at(cell, layer) >= 0:
 		points = PackedVector2Array([Vector2(-1, -1), Vector2(1, -1),
 			Vector2(1, 1), Vector2(-1, 1)])
 	var center := data.world_center(cell)
@@ -161,7 +173,7 @@ static func exposed_layer_paths(data: LevelData, cell: Vector2i, layer: int,
 		var outward := Vector2((b - a).y, -(b - a).x)
 		var direction := (1 if outward.x > 0 else 3) if absf(outward.x) > absf(outward.y) \
 			else (2 if outward.y > 0 else 0)
-		if data.support_top_layer(cell + LevelData.DIRS[direction]) >= layer:
+		if data.has_terrain_volume(cell + LevelData.DIRS[direction], layer):
 			if path.size() > 1:
 				result.append(path)
 			path = PackedVector2Array()
@@ -181,7 +193,9 @@ static func cliff_groups(data: LevelData, region := Rect2i(), segments := 4) -> 
 			var cell := Vector2i(x, y)
 			if not data.cell_exists(cell):
 				continue
-			for layer in data.support_top_layer(cell) + 1:
+			for layer in data.layer_count(cell):
+				if not data.has_terrain_volume(cell, layer):
+					continue
 				var tile := TileRegistry.find(data.solid_tile_id(cell, layer))
 				if tile == null:
 					continue
@@ -197,9 +211,9 @@ static func cliff_groups(data: LevelData, region := Rect2i(), segments := 4) -> 
 							"rim_paths": [],
 						}
 					grouped[key]["paths"].append(path)
-					if layer == data.top_layer(cell) \
-							and data.stair_at(cell) < 0 \
-							and data.get_attachment(cell, "liquid").is_empty():
+					if data.is_surface_exposed(cell, layer) \
+							and data.stair_at(cell, layer) < 0 \
+							and data.get_attachment(cell, "liquid", layer).is_empty():
 						grouped[key]["rim_paths"].append(path)
 	var result: Array[Dictionary] = []
 	for group: Dictionary in grouped.values():
@@ -212,34 +226,51 @@ static func foam_groups(data: LevelData, region := Rect2i()) -> Array[Dictionary
 	for y in range(bounds.position.y, bounds.end.y):
 		for x in range(bounds.position.x, bounds.end.x):
 			var cell := Vector2i(x, y)
-			if not data.cell_exists(cell) or data.stair_at(cell) >= 0:
-				continue
-			var land := TileRegistry.find(data.tile_id(cell))
-			if land == null or land.is_water():
-				continue
-			for direction in 4:
-				var neighbor: Vector2i = cell + LevelData.DIRS[direction]
-				if not data.cell_exists(neighbor) or data.stair_at(neighbor) >= 0:
+			for water_level in data.exposed_layers(cell):
+				if data.stair_at(cell, water_level) >= 0:
 					continue
-				var water := TileRegistry.find(data.tile_id(neighbor))
+				var water := TileRegistry.find(str(
+					data.get_attachment(cell, "liquid", water_level).get("tile_id", "")))
 				if water == null or not water.is_water():
 					continue
-				var water_level := data.elevation(neighbor)
-				if water_level > data.elevation(cell):
-					continue
-				var key := "%s|%s|%d" % [land.tile_id, water.tile_id, water_level]
-				if not grouped.has(key):
-					grouped[key] = {
-						"land": land,
-						"water": water,
-						"water_level": water_level,
-						"edges": [],
-					}
-				grouped[key]["edges"].append(_edge_for(cell, direction))
+				for direction in 4:
+					var neighbor: Vector2i = cell + LevelData.DIRS[direction]
+					if not data.has_terrain_volume(neighbor, water_level) \
+							or data.stair_at(neighbor, water_level) >= 0:
+						continue
+					if data.is_surface_exposed(neighbor, water_level) \
+							and not data.get_attachment(neighbor, "liquid", water_level).is_empty():
+						continue
+					var land := TileRegistry.find(data.solid_tile_id(neighbor, water_level))
+					if land == null:
+						continue
+					var key := "%s|%s|%d" % [land.tile_id, water.tile_id, water_level]
+					if not grouped.has(key):
+						grouped[key] = {
+							"land": land, "water": water,
+							"water_level": water_level, "edges": [],
+						}
+					grouped[key]["edges"].append(_edge_for(neighbor, (direction + 2) % 4))
 	var result: Array[Dictionary] = []
 	for group: Dictionary in grouped.values():
 		result.append(group)
 	return result
+
+static func make_bottom_mesh(data: LevelData, cell: Vector2i, layer: int,
+		segments: int) -> ArrayMesh:
+	var tile := TileRegistry.find(data.solid_tile_id(cell, layer))
+	var polygon := _top_polygon(data, cell, tile, segments, layer)
+	var indices := Geometry2D.triangulate_polygon(polygon)
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var center := data.world_center(cell, layer) - Vector3.UP * LevelData.ELEVATION_STEP
+	for index in range(indices.size() - 1, -1, -1):
+		var point := polygon[indices[index]]
+		var span := tile.cliff_texture_span_m if tile != null else Vector2.ONE
+		tool.set_uv((Vector2(center.x, center.z) + point) / span.max(Vector2.ONE * 0.001))
+		tool.add_vertex(center + Vector3(point.x, 0, point.y))
+	tool.generate_normals()
+	return tool.commit()
 
 static func traced_world_paths(data: LevelData, edges: Array,
 		radius: float, corner_segments: int) -> Array[PackedVector2Array]:

@@ -391,7 +391,7 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 		host._set_status(surface.get("error", "细节需要真实的地形顶面"))
 		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	var point: Vector3 = surface["position"]
-	point.y = host.data.world_center(surface["cell"]).y
+	point.y = host.data.surface_y(int(surface["layer"]))
 	if event is InputEventMouseButton:
 		finish_stroke()
 		drawing = true
