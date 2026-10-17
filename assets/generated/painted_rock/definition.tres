@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_70042"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_3w58w"]
+
+[resource]
+script = ExtResource("2_3w58w")
+asset_id = "painted_rock"
+display_name = "岩石块"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/rock_frontface.png"
+scene_path = "res://assets/generated/painted_rock/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_rock/thumbnail.png"
+carrier = 4
+image_size = Vector2(2, 2)
+volume_size = Vector3(2, 2, 2)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("1_70042")
+generator_version = 3
+face_images = {
+"back": "res://assets/derived_art/scene_pack_20261014/objects/rock_frontface.png",
+"front": "res://assets/derived_art/scene_pack_20261014/objects/rock_frontface.png",
+"left": "res://assets/derived_art/scene_pack_20261014/objects/rock_sideface.png",
+"right": "res://assets/derived_art/scene_pack_20261014/objects/rock_sideface2.png",
+"top": "res://assets/derived_art/scene_pack_20261014/objects/rock_topface2.png"
+}
+behaviour = 1
+supports_objects = true
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": null,
+"quad": [[0.20752, 0.224121], [0.785156, 0.225098], [0.79248, 0.792969], [0.208008, 0.785645]],
+"version": 1.0
+}

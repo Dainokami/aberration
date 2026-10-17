@@ -1,5 +1,8 @@
 # 地形编辑器 v0.1
 
+> **历史文档：当前操作请以 [USAGE_GUIDE.md](USAGE_GUIDE.md) 为准。**
+
+
 > 第二版已加入美术导入、物件和营地预制，使用说明见 [SECOND_VERSION.md](SECOND_VERSION.md)。
 > 当前 Dock 名称为左侧“关卡编辑器”；下文保留第一版地形功能说明。
 

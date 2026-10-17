@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TileDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/tile_definition.gd" id="1_enobs"]
+
+[resource]
+script = ExtResource("1_enobs")
+tile_id = "ground_forest"
+display_name = "森林地面"
+texture_path = "res://assets/source_art/ground_tree_pack_01/ground_forest.png"
+base_color = Color(0.23137255, 0.22352941, 0.1254902, 1)
+transition_priority = 10

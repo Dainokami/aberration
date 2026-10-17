@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_py80j"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_hi1aj"]
+
+[resource]
+script = ExtResource("2_hi1aj")
+asset_id = "painted_biggrass"
+display_name = "阔叶草簇"
+category = "植被"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/biggrass.png"
+scene_path = "res://assets/generated/painted_biggrass/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_biggrass/thumbnail.png"
+image_size = Vector2(2.3587, 2)
+pivot = Vector2(0.5, 0.99)
+profile = ExtResource("1_py80j")
+generator_version = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": [175.0, 376.0, 818.0, 920.0],
+"version": 1.0
+}

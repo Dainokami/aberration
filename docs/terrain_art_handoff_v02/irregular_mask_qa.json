@@ -1,0 +1,70 @@
+{
+  "original_masks_unchanged": true,
+  "samples": [
+    {
+      "path": "straight_blob_110_v1.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 7.47100830078125,
+      "gray_pixel_fraction": 0.005126953125
+    },
+    {
+      "path": "straight_blob_110_v2.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 6.5262298583984375,
+      "gray_pixel_fraction": 0.0053558349609375
+    },
+    {
+      "path": "straight_blob_110_v3.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 7.6690673828125,
+      "gray_pixel_fraction": 0.004974365234375
+    },
+    {
+      "path": "outer_corner_blob_076_v1.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 14.688064575195312,
+      "gray_pixel_fraction": 0.0090484619140625
+    },
+    {
+      "path": "outer_corner_blob_076_v2.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 9.269287109375,
+      "gray_pixel_fraction": 0.0099639892578125
+    },
+    {
+      "path": "outer_corner_blob_076_v3.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 12.571090698242188,
+      "gray_pixel_fraction": 0.0085906982421875
+    },
+    {
+      "path": "inner_corner_blob_239_v1.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 2.1092681884765625,
+      "gray_pixel_fraction": 0.00177001953125
+    },
+    {
+      "path": "inner_corner_blob_239_v2.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 2.5313873291015625,
+      "gray_pixel_fraction": 0.001556396484375
+    },
+    {
+      "path": "inner_corner_blob_239_v3.png",
+      "foreground_components": 1,
+      "enclosed_background_holes": 0,
+      "mean_difference_from_regular_255": 7.1555633544921875,
+      "gray_pixel_fraction": 0.00164794921875
+    }
+  ],
+  "boundary_profile_max_error": 0.0,
+  "boundary_profiles_checked": 564
+}

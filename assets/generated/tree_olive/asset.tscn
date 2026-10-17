@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/source_art/ground_tree_pack_01/tree_olive.png" id="1_pwkgs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jx134"]
+transparency = 2
+alpha_scissor_threshold = 0.15
+alpha_antialiasing_mode = 0
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("1_pwkgs")
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_gkcn7"]
+_surfaces = [{
+"aabb": AABB(-3.8522015, -0.07997981, -3.7465563, 5.2678456, 4.913954, 5.1613817),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(120, 138, 118, 192, 234, 175, 154, 64, 176, 193, 169, 191, 189, 110, 226, 191, 116, 204, 163, 189, 1, 25, 181, 63, 213, 51, 181, 63, 116, 204, 163, 189, 119, 180, 128, 191, 190, 228, 42, 191, 234, 175, 154, 64, 148, 199, 111, 192)
+}]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_ji3wm"]
+height = 2.4
+radius = 0.45
+
+[node name="tree_olive" type="Node3D" unique_id=1650597282]
+
+[node name="Art" type="MeshInstance3D" parent="." unique_id=1215681357]
+material_override = SubResource("StandardMaterial3D_jx134")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_gkcn7")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=1326088297]
+
+[node name="@CollisionShape3D@3" type="CollisionShape3D" parent="ProxyCollision" unique_id=596335472]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("CylinderShape3D_ji3wm")

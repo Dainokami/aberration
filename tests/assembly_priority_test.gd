@@ -1,5 +1,6 @@
 extends SceneTree
 
+var _failed := false
 
 func _initialize() -> void:
 	var assembly := CharacterAssemblyController.new()
@@ -25,6 +26,10 @@ func _initialize() -> void:
 	assembly.lower_body = CharacterAssemblyController.LowerBody.SNAKE
 	_assert_equal(assembly.resolve_locomotion(), CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER, "snake overrides arms")
 	_assert_true(assembly.get_acceleration_multiplier() < 1.0, "snake has low acceleration and sliding inertia")
+	assembly.lower_body = CharacterAssemblyController.LowerBody.TENTACLE
+	_assert_equal(assembly.resolve_locomotion(), CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL, "tentacle gait overrides arms")
+	_assert_true(assembly.get_acceleration_multiplier() < 1.0, "tentacle crawl has a soft pull-in acceleration")
+	_assert_true(assembly.get_deceleration_multiplier() < 1.0, "tentacle crawl keeps short suction inertia")
 	assembly.lower_body = CharacterAssemblyController.LowerBody.NONE
 	assembly.arm_count = 0
 	_assert_equal(assembly.get_collision_height(), 1.02, "head roll collision height")
@@ -49,6 +54,26 @@ func _initialize() -> void:
 	leg_locomotion.lower_body = CharacterAssemblyController.LowerBody.BIPED
 	leg_locomotion.request_attack()
 	_assert_true(not leg_locomotion.is_movement_locked(), "free arms may attack while legs move")
+	var explicit_arm := CharacterAssemblyController.new()
+	root.add_child(explicit_arm)
+	explicit_arm.set_process_unhandled_input(false)
+	explicit_arm.arm_count = 1
+	explicit_arm.lower_body = CharacterAssemblyController.LowerBody.NONE
+	explicit_arm.request_attack(&"scythe")
+	_assert_true(explicit_arm.is_movement_locked(), "explicit arm channel must keep locomotion conflict")
+
+	var catalog_loadout := CharacterAssemblyController.new()
+	root.add_child(catalog_loadout)
+	catalog_loadout.set_process_unhandled_input(false)
+	catalog_loadout.apply_part_movement("gorilla_arm", "wolf_leg")
+	_assert_equal(catalog_loadout.resolve_locomotion(), CharacterAssemblyController.LocomotionMode.BIPED_WALK,
+		"ordinary lower limb overrides upper-arm locomotion")
+	catalog_loadout.apply_part_movement("gorilla_arm", "octopus_leg")
+	_assert_equal(catalog_loadout.resolve_locomotion(), CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL,
+		"octopus lower limb uses its dedicated tentacle crawl")
+	if _failed:
+		quit(1)
+		return
 
 	var file := FileAccess.open("res://tests/.assembly_result.txt", FileAccess.WRITE)
 	if file:
@@ -59,11 +84,11 @@ func _initialize() -> void:
 
 func _assert_equal(actual: Variant, expected: Variant, label: String) -> void:
 	if actual != expected:
+		_failed = true
 		push_error("ASSEMBLY_PRIORITY_TEST: %s expected %s, got %s" % [label, expected, actual])
-		quit(1)
 
 
 func _assert_true(condition: bool, label: String) -> void:
 	if not condition:
+		_failed = true
 		push_error("ASSEMBLY_PRIORITY_TEST: " + label)
-		quit(1)

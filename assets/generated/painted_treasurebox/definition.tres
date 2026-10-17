@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_b86xb"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_lagua"]
+
+[resource]
+script = ExtResource("2_lagua")
+asset_id = "painted_treasurebox"
+display_name = "独眼宝箱"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/treasurebox.png"
+scene_path = "res://assets/generated/painted_treasurebox/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_treasurebox/thumbnail.png"
+image_size = Vector2(1.75, 1.49)
+pivot = Vector2(0.53, 0.92)
+collision = 1
+collision_size = Vector3(1.5, 1.2, 1.5)
+fade_when_occluding = false
+profile = ExtResource("1_b86xb")
+generator_version = 3
+state_images = {
+"closed": "res://assets/derived_art/scene_pack_20261014/objects/treasurebox.png",
+"open": "res://assets/derived_art/scene_pack_20261014/objects/treasurebox_open.png"
+}
+state_pivots = {
+"open": Vector2(0.53, 0.95)
+}
+behaviour = 3
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
+preparation = {
+"black_threshold": null,
+"crop": [260.0, 240.0, 2010.0, 1730.0],
+"version": 1.0
+}

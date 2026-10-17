@@ -56,6 +56,9 @@ func _ready() -> void:
 	parts = PartLoadout.new()
 	parts.name = "PartLoadout"
 	add_child(parts)
+	limbs.changed.connect(func() -> void: parts.sync_movement())
+	limbs.changed.connect(_update_collision_for_loadout)
+	limbs.changed.connect(func() -> void: visual_rig.modular_rig.apply_part_appearance())
 	assembly.loadout_changed.connect(_update_collision_for_loadout)
 	parts.changed_loadout.connect(func() -> void: parts.sync_movement())
 	parts.changed_loadout.connect(_update_collision_for_loadout)

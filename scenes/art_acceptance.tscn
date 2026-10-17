@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/terrain_builder.gd" id="1"]
+[ext_resource type="Resource" path="res://data/levels/art_acceptance.tres" id="2"]
+
+[sub_resource type="Environment" id="Environment"]
+background_mode = 1
+background_color = Color(0.075, 0.09, 0.12, 1)
+ambient_light_source = 3
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.8
+
+[node name="ArtAcceptance" type="Node3D"]
+
+[node name="TerrainBuilder" type="Node3D" parent="."]
+script = ExtResource("1")
+level_data = ExtResource("2")
+show_grid = false
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -35, 0)
+shadow_enabled = true

@@ -35,6 +35,7 @@ var _was_floor := true
 var _air_peak_y := 0.0
 var _auto_timer := 0.0
 var _rings: Array[Dictionary] = []
+var _limb_part_cache: Dictionary = {}
 
 
 func handles_attack() -> bool:
@@ -42,15 +43,61 @@ func handles_attack() -> bool:
 
 
 func overrides_horizontal() -> bool:
-	return true
+	var player := _player()
+	var assembly := player.get_node_or_null("Assembly") as CharacterAssemblyController if player != null else null
+	if assembly == null:
+		return true
+	var mode := assembly.resolve_locomotion()
+	# 没有下肢时交给 Assembly 的头滚/单臂跳/双臂支撑速度曲线。
+	return mode not in [
+		CharacterAssemblyController.LocomotionMode.HEAD_ROLL,
+		CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP,
+		CharacterAssemblyController.LocomotionMode.DOUBLE_ARM_WALK,
+	]
 
 
 func current_upper() -> PartDefinition:
+	var bag := _limb_bag()
+	if bag != null and not bag.equipped_upper.is_empty():
+		return _part_for_limb(bag.equipped_upper, PartDefinition.Slot.UPPER)
 	return PartCatalog.uppers()[upper_index]
 
 
 func current_lower() -> PartDefinition:
+	var bag := _limb_bag()
+	if bag != null and not bag.equipped_lower.is_empty():
+		return _part_for_limb(bag.equipped_lower, PartDefinition.Slot.LOWER)
 	return PartCatalog.lowers()[lower_index]
+
+
+func _limb_bag() -> LimbBag:
+	var player := _player()
+	return player.get_node_or_null("LimbBag") as LimbBag if player != null else null
+
+
+func _part_for_limb(limb_id: String, slot: PartDefinition.Slot) -> PartDefinition:
+	var key := "%d:%s" % [slot, limb_id]
+	if _limb_part_cache.has(key):
+		return _limb_part_cache[key] as PartDefinition
+	var part := PartDefinition.new()
+	part.id = limb_id
+	part.slot = slot
+	if limb_id.is_empty():
+		part.display_name = "无"
+		part.blurb = "该槽位没有肢体"
+		_limb_part_cache[key] = part
+		return part
+	var limb := LimbCatalog.find(limb_id)
+	part.display_name = limb.display_name if limb != null else limb_id
+	part.blurb = limb.blurb if limb != null else ""
+	if limb != null:
+		part.rank = clampi(limb.tier - 1, PartDefinition.Rank.R1, PartDefinition.Rank.R3)
+		if slot == PartDefinition.Slot.UPPER and limb.visual == "scythe":
+			part.attack_shape = PartDefinition.AttackShape.FACING
+			part.attack_power = PartDefinition.Band.NORMAL if limb.tier <= 1 else PartDefinition.Band.HIGH
+			part.attack_rate = PartDefinition.Band.NORMAL if not limb.rare else PartDefinition.Band.HIGH
+	_limb_part_cache[key] = part
+	return part
 
 
 func jump_count() -> int:
@@ -157,8 +204,13 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 		if flat.length() > 0.35:
 			return flat.normalized() * 12.0
 		return Vector3.ZERO
-	var target := wish * speed_on(_tags())
+	var assembly := player.get_node_or_null("Assembly") as CharacterAssemblyController
+	var tentacle_crawl := assembly != null and assembly.resolve_locomotion() == CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL
+	var drive := assembly.get_drive_multiplier() if tentacle_crawl else 1.0
+	var target := wish * speed_on(_tags()) * drive
 	var accel := 34.0 if wish.length_squared() > 0.01 else 40.0
+	if tentacle_crawl:
+		accel *= assembly.get_acceleration_multiplier() if wish.length_squared() > 0.01 else assembly.get_deceleration_multiplier()
 	if is_burrowed():
 		accel *= 0.75
 	if not player.is_on_floor() and not _flying and not _stuck:
@@ -183,6 +235,14 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 		_coyote = maxf(_coyote - delta, 0.0)
 
 	if _climbing:
+		if _climb_target != null and _climb_target.ledge_height >= 0.0 and player.global_position.y >= _climb_target.ledge_height - 0.2:
+			var landed := _climb_target.ledge_point
+			_climbing = false
+			_climb_target = null
+			player.global_position = landed
+			player.velocity = Vector3.ZERO
+			note.emit("爬上去了")
+			return
 		var climb := Input.get_action_strength("move_forward") - Input.get_action_strength("move_back")
 		player.velocity.y = climb * 3.4
 		return
@@ -251,7 +311,7 @@ func _physics_process(delta: float) -> void:
 			_slam_queued = false
 			_slam(_player())
 	_watch_landing()
-	_auto_interact()
+	_auto_combat()
 	_follow_held(delta)
 	_tick_rings(delta)
 
@@ -262,7 +322,7 @@ func try_attack() -> void:
 		return
 	var upper := current_upper()
 	if _flying and upper.has_ability("dive", breakthrough):
-		var enemy := SceneProbe.nearest(player.global_position, 9.0, ENEMY_KINDS)
+		var enemy := SceneProbe.nearest_reachable(player, 9.0, ENEMY_KINDS)
 		_begin_dive(player, enemy)
 		return
 	if upper.attack_shape == PartDefinition.AttackShape.NONE:
@@ -300,8 +360,9 @@ func _interact() -> void:
 		return
 	var origin := player.global_position
 	var upper := current_upper()
+	var lower := current_lower()
 	if upper.has_ability("grab_climb", breakthrough):
-		var pillar := SceneProbe.nearest(origin, 1.9, PackedStringArray(["climbable"]))
+		var pillar := SceneProbe.nearest_reachable(player, 1.9, PackedStringArray(["climbable"]))
 		if pillar:
 			_attach_climb(player, pillar)
 			return
@@ -309,7 +370,7 @@ func _interact() -> void:
 		if _try_throw_grab(origin):
 			return
 	if upper.has_ability("push_pull", breakthrough):
-		var box := SceneProbe.nearest(origin, 1.9, PackedStringArray(["pushable"]))
+		var box := SceneProbe.nearest_reachable(player, 1.9, PackedStringArray(["pushable"]))
 		if box:
 			_held = box
 			_hold_mode = "push"
@@ -324,16 +385,22 @@ func _interact() -> void:
 		note.emit("吸附住了，松开 G 离开")
 		return
 	if upper.has_ability("smash_hard", breakthrough):
-		var hard := SceneProbe.nearest(origin, 2.1, PackedStringArray(["destructible_hard"]))
+		var hard := SceneProbe.nearest_reachable(player, 2.1, PackedStringArray(["destructible_hard"]))
 		if hard:
 			var destroyed := hard.take_hit(PartDefinition.power_value(upper.attack_power))
 			note.emit("砸碎了" if destroyed else "砸了一下")
 			return
 	if upper.has_ability("dig_soft", breakthrough) and _tags().has("fluid"):
-		var soft := SceneProbe.nearest(origin, 2.1, PackedStringArray(["destructible_soft"]))
+		var soft := SceneProbe.nearest_reachable(player, 2.1, PackedStringArray(["destructible_soft"]))
 		if soft:
 			var dug := soft.take_hit(PartDefinition.power_value(upper.attack_power) + 6)
 			note.emit("挖开了" if dug else "挖了一下")
+			return
+	if lower.has_ability("smash_near", breakthrough):
+		var nearby := SceneProbe.nearest_reachable(player, 2.1, PackedStringArray(["destructible_hard", "destructible_soft"]))
+		if nearby:
+			var smashed := nearby.take_hit(10)
+			note.emit("震碎了" if smashed else "震击了一下")
 			return
 	note.emit("附近没有这个部件能用的东西")
 
@@ -353,9 +420,12 @@ func _attach_climb(player: PlayerController, pillar: AffordanceProp) -> void:
 
 
 func _try_throw_grab(origin: Vector3) -> bool:
+	var player := _player()
+	if player == null:
+		return false
 	var kinds := PackedStringArray(["enemy_small", "pushable", "grabbable"])
-	var target := SceneProbe.nearest(origin, 2.2, kinds)
-	var elite := SceneProbe.nearest(origin, 2.2, PackedStringArray(["enemy_elite"]))
+	var target := SceneProbe.nearest_reachable(player, 2.2, kinds)
+	var elite := SceneProbe.nearest_reachable(player, 2.2, PackedStringArray(["enemy_elite"]))
 	if elite != null and (target == null or origin.distance_to(elite.global_position) < origin.distance_to(target.global_position)):
 		note.emit("抓不住精英和 BOSS")
 		return true
@@ -414,43 +484,17 @@ func _watch_landing() -> void:
 	_was_floor = on_floor
 
 
-func _auto_interact() -> void:
+func _auto_combat() -> void:
 	if _auto_timer > 0.0:
 		_auto_timer -= get_physics_process_delta_time()
 		return
 	var player := _player()
 	if player == null:
 		return
-	var origin := player.global_position
 	var upper := current_upper()
-	var lower := current_lower()
-	var tags := _tags()
-	if upper.has_ability("smash_hard", breakthrough):
-		var hard := SceneProbe.nearest(origin, 1.35, PackedStringArray(["destructible_hard"]))
-		if hard:
-			var destroyed := hard.take_hit(PartDefinition.power_value(upper.attack_power))
-			_auto_timer = 0.45
-			if destroyed:
-				note.emit("击碎了硬物件")
-			return
-	if upper.has_ability("dig_soft", breakthrough) and tags.has("fluid"):
-		var soft := SceneProbe.nearest(origin, 1.45, PackedStringArray(["destructible_soft"]))
-		if soft:
-			var dug := soft.take_hit(PartDefinition.power_value(upper.attack_power) + 6)
-			_auto_timer = 0.28
-			if dug:
-				note.emit("在流体里挖开了")
-			return
-	if lower.has_ability("smash_near", breakthrough):
-		var nearby := SceneProbe.nearest(origin, 1.35, PackedStringArray(["destructible_hard", "destructible_soft"]))
-		if nearby:
-			var smashed := nearby.take_hit(10)
-			_auto_timer = 0.4
-			if smashed:
-				note.emit("靠近时拆掉了物件")
-			return
+	# 环境破坏全部由 G 主动触发。这里只保留遁地状态自身的战斗伏击。
 	if is_burrowed() and upper.has_ability("burrow_ambush", breakthrough):
-		var enemy := SceneProbe.nearest(origin, 1.55, ENEMY_KINDS)
+		var enemy := SceneProbe.nearest_reachable(player, 1.55, ENEMY_KINDS)
 		if enemy:
 			var ambushed := enemy.take_hit(PartDefinition.power_value(upper.attack_power) + 6)
 			_auto_timer = 0.45
@@ -546,13 +590,18 @@ func _begin_dive(player: PlayerController, enemy: AffordanceProp) -> void:
 func _tick_dive(player: PlayerController) -> void:
 	var to := _dive_point - player.global_position
 	if to.length() < 0.45:
-		player.velocity = Vector3.ZERO
+		# 目标可能在半空或已消失；到点后必须退出俯冲，让重力和落地结算接管。
+		_diving = false
+		_flying = false
+		player.velocity = Vector3.DOWN * 1.5
 		return
 	player.velocity = to.normalized() * 13.0
 	for prop in SceneProbe.each_kind(ENEMY_KINDS):
 		if _dive_hit.has(prop):
 			continue
 		if player.global_position.distance_to(prop.global_position) > 1.25:
+			continue
+		if not SceneProbe.is_reachable(player, prop):
 			continue
 		_dive_hit.append(prop)
 		prop.take_hit(PartDefinition.power_value(current_upper().attack_power))
@@ -568,22 +617,10 @@ func sync_movement() -> void:
 
 
 func _displayed_lower_id() -> String:
-	var player := _player()
-	if player == null:
-		return current_lower().id
-	var bag := player.get_node_or_null("LimbBag") as LimbBag
-	if bag != null and not bag.equipped_lower.is_empty():
-		return bag.equipped_lower
 	return current_lower().id
 
 
 func _displayed_upper_id() -> String:
-	var player := _player()
-	if player == null:
-		return current_upper().id
-	var bag := player.get_node_or_null("LimbBag") as LimbBag
-	if bag != null and not bag.equipped_upper.is_empty():
-		return bag.equipped_upper
 	return current_upper().id
 
 
@@ -604,7 +641,7 @@ func _attack_channel(limb_id: String) -> StringName:
 
 
 func _lock_attack_target(player: PlayerController) -> AffordanceProp:
-	return SceneProbe.nearest(player.global_position, ATTACK_RANGE, ATTACK_KINDS)
+	return SceneProbe.nearest_reachable(player, ATTACK_RANGE, ATTACK_KINDS)
 
 
 func _slam(player: PlayerController) -> void:
@@ -612,13 +649,14 @@ func _slam(player: PlayerController) -> void:
 		return
 	var power := maxi(PartDefinition.power_value(current_upper().attack_power), 10)
 	for prop in SceneProbe.each_kind(ENEMY_KINDS):
-		if player.global_position.distance_to(prop.global_position) <= 2.7:
+		if player.global_position.distance_to(prop.global_position) <= 2.7 \
+				and SceneProbe.is_reachable(player, prop):
 			prop.take_hit(power)
 	attacked.emit(true)
 
 
 func _spawn_hurricane(player: PlayerController, power: int) -> void:
-	var enemy := SceneProbe.nearest(player.global_position, 8.0, PackedStringArray(["enemy_small"]))
+	var enemy := SceneProbe.nearest_reachable(player, 8.0, PackedStringArray(["enemy_small"]))
 	var at := enemy.global_position if enemy else player.global_position + _facing(player) * 2.0
 	var mesh := MeshInstance3D.new()
 	var box := BoxMesh.new()

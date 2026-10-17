@@ -458,6 +458,18 @@ func _animate_locomotion() -> void:
 			if _carrying_scythe():
 				_set_bone_rotation("anim_scythe_grip", sin(phase) * 0.12)
 
+		CharacterAssemblyController.LocomotionMode.TENTACLE_CRAWL:
+			# 触手不是迈步：左右轮流张开吸附，身体在收缩阶段被拉向前方。
+			var wave := sin(phase) if moving else 0.0
+			var contraction := absf(wave) if moving else 0.0
+			var weave := _weave_offset(wave * 0.055 * amount * gait)
+			_set_bone_position("root", Vector3(weave.x, _anim_ground(848.0) - contraction * 0.035 * amount * gait + weave.y, weave.z))
+			_set_bone_position("left_leg", Vector3(-0.07 - maxf(wave, 0.0) * 0.08 * amount * gait, maxf(-wave, 0.0) * 0.055 * amount * gait, 0.0))
+			_set_bone_position("right_leg", Vector3(0.07 + maxf(-wave, 0.0) * 0.08 * amount * gait, maxf(wave, 0.0) * 0.055 * amount * gait, 0.0))
+			_set_bone_rotation("left_leg", -0.38 + wave * 0.24 * amount * gait)
+			_set_bone_rotation("right_leg", 0.38 + wave * 0.24 * amount * gait)
+			_set_bone_rotation("body", -wave * 0.045 * amount * gait)
+
 		CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
 			# 身子横着穿过路线，尾巴比身体晚一拍，波从头部往后传。
 			var wave := sin(phase) if moving else 0.0

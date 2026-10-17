@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TerrainArtSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/terrain_art_set.gd" id="1_rpvoo"]
+
+[resource]
+script = ExtResource("1_rpvoo")
+set_id = "painted_earth"
+display_name = "手绘泥土"
+top_path = "res://assets/derived_art/scene_pack_20261014/terrain/earth.png"
+cliff_path = "res://assets/derived_art/scene_pack_20261014/terrain/cliff_body.png"
+cliff_span = Vector2(6.4453, 1.0078)
+rim_paths = PackedStringArray()
+slope_side_path = "res://assets/derived_art/scene_pack_20261014/terrain/slope.png"
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"

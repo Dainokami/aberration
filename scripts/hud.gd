@@ -82,7 +82,7 @@ func _apply_playtest_caption() -> void:
 		return
 	$SafeArea/TopLeft/Content/Title.text = "关卡试玩"
 	$SafeArea/TopLeft/Content/Controls.text = "WASD移动  C旧拼接  R重置  Z上肢  X下肢  T突破  G捡肢体/交互  J攻击  Tab背包"
-	objective_label.text = str(player.get_meta("playtest_level"))
+	objective_label.text = "蓝块是流体，黄块是沙漠。长臂猿对崖壁按 G，再按 W 爬上去。"
 
 
 func _is_level_playtest() -> bool:

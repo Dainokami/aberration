@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TileDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/tile_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+tile_id = "rock"
+display_name = "岩地"
+texture_path = "res://assets/source_art/terrain_handoff_v02/top/rock_top.png"
+base_color = Color(0.50980395, 0.49019608, 0.5019608, 1)
+default_height = 0
+is_builtin = true
+transition_priority = 30
+world_space_top = true
+top_texture_span_m = Vector2(8, 8)
+cliff_texture_path = "res://assets/source_art/terrain_handoff_v02/cliff/rock_cliff.png"
+cliff_texture_span_m = Vector2(4, 4)
+rim_texture_path = "res://assets/source_art/terrain_handoff_v02/rim/rock_rim_soft.png"
+rim_u_span_m = 8.0
+rim_alpha_range = Vector2(0.32320443, 0.67265195)
+rim_inset_m = 0.55
+rim_drop_m = 0.42
+corner_radius_m = 0.82

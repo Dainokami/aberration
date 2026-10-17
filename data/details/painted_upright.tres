@@ -1,0 +1,162 @@
+[gd_resource type="Resource" script_class="DetailSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/assets/detail_set.gd" id="1_emgd5"]
+
+[resource]
+script = ExtResource("1_emgd5")
+set_id = "painted_upright"
+display_name = "草簇与碎石"
+atlas_path = "res://assets/derived_art/scene_pack_20261014/upright_atlas.png"
+orientation = 1
+variants = Array[Dictionary]([{
+"id": "detail_07",
+"name": "07_石块",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(8, 8, 82, 80),
+"size": Vector2(0.2891, 0.282)
+}, {
+"id": "detail_08",
+"name": "08_石块",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(106, 8, 81, 67),
+"size": Vector2(0.2852, 0.2359)
+}, {
+"id": "detail_09",
+"name": "09_石块组合",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(203, 8, 157, 133),
+"size": Vector2(0.582, 0.4931)
+}, {
+"id": "detail_10",
+"name": "10_石块组合",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(376, 8, 259, 161),
+"size": Vector2(0.9805, 0.6095)
+}, {
+"id": "detail_11",
+"name": "11_石块",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(651, 8, 76, 61),
+"size": Vector2(0.2656, 0.2132)
+}, {
+"id": "detail_12",
+"name": "12_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(743, 8, 154, 124),
+"size": Vector2(0.5703, 0.4592)
+}, {
+"id": "detail_13",
+"name": "13_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(913, 8, 266, 183),
+"size": Vector2(1.0078, 0.6933)
+}, {
+"id": "detail_14",
+"name": "14_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1195, 8, 168, 93),
+"size": Vector2(0.625, 0.346)
+}, {
+"id": "detail_15",
+"name": "15_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1379, 8, 201, 148),
+"size": Vector2(0.7539, 0.5551)
+}, {
+"id": "detail_16",
+"name": "16_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(8, 207, 512, 187),
+"size": Vector2(2, 0.7301)
+}, {
+"id": "detail_17",
+"name": "17_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(536, 207, 123, 100),
+"size": Vector2(0.4492, 0.3652)
+}, {
+"id": "detail_18",
+"name": "18_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(675, 207, 171, 152),
+"size": Vector2(0.6367, 0.566)
+}, {
+"id": "detail_19",
+"name": "19_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(862, 207, 138, 105),
+"size": Vector2(0.5078, 0.3864)
+}, {
+"id": "detail_20",
+"name": "20_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1016, 207, 127, 113),
+"size": Vector2(0.4648, 0.4136)
+}, {
+"id": "detail_21",
+"name": "21_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1159, 207, 126, 114),
+"size": Vector2(0.4609, 0.417)
+}, {
+"id": "detail_22",
+"name": "22_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1301, 207, 347, 201),
+"size": Vector2(1.3242, 0.7671)
+}, {
+"id": "detail_23",
+"name": "23_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1664, 207, 151, 99),
+"size": Vector2(0.5586, 0.3662)
+}, {
+"id": "detail_24",
+"name": "24_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(1831, 207, 148, 92),
+"size": Vector2(0.5469, 0.3399)
+}, {
+"id": "detail_25",
+"name": "25_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(8, 424, 181, 122),
+"size": Vector2(0.6758, 0.4555)
+}, {
+"id": "detail_26",
+"name": "26_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(205, 424, 78, 61),
+"size": Vector2(0.2734, 0.2138)
+}, {
+"id": "detail_27",
+"name": "27_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(299, 424, 95, 80),
+"size": Vector2(0.3398, 0.2862)
+}, {
+"id": "detail_28",
+"name": "28_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(410, 424, 163, 95),
+"size": Vector2(0.6055, 0.3529)
+}, {
+"id": "detail_29",
+"name": "29_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(589, 424, 140, 96),
+"size": Vector2(0.5156, 0.3536)
+}, {
+"id": "detail_30",
+"name": "30_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(745, 424, 89, 87),
+"size": Vector2(0.3164, 0.3093)
+}, {
+"id": "detail_31",
+"name": "31_草丛",
+"pivot": Vector2(0.5, 1),
+"rect": Rect2i(850, 424, 103, 85),
+"size": Vector2(0.3711, 0.3062)
+}])
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"

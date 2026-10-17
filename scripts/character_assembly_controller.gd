@@ -10,6 +10,7 @@ enum LowerBody {
 	BIPED,
 	QUADRUPED,
 	SNAKE,
+	TENTACLE,
 }
 
 enum LocomotionMode {
@@ -19,6 +20,7 @@ enum LocomotionMode {
 	BIPED_WALK,
 	QUADRUPED_WALK,
 	SNAKE_SLITHER,
+	TENTACLE_CRAWL,
 }
 
 @export_range(0, 2) var arm_count := 0
@@ -109,23 +111,23 @@ func _apply_preset(index: int) -> void:
 
 func apply_part_movement(upper_id: String, lower_id: String) -> void:
 	part_wings = upper_id in ["goose_wing", "bat_wing", "albatross_wing", "eagle_wing"]
-	if lower_id in ["water_snake", "fish_tail", "snake_body", "python_body", "crowned_snake"]:
-		lower_body = LowerBody.SNAKE
-		if upper_id in ["mantis_arm", "mantis_blade", "mantis_king", "octopus_arm"]:
-			arm_count = 2
-		elif upper_id in ["gorilla_arm", "gibbon_arm", "gerbil_paw"]:
-			arm_count = 1
-		else:
-			arm_count = 0
-	elif upper_id == "octopus_arm":
-		lower_body = LowerBody.NONE
+	if upper_id == "octopus_arm":
 		arm_count = 2
-	elif upper_id in ["gorilla_arm", "gibbon_arm", "gerbil_paw"]:
-		lower_body = LowerBody.NONE
+	elif upper_id in ["gorilla_arm", "gibbon_arm", "gerbil_paw", "mantis_arm", "mantis_blade", "mantis_king"]:
 		arm_count = 1
 	else:
-		lower_body = LowerBody.BIPED
 		arm_count = 0
+	if lower_id in ["water_snake", "fish_tail", "snake_body", "python_body", "crowned_snake"]:
+		lower_body = LowerBody.SNAKE
+	elif lower_id == "octopus_leg":
+		lower_body = LowerBody.TENTACLE
+	elif not lower_id.is_empty():
+		# 策划优先级为下肢 > 上肢 > 头；有普通下肢时不能退回手臂支撑。
+		lower_body = LowerBody.BIPED
+	elif arm_count > 0:
+		lower_body = LowerBody.NONE
+	else:
+		lower_body = LowerBody.NONE
 
 
 func resolve_locomotion() -> LocomotionMode:
@@ -137,6 +139,8 @@ func resolve_locomotion() -> LocomotionMode:
 			return LocomotionMode.QUADRUPED_WALK
 		LowerBody.SNAKE:
 			return LocomotionMode.SNAKE_SLITHER
+		LowerBody.TENTACLE:
+			return LocomotionMode.TENTACLE_CRAWL
 
 	if arm_count >= 2:
 		return LocomotionMode.DOUBLE_ARM_WALK
@@ -164,6 +168,8 @@ func get_speed_multiplier() -> float:
 				if lower != null:
 					snake_scale = lower.speed_scale
 			return 0.9 * snake_scale
+		LocomotionMode.TENTACLE_CRAWL:
+			return 0.9
 	return 1.0
 
 
@@ -193,6 +199,8 @@ func get_cadence() -> float:
 			return 11.5
 		LocomotionMode.SNAKE_SLITHER:
 			return 6.2
+		LocomotionMode.TENTACLE_CRAWL:
+			return 6.8
 	return 8.0
 
 
@@ -213,6 +221,9 @@ func get_drive_multiplier() -> float:
 		LocomotionMode.SNAKE_SLITHER:
 			# 只留很轻的起伏。大幅一冲一停会让身体看起来在跟路线较劲。
 			return 0.92 + sin(_locomotion_phase) * 0.08
+		LocomotionMode.TENTACLE_CRAWL:
+			# 两侧触手轮流吸附、收缩。低谷仍保留推进，避免操作完全停顿。
+			return 0.68 + pow(absf(sin(_locomotion_phase)), 1.35) * 0.48
 	return 1.0
 
 
@@ -230,6 +241,8 @@ func get_acceleration_multiplier() -> float:
 			return 1.28
 		LocomotionMode.SNAKE_SLITHER:
 			return 0.56
+		LocomotionMode.TENTACLE_CRAWL:
+			return 0.7
 	return 1.0
 
 
@@ -247,19 +260,23 @@ func get_deceleration_multiplier() -> float:
 			return 1.22
 		LocomotionMode.SNAKE_SLITHER:
 			return 0.42
+		LocomotionMode.TENTACLE_CRAWL:
+			return 0.58
 	return 1.0
 
 
 func get_collision_height() -> float:
-	if limbs_equipped and resolve_locomotion() != LocomotionMode.SNAKE_SLITHER:
-		return 2.16
 	match resolve_locomotion():
 		LocomotionMode.HEAD_ROLL:
-			return 2.16
+			return 1.02
 		LocomotionMode.SINGLE_ARM_HOP, LocomotionMode.DOUBLE_ARM_WALK:
 			return 1.65
+		LocomotionMode.BIPED_WALK, LocomotionMode.QUADRUPED_WALK:
+			return 2.12
 		LocomotionMode.SNAKE_SLITHER:
 			return 2.2
+		LocomotionMode.TENTACLE_CRAWL:
+			return 1.88
 	return 1.65
 
 
@@ -274,9 +291,9 @@ func get_loadout_summary() -> String:
 		return "移动：%s  |  上肢：%s  下肢：%s" % [
 			get_locomotion_label(), _limb_name(limb_upper_id), _limb_name(limb_lower_id)
 		]
-	var lower_label: String = ["无", "双足", "四足", "蛇类"][lower_body]
+	var lower_label: String = ["无", "双足", "四足", "蛇类", "触手"][lower_body]
 	return "移动：%s  |  上肢：%d  下肢：%s  翅膀：%s" % [
-		get_locomotion_label(), arm_count, lower_label, "有" if wings_equipped else "无"
+		get_locomotion_label(), arm_count, lower_label, "有" if can_fly() else "无"
 	]
 
 
@@ -288,7 +305,7 @@ func _limb_name(limb_id: String) -> String:
 
 
 func can_fly() -> bool:
-	return wings_equipped
+	return wings_equipped or part_wings
 
 
 func is_movement_locked() -> bool:
@@ -297,7 +314,14 @@ func is_movement_locked() -> bool:
 
 func request_attack(channel: StringName = &"") -> void:
 	if channel != &"":
-		attack_started.emit(channel, false)
+		var uses_locomotion_limb := lower_body == LowerBody.NONE and arm_count > 0 \
+			and channel not in [&"head", &"wings"]
+		if uses_locomotion_limb:
+			_movement_lock_remaining = attack_movement_lock_time
+			conflict_reported.emit("冲突：上肢同时负责移动和攻击；当前策略为攻击短暂中断移动。")
+		else:
+			conflict_reported.emit("下肢承担移动，上肢可在移动中攻击。")
+		attack_started.emit(channel, uses_locomotion_limb)
 		return
 	var arms_used_for_locomotion := lower_body == LowerBody.NONE and arm_count > 0
 	if arm_count == 0:

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TerrainArtSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/terrain_art_set.gd" id="1_bu2lo"]
+
+[resource]
+script = ExtResource("1_bu2lo")
+set_id = "painted_grass"
+display_name = "手绘草地"
+top_path = "res://assets/derived_art/scene_pack_20261014/terrain/grass.png"
+cliff_path = "res://assets/derived_art/scene_pack_20261014/terrain/cliff_body.png"
+cliff_span = Vector2(6.4453, 1.0078)
+rim_paths = PackedStringArray("res://assets/derived_art/scene_pack_20261014/terrain/rim_grass.png")
+rim_span = 6.4453
+rim_rise = 0.2344
+rim_drop = 0.5
+slope_side_path = "res://assets/derived_art/scene_pack_20261014/terrain/slope.png"
+source_manifest = "res://assets/derived_art/scene_pack_20261014/manifest.json"
