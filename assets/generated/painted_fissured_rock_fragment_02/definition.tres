@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="PlaceableDefinition" format=3]
+
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="1_ip14l"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="2_hosee"]
+
+[resource]
+script = ExtResource("2_hosee")
+asset_id = "painted_fissured_rock_fragment_02"
+display_name = "裂隙落石·02"
+category = "岩石装饰"
+source_image = "res://assets/derived_art/scene_pack_20261015/painted_fissured_rock_fragment_02.png"
+scene_path = "res://assets/generated/painted_fissured_rock_fragment_02/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_fissured_rock_fragment_02/thumbnail.png"
+carrier = 2
+image_size = Vector2(2.1379588, 2.1379588)
+pivot = Vector2(0.5, 0.9921875)
+volume_size = Vector3(0.4468, 0.4468, 0.4468)
+collision_size = Vector3(0.4468, 0.4468, 0.4468)
+fade_when_occluding = false
+profile = ExtResource("1_ip14l")
+generator_version = 5
+source_manifest = "res://assets/derived_art/scene_pack_20261015/manifest.json"
+preparation = {
+"id": "painted_fissured_rock_fragment_02",
+"kind": "fragment",
+"name": "裂隙落石·02",
+"output": "painted_fissured_rock_fragment_02.png",
+"recipe": {
+"canvas": [512.0, 512.0],
+"component": {
+"bounds": [86.0, 243.0, 193.0, 350.0],
+"label": 3.0,
+"pixels": 7287.0
+},
+"crop": [86.0, 243.0, 193.0, 350.0],
+"fit": [107.0, 107.0],
+"offset": [202.0, 401.0],
+"pivot": [0.5, 0.9921875],
+"upscale": false
+},
+"source_id": "fissured_rock_sheet",
+"spec_row": 14.0,
+"world_size": [0.4468, 0.4468, 0.4468],
+"wrap_depth_m": 0.15638,
+"wrap_method": "silhouette_extrusion"
+}

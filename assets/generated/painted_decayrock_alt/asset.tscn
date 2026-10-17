@@ -1,0 +1,205 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/runtime/gameplay_prop.gd" id="1_c4qa6"]
+[ext_resource type="Resource" path="res://data/art_profile.tres" id="2_8vu4t"]
+[ext_resource type="Script" path="res://scripts/assets/placeable_definition.gd" id="3_8r3sp"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/decayrock_frontface.png" id="4_737e2"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/decayrock_sideface.png" id="5_5dell"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/decayrock_sideface2.png" id="6_k3mx5"]
+[ext_resource type="Texture2D" path="res://assets/derived_art/scene_pack_20261014/objects/decayrock_topface.png" id="7_jyqk3"]
+
+[sub_resource type="Resource" id="Resource_6ya3w"]
+script = ExtResource("3_8r3sp")
+asset_id = "painted_decayrock_alt"
+display_name = "风化岩石·顶面二"
+category = "玩法物件"
+source_image = "res://assets/derived_art/scene_pack_20261014/objects/decayrock_topface.png"
+scene_path = "res://assets/generated/painted_decayrock_alt/asset.tscn"
+thumbnail_path = "res://assets/generated/painted_decayrock_alt/thumbnail.png"
+carrier = 4
+image_size = Vector2(2, 2)
+volume_size = Vector3(2, 2, 2)
+collision = 1
+collision_size = Vector3(2, 2, 2)
+fade_when_occluding = false
+profile = ExtResource("2_8vu4t")
+generator_version = 4
+face_images = {
+"back": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_frontface.png",
+"front": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_frontface.png",
+"left": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_sideface.png",
+"right": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_sideface2.png",
+"top": "res://assets/derived_art/scene_pack_20261014/objects/decayrock_topface.png"
+}
+behaviour = 2
+supports_objects = true
+source_manifest = "res://assets/derived_art/scene_pack_20261014/remaining_objects_manifest.json"
+preparation = {
+"base_asset": "painted_decayrock",
+"base_manifest": "res://assets/derived_art/scene_pack_20261014/manifest.json",
+"top_source": "decayrock_topface"
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a3wrj"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_737e2")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_2mdpq"]
+_surfaces = [{
+"aabb": AABB(-1, 0, 1, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grhia"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_737e2")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_6abep"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lxjgt"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("5_5dell")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_mi1yc"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 1e-05, 2, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8bd5"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("6_k3mx5")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_2pko2"]
+_surfaces = [{
+"aabb": AABB(1, 0, -1, 1e-05, 2, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rd2o1"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("7_jyqk3")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_0gfw2"]
+_surfaces = [{
+"aabb": AABB(-1, 2, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 191, 0, 0, 128, 191, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 128, 191)
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t2155"]
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("4_737e2")
+texture_repeat = false
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_dolc0"]
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 1e-05, 2),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742481,
+"index_count": 6,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63)
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3xrsh"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ya6ru"]
+size = Vector3(2, 2, 2)
+
+[node name="painted_decayrock_alt" type="Node3D" unique_id=1879725153]
+script = ExtResource("1_c4qa6")
+definition = SubResource("Resource_6ya3w")
+
+[node name="Art" type="Node3D" parent="." unique_id=1365782869]
+
+[node name="Front" type="MeshInstance3D" parent="Art" unique_id=791224807]
+material_override = SubResource("StandardMaterial3D_a3wrj")
+mesh = SubResource("ArrayMesh_2mdpq")
+
+[node name="Back" type="MeshInstance3D" parent="Art" unique_id=1093787863]
+material_override = SubResource("StandardMaterial3D_grhia")
+mesh = SubResource("ArrayMesh_6abep")
+
+[node name="Left" type="MeshInstance3D" parent="Art" unique_id=393781351]
+material_override = SubResource("StandardMaterial3D_lxjgt")
+mesh = SubResource("ArrayMesh_mi1yc")
+
+[node name="Right" type="MeshInstance3D" parent="Art" unique_id=736476540]
+material_override = SubResource("StandardMaterial3D_x8bd5")
+mesh = SubResource("ArrayMesh_2pko2")
+
+[node name="Top" type="MeshInstance3D" parent="Art" unique_id=1575416183]
+material_override = SubResource("StandardMaterial3D_rd2o1")
+mesh = SubResource("ArrayMesh_0gfw2")
+
+[node name="Bottom" type="MeshInstance3D" parent="Art" unique_id=1000753646]
+material_override = SubResource("StandardMaterial3D_t2155")
+mesh = SubResource("ArrayMesh_dolc0")
+
+[node name="ProxyCollision" type="StaticBody3D" parent="." unique_id=400008875]
+
+[node name="Shape" type="CollisionShape3D" parent="ProxyCollision" unique_id=271623541]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_3xrsh")
+
+[node name="InteractionArea" type="Area3D" parent="." unique_id=107878450]
+collision_layer = 4
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="InteractionArea" unique_id=924734069]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_ya6ru")

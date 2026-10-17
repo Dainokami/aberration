@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "pack": "scene_pack_20261014",
+  "base_manifest": "manifest.json",
+  "entries": [
+    {
+      "id": "climbingrock_frontface",
+      "source": "objects/climbingrock_frontface.png",
+      "sha256": "8a21278c98b992438de5178a91ba4ef07a3be0d26cbd16ae76cae6f77a2c7b9e",
+      "output": "remaining_objects/climbingrock_frontface.png",
+      "size_m": [
+        2,
+        2
+      ],
+      "recipe": {
+        "quad": [
+          [
+            0.220703,
+            0.414062
+          ],
+          [
+            0.783203,
+            0.412109
+          ],
+          [
+            0.785156,
+            0.613281
+          ],
+          [
+            0.226562,
+            0.615234
+          ]
+        ],
+        "output_size": [
+          1024,
+          1024
+        ],
+        "opaque_seams": true,
+        "perspective_removed": true
+      }
+    },
+    {
+      "id": "climbingrock_sideface2",
+      "source": "objects/climbingrock_sideface2.png",
+      "sha256": "26c7d6d5c1f1616cf075a670c4ad5724bc903cb548472e8c33fc7a8b62dee5c5",
+      "output": "remaining_objects/climbingrock_sideface2.png",
+      "size_m": [
+        2,
+        2
+      ],
+      "recipe": {
+        "quad": [
+          [
+            0.214844,
+            0.328125
+          ],
+          [
+            0.685547,
+            0.564453
+          ],
+          [
+            0.664062,
+            0.777344
+          ],
+          [
+            0.21875,
+            0.544922
+          ]
+        ],
+        "output_size": [
+          1024,
+          1024
+        ],
+        "opaque_seams": true,
+        "perspective_removed": true
+      }
+    },
+    {
+      "id": "climbingrock_sideface3",
+      "source": "objects/climbingrock_sideface3.png",
+      "sha256": "c65973714ead0b39efa3bd49650d84eb29a367808553fe900ffe7eb9eb7d8efd",
+      "output": "remaining_objects/climbingrock_sideface3.png",
+      "size_m": [
+        2,
+        2
+      ],
+      "recipe": {
+        "quad": [
+          [
+            0.433594,
+            0.431641
+          ],
+          [
+            0.574219,
+            0.353516
+          ],
+          [
+            0.568359,
+            0.568359
+          ],
+          [
+            0.431641,
+            0.640625
+          ]
+        ],
+        "output_size": [
+          1024,
+          1024
+        ],
+        "opaque_seams": true,
+        "perspective_removed": true
+      }
+    },
+    {
+      "id": "climbingrock_topface",
+      "source": "objects/climbingrock_topface.png",
+      "sha256": "760afaa70edcfb21d53575c601954eed171a9f130fe4e4199132d77a6be6d7f1",
+      "output": "remaining_objects/climbingrock_topface.png",
+      "size_m": [
+        2,
+        2
+      ],
+      "recipe": {
+        "quad": [
+          [
+            0.277344,
+            0.291016
+          ],
+          [
+            0.728516,
+            0.289062
+          ],
+          [
+            0.783203,
+            0.414062
+          ],
+          [
+            0.220703,
+            0.412109
+          ]
+        ],
+        "output_size": [
+          1024,
+          1024
+        ],
+        "opaque_seams": true,
+        "perspective_removed": true
+      }
+    },
+    {
+      "id": "climbingrock_topface2",
+      "source": "objects/climbingrock_topface2.png",
+      "sha256": "3950c5b3ff5f753d864ea037753f3f40302544fdd25eb5b1e3828e3b39b22a6c",
+      "output": "remaining_objects/climbingrock_topface2.png",
+      "size_m": [
+        2,
+        2
+      ],
+      "recipe": {
+        "quad": [
+          [
+            0.230469,
+            0.339844
+          ],
+          [
+            0.679688,
+            0.564453
+          ],
+          [
+            0.828125,
+            0.490234
+          ],
+          [
+            0.392578,
+            0.263672
+          ]
+        ],
+        "output_size": [
+          1024,
+          1024
+        ],
+        "opaque_seams": true,
+        "perspective_removed": true
+      }
+    }
+  ],
+  "variants": {
+    "painted_climbingrock": "climbingrock_topface",
+    "painted_climbingrock_alt": "climbingrock_topface2",
+    "painted_rock_alt": "rock_topface",
+    "painted_decayrock_alt": "decayrock_topface"
+  },
+  "note": "Climbing volumes use solid rock collision; attach painted_climb_surface for climbing."
+}

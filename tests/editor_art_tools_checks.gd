@@ -165,6 +165,46 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.tabs.current_tab = 1
 	var objects = plugin.world_tools
 	objects.object_mode.selected = 0
+	objects.refresh_library()
+	objects.scale_input.value = 1
+	objects.yaw_input.value = 0
+	var before_supplement := map.clone_data()
+	var supplements: Array[String] = ["painted_climbingrock", "painted_climbingrock_alt",
+		"painted_rock_alt", "painted_decayrock_alt"]
+	for i in supplements.size():
+		var path: String = "res://assets/generated/" + supplements[i] + "/definition.tres"
+		var index: int = objects.paths.find(path)
+		suite.check(index >= 0 and objects.library.get_item_icon(index) != null,
+			"remaining art has an actual editor library card " + supplements[i])
+		if index < 0:
+			continue
+		objects.library.select(index)
+		await plugin.get_tree().physics_frame
+		await plugin.get_tree().physics_frame
+		click(plugin, camera, camera.unproject_position(map.world_center(Vector2i(i, 4))))
+		suite.check(map.objects.size() == i + 1 and map.objects.back()["definition"] == path,
+			"viewport places remaining art resource " + supplements[i])
+	for i in supplements.size():
+		history.undo()
+	suite.check(map.clone_data() == before_supplement,
+		"remaining art placement undo restores the complete original map")
+	var manifest_1015: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
+		"res://assets/derived_art/scene_pack_20261015/manifest.json"))
+	for entry: Dictionary in manifest_1015["entries"]:
+		var path: String = "res://assets/generated/" + str(entry["id"]) + "/definition.tres"
+		var index: int = objects.paths.find(path)
+		suite.check(index >= 0 and objects.library.get_item_icon(index) != null,
+			"1015 art appears in editor library " + str(entry["name"]))
+	for id: String in ["painted_traction_rock_01", "painted_fissured_rock"]:
+		var path := "res://assets/generated/" + id + "/definition.tres"
+		objects.library.select(objects.paths.find(path))
+		await plugin.get_tree().physics_frame
+		await plugin.get_tree().physics_frame
+		click(plugin, camera, camera.unproject_position(map.world_center(Vector2i(3, 4))))
+		suite.check(map.objects.size() == 1 and map.objects[0]["definition"] == path,
+			"1015 viewport placement " + id)
+		history.undo()
+	suite.check(map.clone_data() == before_supplement, "1015 viewport undo preserves original map")
 	var rock: int = objects.paths.find("res://assets/generated/painted_rock/definition.tres")
 	objects.library.select(rock)
 	objects.scale_input.value = 1
