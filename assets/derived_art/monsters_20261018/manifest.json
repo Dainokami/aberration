@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "archives": {
+    "小怪.zip": "361badb7d3d2911803cbe9b71bc2d695a35c18198f3d94ced4d8486980bc6431",
+    "怪物角色肢体-呸呸.zip": "44a429efbf58bd813bf8807f1b88500cf1dceda290480cd6456ce88333c6f5bb"
+  },
+  "assets": {
+    "octopus": {
+      "image": "res://assets/derived_art/monsters_20261018/octopus/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/octopus/part_00.png",
+          "name": "已插入图像",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/octopus/part_01.png",
+          "name": "已插入图像",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/octopus/part_02.png",
+          "name": "图层 12",
+          "order": 2
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/octopus/part_03.png",
+          "name": "已插入图像",
+          "order": 3
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        13,
+        160,
+        1029,
+        894
+      ],
+      "source": "小怪/zhangyu.psd",
+      "composite_mean_error": 2.2496120541838134
+    },
+    "bat": {
+      "image": "res://assets/derived_art/monsters_20261018/bat/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/bat/part_00.png",
+          "name": "已插入图像",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/bat/part_01.png",
+          "name": "图层 15",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/bat/part_02.png",
+          "name": "已插入图像",
+          "order": 2
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        41,
+        59,
+        950,
+        978
+      ],
+      "source": "小怪/bianfu.psd",
+      "composite_mean_error": 1.592579518175583
+    },
+    "demon_dog": {
+      "image": "res://assets/derived_art/monsters_20261018/demon_dog/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_00.png",
+          "name": "已插入图像",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_01.png",
+          "name": "已插入图像",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_02.png",
+          "name": "已插入图像",
+          "order": 2
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_03.png",
+          "name": "已插入图像",
+          "order": 3
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_04.png",
+          "name": "已插入图像",
+          "order": 4
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_05.png",
+          "name": "已插入图像",
+          "order": 5
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/demon_dog/part_06.png",
+          "name": "已插入图像",
+          "order": 6
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        118,
+        148,
+        1014,
+        965
+      ],
+      "source": "小怪/emoquan.psd",
+      "composite_mean_error": 1.0096184842249658
+    },
+    "goose": {
+      "image": "res://assets/derived_art/monsters_20261018/goose/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/goose/part_00.png",
+          "name": "已插入图像",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/goose/part_01.png",
+          "name": "图层 9",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/goose/part_02.png",
+          "name": "已插入图像",
+          "order": 2
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/goose/part_03.png",
+          "name": "已插入图像",
+          "order": 3
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        28,
+        149,
+        1043,
+        1010
+      ],
+      "source": "小怪/e.psd",
+      "composite_mean_error": 0.47430448388203017
+    },
+    "kangaroo": {
+      "image": "res://assets/derived_art/monsters_20261018/kangaroo/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo/part_00.png",
+          "name": "图层 27",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo/part_01.png",
+          "name": "已插入图像",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo/part_02.png",
+          "name": "已插入图像",
+          "order": 2
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo/part_03.png",
+          "name": "已插入图像",
+          "order": 3
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        30,
+        43,
+        960,
+        1033
+      ],
+      "source": "小怪/daishu1.psd",
+      "composite_mean_error": 0.3040314214677641
+    },
+    "kangaroo_front": {
+      "image": "res://assets/derived_art/monsters_20261018/kangaroo_front/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo_front/part_00.png",
+          "name": "图层 4",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo_front/part_01.png",
+          "name": "已插入图像",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/kangaroo_front/part_02.png",
+          "name": "已插入图像",
+          "order": 2
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        273,
+        41,
+        1077,
+        1045
+      ],
+      "source": "小怪/daishu2.psd",
+      "composite_mean_error": 0.3031352880658436
+    },
+    "gerbil": {
+      "image": "res://assets/derived_art/monsters_20261018/gerbil/composite.png",
+      "parts": [],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        142,
+        194,
+        906,
+        904
+      ],
+      "source": "gerbil"
+    },
+    "wolf": {
+      "image": "res://assets/derived_art/monsters_20261018/wolf/composite.png",
+      "parts": [
+        {
+          "path": "res://assets/derived_art/monsters_20261018/wolf/part_00.png",
+          "name": "42e726c39693536bf877a47c308d06ac",
+          "order": 0
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/wolf/part_01.png",
+          "name": "c76abfb77c849d90b8e2afbfebd21f1a",
+          "order": 1
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/wolf/part_02.png",
+          "name": "e43b66567ac9a048ae83aa0c59a0bf34",
+          "order": 2
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/wolf/part_03.png",
+          "name": "后前肢",
+          "order": 3
+        },
+        {
+          "path": "res://assets/derived_art/monsters_20261018/wolf/part_04.png",
+          "name": "躯干",
+          "order": 4
+        }
+      ],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        13,
+        205,
+        1047,
+        917
+      ],
+      "source": "wolf"
+    },
+    "gorilla": {
+      "image": "res://assets/derived_art/monsters_20261018/gorilla/composite.png",
+      "parts": [],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        36,
+        74,
+        1037,
+        975
+      ],
+      "source": "gorilla"
+    },
+    "gorilla_front": {
+      "image": "res://assets/derived_art/monsters_20261018/gorilla_front/composite.png",
+      "parts": [],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        124,
+        33,
+        943,
+        981
+      ],
+      "source": "gorilla_front"
+    },
+    "gibbon": {
+      "image": "res://assets/derived_art/monsters_20261018/gibbon/composite.png",
+      "parts": [],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        183,
+        46,
+        957,
+        1007
+      ],
+      "source": "gibbon"
+    },
+    "ostrich": {
+      "image": "res://assets/derived_art/monsters_20261018/ostrich/composite.png",
+      "parts": [],
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        273,
+        22,
+        927,
+        1044
+      ],
+      "source": "ostrich"
+    }
+  }
+}

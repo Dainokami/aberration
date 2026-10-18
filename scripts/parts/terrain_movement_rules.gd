@@ -23,6 +23,10 @@ static func speed(lower_id: String, ecosystem: String, underwater := false) -> f
 	return float(SPEEDS.get(ecosystem, {}).get(lower_id, 0.0))
 
 static func speed_for_tags(lower_id: String, tags: PackedStringArray) -> float:
+	# Water wins over overlapping seabed/shore tags. Older test courses only
+	# authored "fluid"; preserve that tag while applying the ocean rules.
+	if tags.has("fluid") or tags.has("ocean"):
+		return speed(lower_id, "ocean", tags.has("ocean") and not tags.has("water_surface"))
 	for ecosystem in ["ocean", "desert", "rock", "grass"]:
 		if tags.has(ecosystem):
 			return speed(lower_id, ecosystem, ecosystem == "ocean" and not tags.has("water_surface"))

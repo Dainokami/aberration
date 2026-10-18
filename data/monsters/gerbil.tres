@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/encounters/monster_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+monster_id = "gerbil"
+display_name = "沙鼠"
+ecosystems = PackedStringArray("desert")
+movement = "land"
+source_aggressive = false
+group_living = true
+attack = "bite"
+max_health = 20.0
+damage = 8.0
+speed = 8.4
+attack_interval = 1.15
+source_row = 5
+image_height = 1.1
+drops = PackedStringArray("gerbil_limb")
+source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"
+image_path = "res://assets/derived_art/monsters_20261018/gerbil/composite.png"
+parts = Array[Dictionary]([])

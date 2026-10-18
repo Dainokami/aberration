@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/encounters/monster_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+monster_id = "gorilla"
+display_name = "猩猩"
+ecosystems = PackedStringArray("rock")
+movement = "land"
+source_aggressive = true
+group_living = false
+attack = "swing"
+max_health = 80.0
+damage = 22.0
+speed = 5.6
+attack_interval = 0.62
+source_row = 8
+image_height = 1.8
+drops = PackedStringArray("gorilla_limb")
+source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"
+image_path = "res://assets/derived_art/monsters_20261018/gorilla/composite.png"
+parts = Array[Dictionary]([])

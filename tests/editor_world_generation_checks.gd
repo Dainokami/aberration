@@ -40,6 +40,10 @@ func run(plugin: EditorPlugin) -> void:
 	dialog.config.prefabs.assign([{"path": "res://data/prefabs/demo_camp.tres",
 		"minimum": 1, "maximum": 1, "weight": 1, "zone": "any", "rotate": true}])
 	dialog._sync()
+	var rotation: CheckBox = dialog._source_rows.find_child("RotatePrefab", true, false)
+	check(rotation != null and rotation.disabled and not rotation.button_pressed \
+		and rotation.text == "固定朝向",
+		"fixed-camera prefab disables unsafe worldgen rotation")
 	dialog._start()
 	while dialog._thread != null:
 		await tree.process_frame

@@ -29,6 +29,7 @@ func run() -> void:
 	var data: LevelData = first.data
 	check(data.validate().is_empty(), "real LevelData and object validation")
 	check(data.map_size == Vector2i(64, 64) and data.spawn_layer == 1, "finite bounds and spawn")
+	check(int(data.generation.algorithm_version) == 4, "fixed-view rotation policy bumps algorithm version")
 	var second := generate(config)
 	check(second.get("data") != null and data.clone_data() == second.data.clone_data(),
 		"same seed reproduces all terrain, objects, IDs and metadata")
@@ -38,8 +39,14 @@ func run() -> void:
 		"different seeds change terrain")
 	var zone_errors := 0
 	var sea_cells := 0
+	var fixed_view_count := 0
+	var fixed_view_rotation_errors := 0
 	for record in data.objects:
-		var definition := ObjectRules.definition(record)
+		var definition: Resource = ObjectRules.definition(record)
+		if not definition.supports_quarter_turns():
+			fixed_view_count += 1
+			if not is_zero_approx(float(record.get("yaw", 0.0))):
+				fixed_view_rotation_errors += 1
 		if definition.mechanism in WorldGenerator.COLLECTIBLES:
 			for cell in ObjectRules.covered_cells(data, record):
 				if data.generation.zones[data.index(cell)] != 1:
@@ -52,6 +59,8 @@ func run() -> void:
 				if not data.is_solid_layer(cell, 0):
 					zone_errors += 1
 	check(zone_errors == 0 and sea_cells > 0, "collectibles only static; oceans have real seabed")
+	check(fixed_view_count > 0 and fixed_view_rotation_errors == 0,
+		"scattered fixed-camera objects keep their authored yaw")
 	var path := "/tmp/aberration-worldgen-roundtrip.tres"
 	check(ResourceSaver.save(data, path) == OK, "generated map saves")
 	var loaded := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
@@ -77,6 +86,7 @@ func run() -> void:
 		check(world.generation.placements.size() == 3, "minimum maximum budget respected")
 		var complete := true
 		for placement in world.generation.placements:
+			complete = complete and int(placement.turns) == 0
 			for y in source.fragment.map_size.y:
 				for x in source.fragment.map_size.x:
 					var local := Vector2i(x, y)
@@ -89,6 +99,10 @@ func run() -> void:
 								source_cell, layer).get("tile_id", ""):
 							complete = false
 		check(complete, "with height alignment disabled prefab columns preserve original layers and air")
+		var warned := false
+		for warning in with_prefabs.warnings:
+			warned = warned or str(warning).contains("固定视角物件")
+		check(warned, "worldgen reports why fixed-camera prefabs keep their authored direction")
 		var repeat := generate(config)
 		check(repeat.get("data") != null and world.clone_data() == repeat.data.clone_data(),
 			"prefab random IDs remapped deterministically")

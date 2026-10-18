@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/encounters/monster_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+monster_id = "eagle"
+display_name = "老鹰"
+ecosystems = PackedStringArray("desert")
+movement = "air"
+source_aggressive = false
+group_living = false
+attack = "peck"
+max_health = 40.0
+damage = 22.0
+speed = 8.4
+attack_interval = 0.62
+source_row = 22
+image_height = 1.8
+drops = PackedStringArray("eagle_limb")
+source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"

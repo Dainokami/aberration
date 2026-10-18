@@ -1,0 +1,593 @@
+{
+  "version": 1,
+  "archives": {
+    "小怪.zip": "361badb7d3d2911803cbe9b71bc2d695a35c18198f3d94ced4d8486980bc6431",
+    "怪物角色肢体-呸呸.zip": "44a429efbf58bd813bf8807f1b88500cf1dceda290480cd6456ce88333c6f5bb"
+  },
+  "source_members": [
+    {
+      "monster_id": "octopus",
+      "archive": "小怪.zip",
+      "member": "小怪/zhangyu.psd",
+      "sha256": "ab597108ccb81ceb03bb514961134300ceb8d917f57ac75f3b88e0f920d6f7a3",
+      "copied_path": "res://assets/source_art/monsters_20261018/zhangyu.psd",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "bat",
+      "archive": "小怪.zip",
+      "member": "小怪/bianfu.psd",
+      "sha256": "f87c8f1876075fe8c5928dabe7b4485781a890171b06d2443623cdd5814fc991",
+      "copied_path": "res://assets/source_art/monsters_20261018/bianfu.psd",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "demon_dog",
+      "archive": "小怪.zip",
+      "member": "小怪/emoquan.psd",
+      "sha256": "d7fa12b223782501a955507b8a8b108d8086ba0536215fd1fb014f2c2e880700",
+      "copied_path": "res://assets/source_art/monsters_20261018/emoquan.psd",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "goose",
+      "archive": "小怪.zip",
+      "member": "小怪/e.psd",
+      "sha256": "da6b9d4b78186d2f8532be69269f3bea4e155e14df22a94d920e9c31767a98b7",
+      "copied_path": "res://assets/source_art/monsters_20261018/e.psd",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "kangaroo",
+      "archive": "小怪.zip",
+      "member": "小怪/daishu1.psd",
+      "sha256": "964790472f7eef4b80d0b4cf13ebd707c3fb1c91d976f0f893c44f7877dbe7ba",
+      "copied_path": "res://assets/source_art/monsters_20261018/daishu1.psd",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "kangaroo_front",
+      "archive": "小怪.zip",
+      "member": "小怪/daishu2.psd",
+      "sha256": "047785fd349a30a384cb4b6c5b2f098fdcd0bbff7a00ee3a170394a043560460",
+      "copied_path": "res://assets/source_art/monsters_20261018/daishu2.psd",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gerbil",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "沙鼠/036be1e1881a1bc079fd156becb3dcdf.jpg",
+      "sha256": "4d158f51d0be9a2b1b535d48a05eb1a9201f06685eef29056de5587c588f1e59",
+      "copied_path": "res://assets/source_art/monsters_20261018/gerbil/036be1e1881a1bc079fd156becb3dcdf.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gerbil",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "沙鼠/511ec7b08742fea58e342464fe065bb0.jpg",
+      "sha256": "678b3d433ee19b841b24722fdbdfea3596730bb45e128578bbe2662fe0e816a6",
+      "copied_path": "res://assets/source_art/monsters_20261018/gerbil/511ec7b08742fea58e342464fe065bb0.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gerbil",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "沙鼠/8c03448fa084bb5b6e3c418e18a60afe.jpg",
+      "sha256": "d898c6bc2e3c51b53e08a90a0afa9ad34237ea1b241a138f3645a11cb014bfae",
+      "copied_path": "res://assets/source_art/monsters_20261018/gerbil/8c03448fa084bb5b6e3c418e18a60afe.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gerbil",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "沙鼠/8e2637d6cd5fdd4bbe275a68fb818d19.png",
+      "sha256": "1b6c6820a63a4386370b5a90ecea0dd46ba256d664f16355564f9a936a3ad9b5",
+      "copied_path": "res://assets/source_art/monsters_20261018/gerbil/8e2637d6cd5fdd4bbe275a68fb818d19.png",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gerbil",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "沙鼠/c3e10404635450ad7bb76c6d78cd3ac2.jpg",
+      "sha256": "d63d217551480b572175fa8df9262c37ca6d17c1af709c1c2d1a61ba83c96f49",
+      "copied_path": "res://assets/source_art/monsters_20261018/gerbil/c3e10404635450ad7bb76c6d78cd3ac2.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gerbil",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "沙鼠/d0f911006257bd9a959dd319ffc449c0.jpg",
+      "sha256": "2d4327d8f52284ab6491ed43f0354284a2bf9e1b61ddfcebf976f2fb7c2f5237",
+      "copied_path": "res://assets/source_art/monsters_20261018/gerbil/d0f911006257bd9a959dd319ffc449c0.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "wolf",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "狼/42e726c39693536bf877a47c308d06ac.jpg",
+      "sha256": "4e1a3d16d59d2bd6fa08e237e406e83941c685b4e40a5ecdad16d8d509a14dea",
+      "copied_path": "res://assets/source_art/monsters_20261018/wolf/42e726c39693536bf877a47c308d06ac.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "wolf",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "狼/c76abfb77c849d90b8e2afbfebd21f1a.jpg",
+      "sha256": "7e1527c3d9e9a437a163ecada9983d1fef2d69a7ef729fdb0826bc98736ea55f",
+      "copied_path": "res://assets/source_art/monsters_20261018/wolf/c76abfb77c849d90b8e2afbfebd21f1a.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "wolf",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "狼/e43b66567ac9a048ae83aa0c59a0bf34.jpg",
+      "sha256": "2a280d29a5981b04162e4c363058ad91fa2facecc8830b303a8df2436d3df83a",
+      "copied_path": "res://assets/source_art/monsters_20261018/wolf/e43b66567ac9a048ae83aa0c59a0bf34.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "wolf",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "狼/后前肢.jpg",
+      "sha256": "e7269123135aeeb7d8d65ab135958c9f7766357a661adbf20c6181976a5ba05d",
+      "copied_path": "res://assets/source_art/monsters_20261018/wolf/part_e7269123135a.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "wolf",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "狼/躯干.jpg",
+      "sha256": "67e5b5e25b6faad97c000223ed93f00eb57d0bfedcef50f2cec47c18cad43476",
+      "copied_path": "res://assets/source_art/monsters_20261018/wolf/part_67e5b5e25b6f.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-侧/0627eea721a81218768b01507188cc58.jpg",
+      "sha256": "483efffbfa75342d7a4c6a2b013bc68bf9fad54de14fe3aaa382bd5c51219fd3",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla/0627eea721a81218768b01507188cc58.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-侧/1e34198eeff691a43d660be069ccb0dc.png",
+      "sha256": "13c08045889dba7c8ead3b9cbbfe39c152e957b71b2effad2922700a4a9e8155",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla/1e34198eeff691a43d660be069ccb0dc.png",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-侧/7349235d8e11f0ad0fe4408e55606868.jpg",
+      "sha256": "b031e1a72e0a4bfe6a07a0a6bbbd80d4b3b70a13b4babfc63c29fcdbcb4b3e39",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla/7349235d8e11f0ad0fe4408e55606868.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-侧/a15d87529ac7cdcfc553b57d7d1c1358.png",
+      "sha256": "088a1d860a3cf4c9982866ccdb5f6192dbcd9d10e137defa521277ba522e21ce",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla/a15d87529ac7cdcfc553b57d7d1c1358.png",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-侧/d1f66be7f69771f2eba175cf4365f2ad.jpg",
+      "sha256": "dc4c24589ec40f213fa77985b2bcd1aaecf9037e1d02b339e3e8f2fd5db853c1",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla/d1f66be7f69771f2eba175cf4365f2ad.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-侧/fb587ed0168cee51df0cc2007345c7d9.jpg",
+      "sha256": "4c8c8f971a7851ae9d7cd95d2a3dd8a5b500e5467ea551fe41b3abdaf15f3116",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla/fb587ed0168cee51df0cc2007345c7d9.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla_front",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-正/16b8d76bc056d777d4b4ec8565fd4004.jpg",
+      "sha256": "991b32d990eafe8e0df82e034e6d93fc317430e6841432b56c657279fcd83b1b",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla_front/16b8d76bc056d777d4b4ec8565fd4004.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla_front",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-正/430a2a64e2962fa98d709b3c8e37e79b.jpg",
+      "sha256": "b26fd3e255dfc1fc7f207560175daa6aa78a43599b61b064515422facd1766cf",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla_front/430a2a64e2962fa98d709b3c8e37e79b.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla_front",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-正/4f68313b10c3bd8824b3a8a4453bc7d4.jpg",
+      "sha256": "65a2476298399968bb33ce27d0e4a6d0cf60c71897418fa6ff706d07435ebdd6",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla_front/4f68313b10c3bd8824b3a8a4453bc7d4.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla_front",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-正/7349235d8e11f0ad0fe4408e55606868.jpg",
+      "sha256": "b031e1a72e0a4bfe6a07a0a6bbbd80d4b3b70a13b4babfc63c29fcdbcb4b3e39",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla_front/7349235d8e11f0ad0fe4408e55606868.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla_front",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-正/ac4dcb40c885acfb5abc895b7d73f574.jpg",
+      "sha256": "2afe6e35b2fd1b1f2b2ead2ff29c251bb995e2e5d72bcec797d7b2baf28e2d3d",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla_front/ac4dcb40c885acfb5abc895b7d73f574.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gorilla_front",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "猩猩-正/af206cd00a7d9ad85018b59865bda150.jpg",
+      "sha256": "07419fa5b6ac7d7bec3061698672dd888cc864012ed6e208eedb63b798cd0159",
+      "copied_path": "res://assets/source_art/monsters_20261018/gorilla_front/af206cd00a7d9ad85018b59865bda150.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gibbon",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "长臂猿/26c2944ff580e42163cce6b23301c923.jpg",
+      "sha256": "9c61a7ebb790a697a918ae39871360960d9f3a1945ae7c433207776867d2188d",
+      "copied_path": "res://assets/source_art/monsters_20261018/gibbon/26c2944ff580e42163cce6b23301c923.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gibbon",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "长臂猿/34e7eab1487586ca8666036e7de4ea14.jpg",
+      "sha256": "389c634e671f1677221d1d73cfe5c91775205465f7bf351997eb89863b5cdd8d",
+      "copied_path": "res://assets/source_art/monsters_20261018/gibbon/34e7eab1487586ca8666036e7de4ea14.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gibbon",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "长臂猿/6252dc2066336a2da16a0503aea82c22.jpg",
+      "sha256": "71479c44561c6738ae7968d73f79c1715ed5963f31d52d16979296ea25aa5796",
+      "copied_path": "res://assets/source_art/monsters_20261018/gibbon/6252dc2066336a2da16a0503aea82c22.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gibbon",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "长臂猿/90d5218a4c0e18474f740dc3710cf313.jpg",
+      "sha256": "fa6c5e21e20a9a541679422c9569c499258b7136598eebaaedcb6ede8ba1a0db",
+      "copied_path": "res://assets/source_art/monsters_20261018/gibbon/90d5218a4c0e18474f740dc3710cf313.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gibbon",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "长臂猿/b010e99c5501550588824fac1a5958a7.jpg",
+      "sha256": "10d5656fb6154c206462b6a3969f56869b6a951ff7f1d9876e90c91ef75b6011",
+      "copied_path": "res://assets/source_art/monsters_20261018/gibbon/b010e99c5501550588824fac1a5958a7.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "gibbon",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "长臂猿/fc9ab77c3960b968e2c9e96c6713951d.png",
+      "sha256": "9b71f6d8fbcee8781bb6f5e77dca9a32d63bd5df08b75a6876b641e8a2123edc",
+      "copied_path": "res://assets/source_art/monsters_20261018/gibbon/fc9ab77c3960b968e2c9e96c6713951d.png",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "ostrich",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "鸵鸟/0db68535840db0da9c626f8d0e5db26a.jpg",
+      "sha256": "8a4e707e99c74d252972a2599359272f7bf2e072e8f5d1fe2d9d0e331cf48605",
+      "copied_path": "res://assets/source_art/monsters_20261018/ostrich/0db68535840db0da9c626f8d0e5db26a.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "ostrich",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "鸵鸟/198dc734924bd283051ff91fc9677299.jpg",
+      "sha256": "9bbd36c50742d83184a483cc4d91b6e307d1ff475ca3bfc690183cd012a7c8ea",
+      "copied_path": "res://assets/source_art/monsters_20261018/ostrich/198dc734924bd283051ff91fc9677299.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "ostrich",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "鸵鸟/1cfa74ddeedf505f10e316e65a8df9a6.jpg",
+      "sha256": "75403992da347530ef777ed139cf0a863275409f180ca226ea18bdc270cc6d9e",
+      "copied_path": "res://assets/source_art/monsters_20261018/ostrich/1cfa74ddeedf505f10e316e65a8df9a6.jpg",
+      "copy_verified": true
+    },
+    {
+      "monster_id": "ostrich",
+      "archive": "怪物角色肢体-呸呸.zip",
+      "member": "鸵鸟/845a3a7e2d4644996da7b18ba6c721db.jpg",
+      "sha256": "0d7cf5f65e484858d8cc3909ffdd9a181965279d0c53d54aa3ae8a092da25bf2",
+      "copied_path": "res://assets/source_art/monsters_20261018/ostrich/845a3a7e2d4644996da7b18ba6c721db.jpg",
+      "copy_verified": true
+    }
+  ],
+  "derived_assets": {
+    "octopus": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        13,
+        160,
+        1029,
+        894
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/octopus/composite.png": "126fac0ec42b26da04baec4cf57389fbf2d048abc417d29bc9438e78181793a4",
+        "res://assets/derived_art/monsters_20261018/octopus/part_00.png": "80a157bd6e2e80a0dad9e669ebdd7b4bd09ddd607539be6c80b93d177574d6af",
+        "res://assets/derived_art/monsters_20261018/octopus/part_01.png": "dd81c7710709f77ff919401b549aa03227f00e29577a8b0c28013eb63828edb7",
+        "res://assets/derived_art/monsters_20261018/octopus/part_02.png": "6bbd741a37c2232d32b749627d4fd1407f4e171f67064e81a2ffdaa21fab2f2d",
+        "res://assets/derived_art/monsters_20261018/octopus/part_03.png": "dccbfa32312ea318cf16ba4df3dbce03f716ad8f497444392537236834b200c7"
+      }
+    },
+    "bat": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        41,
+        59,
+        950,
+        978
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.1,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/bat/composite.png": "0e98b05324be7d5b4bb4dc66c54fa987e8c3c27b92305fbea3cba0f73c51a5e1",
+        "res://assets/derived_art/monsters_20261018/bat/part_00.png": "4844bf3d5326c2bb408978c91a4de83383df652075ad3e9d0a55fed529352b36",
+        "res://assets/derived_art/monsters_20261018/bat/part_01.png": "f19297ec54fd8f0fafb4717cb0383c2d116afb4db7dc89eddac00e7de95cdc83",
+        "res://assets/derived_art/monsters_20261018/bat/part_02.png": "983914d8749d36da1579a4de32b9bcf32b4479eb4fd5bbf5ae9ef8fad5b082ab"
+      }
+    },
+    "demon_dog": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        118,
+        148,
+        1014,
+        965
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.1,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/demon_dog/composite.png": "19439ec07430c0cc599c933b8c8d9f674c170362c315f0b82a5e11cb6834671b",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_00.png": "a0e4f6fde0629ea6241fb055baef9c55e989ac287598884e0e3a6c66f9554cc5",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_01.png": "079162d15a46e6ede99cc5ec775bfafaf7ba4aafec875c87dd752ff4937885dc",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_02.png": "1a13e25b693665cc639d6496a8f2b43caabe6b28cbe98d964b3c6215005b52c4",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_03.png": "b52b6fdb528c69af893a297fc4f1c9e35c871a8627fa3adeb91de06ec4dd891b",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_04.png": "e77bc4bd8b7f067e81fe2f7ed71810be41ba69a15e5a0903da8738ad67436c69",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_05.png": "abcbd3aeedaa563c9d5ca6af69d0278baa5b82152b84dd177be39b2c6f8e5de0",
+        "res://assets/derived_art/monsters_20261018/demon_dog/part_06.png": "61d2384a8489c203bcd084e4dbb7e9bda5f2e046c0219e0fcaf411ea0751cf42"
+      }
+    },
+    "goose": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        28,
+        149,
+        1043,
+        1010
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/goose/composite.png": "83ee4eda4652c7bf7961e020041686b32a5edb2831d072eb1b7792cc22d9c178",
+        "res://assets/derived_art/monsters_20261018/goose/part_00.png": "2ba455ff348c8083c395cab6534483f32eea462e93c2e1434eeccf78695b4337",
+        "res://assets/derived_art/monsters_20261018/goose/part_01.png": "1fc11410638b70fcf89d2aa14fa275cbdf6c6fe1262b1d3649fe8ba30da087a6",
+        "res://assets/derived_art/monsters_20261018/goose/part_02.png": "d92d621407b096e9db976b88a9536314776ed5468b3423666304434c677ec45e",
+        "res://assets/derived_art/monsters_20261018/goose/part_03.png": "1a956bc1ac213a6a06bd4299ff3c83b93f1274fe918fcd930aeeb800965ce0f9"
+      }
+    },
+    "kangaroo": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        30,
+        43,
+        960,
+        1033
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/kangaroo/composite.png": "0a4355f036d3c531a50247a5e327e1eb9e05d55078eb4fc32938e41b4e309363",
+        "res://assets/derived_art/monsters_20261018/kangaroo/part_00.png": "c07343a41c9aca7e6954d536c5ac57270a4f5a896443ae3cb70704a4e281b9af",
+        "res://assets/derived_art/monsters_20261018/kangaroo/part_01.png": "785ea6092d09feebff0249ccc9f23dc939fc7ab484520dbedf36f4ad08e1bfa1",
+        "res://assets/derived_art/monsters_20261018/kangaroo/part_02.png": "5cbb67e8bcbcdb9601f21c06eff055b4a5aaa5b5fb6189e33091b442c5d7d65f",
+        "res://assets/derived_art/monsters_20261018/kangaroo/part_03.png": "3e145887bdb655fb2b90cc41549649c985837fe19b4a0eb164326159a521fe4a"
+      }
+    },
+    "kangaroo_front": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        273,
+        41,
+        1077,
+        1045
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/kangaroo_front/composite.png": "a962bc5a2bc94257616cfa73ab1caeae41eb88bee1260c43ed544dd8fd3b9b2c",
+        "res://assets/derived_art/monsters_20261018/kangaroo_front/part_00.png": "287ad0b48b32734b3a8d99fe749eb0bb0c5ee56e7649f74c3614dd01deb37c31",
+        "res://assets/derived_art/monsters_20261018/kangaroo_front/part_01.png": "ae9ec97d549b3054d75460066deb9bef2fa457d19295fb683be73a1c1a662651",
+        "res://assets/derived_art/monsters_20261018/kangaroo_front/part_02.png": "cd0d2571a9e406a031a69a66788abd1fb5aec01c786ccdc83136059b3f3e7d21"
+      }
+    },
+    "gerbil": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        142,
+        194,
+        906,
+        904
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.1,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/gerbil/composite.png": "05b9a66a08da932cff3691c2d1e512e40d5400ab19f9ebdaf82aa8afcf02b25a"
+      }
+    },
+    "wolf": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        13,
+        205,
+        1047,
+        917
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/wolf/composite.png": "917adcd16e4142971ea089c6f2da1c8a8103b14f844828666f011b49c542e9ff",
+        "res://assets/derived_art/monsters_20261018/wolf/part_00.png": "1d6e42955ad79efdc9685c768d2bdb2e25fe13067bd8889b07749b0e95cf988b",
+        "res://assets/derived_art/monsters_20261018/wolf/part_01.png": "0c7bb82e87b98bf4088eb747b430e33a9edb6e4e7a5c2f506e7abce461ef67fe",
+        "res://assets/derived_art/monsters_20261018/wolf/part_02.png": "27d2c50ba608a7aca1d49d06ad71b63acfed237bac88e99e33b66784a92e3d4f",
+        "res://assets/derived_art/monsters_20261018/wolf/part_03.png": "025dee57cda7593e88b86e3eef3f9962e79fac2034f980258f46aac893c1dcd1",
+        "res://assets/derived_art/monsters_20261018/wolf/part_04.png": "e1fc1a9e61edf45e4485c6ae788f3582239cb8a8b5c26d5475950d84de70d835"
+      }
+    },
+    "gorilla": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        36,
+        74,
+        1037,
+        975
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/gorilla/composite.png": "e97f19680c36cbaf582a445c4f1bd5d049a66f191c64f88a239e7f31438c656d"
+      }
+    },
+    "gorilla_front": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        124,
+        33,
+        943,
+        981
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/gorilla_front/composite.png": "e00ec757a4bcd2cf88aaee92fc07c388bf2e802918ae68e67455e17bfb937a30"
+      }
+    },
+    "gibbon": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        183,
+        46,
+        957,
+        1007
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/gibbon/composite.png": "ea9d4420a3f2a803d2f008e3e0f62d973f3a15501ae7dc6893cd12bdf06093d8"
+      }
+    },
+    "ostrich": {
+      "canvas": [
+        1080,
+        1080
+      ],
+      "crop": [
+        273,
+        22,
+        927,
+        1044
+      ],
+      "contact": [
+        0.5,
+        1.0
+      ],
+      "image_height_m": 1.8,
+      "files": {
+        "res://assets/derived_art/monsters_20261018/ostrich/composite.png": "1ffa7202a1d38f5ad2f03aef7882c8271c55a41e761d181d7164906dc2c37f66"
+      }
+    }
+  }
+}

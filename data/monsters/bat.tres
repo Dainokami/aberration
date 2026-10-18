@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/encounters/monster_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+monster_id = "bat"
+display_name = "蝙蝠"
+ecosystems = PackedStringArray("rock")
+movement = "air"
+source_aggressive = true
+group_living = true
+attack = "bite"
+max_health = 20.0
+damage = 8.0
+speed = 5.6
+attack_interval = 0.62
+source_row = 19
+image_height = 1.1
+drops = PackedStringArray("bat_limb")
+source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"
+image_path = "res://assets/derived_art/monsters_20261018/bat/composite.png"
+parts = Array[Dictionary]([{
+"path": "res://assets/derived_art/monsters_20261018/bat/part_00.png",
+"name": "已插入图像",
+"order": 0
+}, {
+"path": "res://assets/derived_art/monsters_20261018/bat/part_01.png",
+"name": "图层 15",
+"order": 1
+}, {
+"path": "res://assets/derived_art/monsters_20261018/bat/part_02.png",
+"name": "已插入图像",
+"order": 2
+}])

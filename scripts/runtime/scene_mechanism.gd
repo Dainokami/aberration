@@ -216,7 +216,4 @@ func _physics_process(delta: float) -> void:
 			if not actor is Node3D or not covers(actor.global_position):
 				continue
 			var damage := float(definition.mechanism_parameters.get("damage_per_second", 1.0))
-			if actor.has_method("take_damage"):
-				actor.take_damage(damage)
-			else:
-				actor.set_meta("scene_health", float(actor.get_meta("scene_health", 100.0)) - damage)
+			CombatHealth.hurt(actor, damage, "environment")

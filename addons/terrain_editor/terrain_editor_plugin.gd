@@ -97,6 +97,7 @@ var world_tools
 var view_settings
 var world_gen_dialog
 var world_gen_target: TerrainBuilder
+var encounter_tools
 var preview_fov := -1.0
 var preview_pitch := -1.0
 var preview_distance := -1.0
@@ -118,6 +119,8 @@ func _enter_tree() -> void:
 	_add_page("视角", view_settings)
 	view_settings.setup(self)
 	world_tools.add_detail_page()
+	encounter_tools = load("res://addons/terrain_editor/encounter_tools.gd").new()
+	encounter_tools.setup(self, tabs)
 	editor_dock = EditorDock.new()
 	editor_dock.title = "关卡编辑器"
 	editor_dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BR
@@ -138,6 +141,13 @@ func _enter_tree() -> void:
 		_run_scene_placement_checks.call_deferred()
 	elif "--test-worldgen-editor" in OS.get_cmdline_user_args():
 		_run_worldgen_checks.call_deferred()
+	elif "--test-encounter-editor" in OS.get_cmdline_user_args():
+		_run_encounter_checks.call_deferred()
+
+func _run_encounter_checks() -> void:
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
+	await load("res://tests/editor_encounter_checks.gd").new().run(self)
 
 func _run_worldgen_checks() -> void:
 	await get_tree().create_timer(1.0).timeout
@@ -160,6 +170,9 @@ func _run_editor_checks() -> void:
 
 func _exit_tree() -> void:
 	_finish_terrain_stroke()
+	if encounter_tools:
+		encounter_tools.finish_stroke()
+		encounter_tools.reset_overlay()
 	if is_instance_valid(world_gen_dialog):
 		world_gen_dialog.queue_free()
 	_disable_2_5d_view()
@@ -188,6 +201,8 @@ func _handles(object: Object) -> bool:
 
 func _edit(object: Object) -> void:
 	_finish_terrain_stroke()
+	if encounter_tools:
+		encounter_tools.finish_stroke()
 	if world_tools:
 		world_tools.reset()
 	if object is TerrainBuilder:
@@ -208,6 +223,8 @@ func _edit(object: Object) -> void:
 		data = null
 		if preview and is_instance_valid(preview):
 			preview.queue_free()
+	if encounter_tools:
+		encounter_tools.sync()
 
 func _enable_initial_view(target: TerrainBuilder) -> void:
 	if builder == target and not fixed_view_active and not free_view_active:
@@ -776,6 +793,8 @@ func _apply_generated_world(generated: LevelData) -> void:
 		if is_instance_valid(world_gen_dialog):
 			world_gen_dialog._status.text = "工作场景已切换，请关闭并重新打开本窗口后再应用"
 		return
+	generated.encounter = data.encounter.duplicate(true) as EncounterConfig \
+		if data.encounter != null else null
 	var before := {"map": data, "path": current_path, "dirty": dirty}
 	var after := {"map": generated, "path": "", "dirty": true}
 	var history := get_undo_redo()
@@ -804,6 +823,8 @@ func _switch_generated_map(target: TerrainBuilder, outgoing: Dictionary, incomin
 		_set_dirty(incoming.dirty)
 		_make_preview()
 		_sync_tint_controls()
+		if encounter_tools:
+			encounter_tools.sync()
 		_set_status("已切换地图 · 世界生成支持撤销/重做 · 请另存新地图")
 
 func _require_builder(message := "请先在场景树中选择 TerrainBuilder") -> bool:
@@ -934,6 +955,8 @@ func _refresh_brush_preview() -> void:
 func _slice_changed(index: int) -> void:
 	if is_instance_valid(builder):
 		builder.set_slice_layer(index - 1)
+	if encounter_tools:
+		encounter_tools.refresh_overlay()
 	_refresh_brush_preview()
 
 func _limit_layer_popup(option: OptionButton) -> void:
@@ -1080,6 +1103,8 @@ func _input(event: InputEvent) -> void:
 		if key in view_move_keys:
 			view_move_keys[key] = false
 	if event is InputEventMouseButton and not event.pressed:
+		if encounter_tools and event.button_index == MOUSE_BUTTON_LEFT:
+			encounter_tools.finish_stroke()
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			_erase_button_down = false
 		if drawing and event.button_index == stroke_button:
@@ -1122,6 +1147,8 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 			and not (event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT):
 		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	# Tabs 1+ (物件/导入/预制) handled by world_tools
+	if encounter_tools and encounter_tools.active():
+		return encounter_tools.handle(camera, event)
 	if world_tools and world_tools.active():
 		return world_tools.handle(camera, event)
 	# Tab 0: terrain
@@ -1348,6 +1375,9 @@ func _sync_view_buttons() -> void:
 	_refresh_view_mode_badges()
 
 func _process(delta: float) -> void:
+	if encounter_tools and (encounter_tools.observed_data != data \
+			or data != null and encounter_tools.observed_config != data.encounter):
+		encounter_tools.sync()
 	if _preview_pending:
 		_preview_pending = false
 		if is_instance_valid(tabs) and tabs.current_tab == 0:
@@ -1523,6 +1553,8 @@ func _apply_map_snapshot(target: LevelData, snapshot: Dictionary) -> void:
 		_sync_tint_controls()
 		_refresh_brush_preview()
 		_set_dirty(true)
+		if encounter_tools:
+			encounter_tools.sync()
 
 func _commit_objects(before: Array[Dictionary], after: Array[Dictionary], label: String) -> void:
 	if data == null or before == after:

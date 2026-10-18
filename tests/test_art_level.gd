@@ -113,7 +113,7 @@ func run() -> void:
 	v6.erase("details")
 	candidate.restore_data(v6)
 	check(candidate.objects[0]["position"] == root_rock["position"] \
-		and candidate.details.is_empty() and candidate.format_version == 8,
+		and candidate.details.is_empty() and candidate.format_version == LevelData.FORMAT_VERSION,
 		"v6 migration adds empty details without lifting already migrated terrain")
 	var output := "user://art_level_roundtrip.tres"
 	check(ResourceSaver.save(data, output) == OK, "v7 map saves")
@@ -132,7 +132,11 @@ func run() -> void:
 	destination.setup_blank(Vector2i(18, 18))
 	for turns in 4:
 		var result := prefab.stamp(destination, Vector2i(2, 2), turns)
-		check(result["error"].is_empty(), "v7 prefab rotation %d: %s" % [turns, result["error"]])
+		if turns > 0:
+			check(not result["error"].is_empty(),
+				"fixed-camera wall attachment rejects prefab rotation %d" % turns)
+			continue
+		check(result["error"].is_empty(), "authored prefab direction remains valid")
 		if not result["error"].is_empty():
 			continue
 		var stamped := LevelData.new()
@@ -142,9 +146,9 @@ func run() -> void:
 			if item.has("support_id"):
 				relation_count += 1
 				check(not ObjectRules.find_record(stamped, item["support_id"]).is_empty()
-					and item["support_id"] != "root", "prefab remaps host IDs %d" % turns)
+					and item["support_id"] != "root", "prefab remaps host IDs")
 		check(relation_count == 2 and stamped.details.size() == data.details.size(),
-			"prefab retains all attachments and details %d" % turns)
+			"prefab retains all attachments and details")
 	await check_render_and_pick(data)
 	print("ART LEVEL TEST FAILURES: ", failures)
 	quit(0 if failures.is_empty() else 1)

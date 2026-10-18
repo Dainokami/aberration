@@ -2,6 +2,7 @@
 extends RefCounted
 
 const BlockPicker := preload("res://addons/terrain_editor/block_picker.gd")
+const CollisionBatch := preload("res://scripts/level/terrain_collision_batch.gd")
 
 static func pick(builder: TerrainBuilder, camera: Camera3D, mouse: Vector2,
 		ignore_id := "", target_definition: PlaceableDefinition = null) -> Dictionary:
@@ -47,10 +48,17 @@ static func pick(builder: TerrainBuilder, camera: Camera3D, mouse: Vector2,
 		var normal: Vector3 = (inverse.basis * (hit["normal"] as Vector3)).normalized()
 		if not id.is_empty():
 			return {"kind": "object", "id": id, "position": position, "normal": normal}
-		if collider.has_meta("terrain_cell"):
-			var cell: Vector2i = collider.get_meta("terrain_cell")
-			var layer := int(collider.get_meta("terrain_layer", -1))
-			if normal.y > 0.7 and (collider.get_meta("slice_cap", false) \
+		var support := {}
+		if collider.get_meta("terrain_collision_batch", false):
+			support = CollisionBatch.hit_metadata(collider, int(hit["shape"]))
+		elif collider.has_meta("terrain_cell"):
+			support = {"cell": collider.get_meta("terrain_cell"),
+				"layer": collider.get_meta("terrain_layer", -1),
+				"slice_cap": collider.get_meta("slice_cap", false)}
+		if not support.is_empty():
+			var cell: Vector2i = support.cell
+			var layer := int(support.layer)
+			if normal.y > 0.7 and (support.slice_cap \
 					or not builder.level_data.is_surface_exposed(cell, layer)):
 				return {"error": "这里是切片显示的临时盖面；请显示真实顶面后再摆放"}
 			return {"kind": "terrain", "cell": cell, "layer": layer,

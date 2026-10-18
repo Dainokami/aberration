@@ -33,6 +33,9 @@ const CLIMB_MOVE_SPEED := 3.0
 const CLIMB_LINK_TOLERANCE := 0.35
 ## Set before entering the tree to bypass the editor's playtest request file.
 var level_override := ""
+var encounter_director: EncounterDirector
+var combat_health: CombatHealth
+var attack_cooldown := 0.0
 
 func _ready() -> void:
 	var request := ConfigFile.new()
@@ -57,13 +60,13 @@ func _ready() -> void:
 	builder.build_collision = true
 	builder.level_data = data
 	add_child(builder)
-	builder.rebuild()
 	_setup_interaction_course()
 	_connect_props()
 	_setup_player()
 	LimbField.scatter_ahead(self, spawn_position)
 	_setup_camera()
 	_setup_ui(requested)
+	_setup_encounters()
 	if testing:
 		run_physics_checks.call_deferred()
 
@@ -74,6 +77,30 @@ static func resolve_level_path(request: ConfigFile, args: PackedStringArray) -> 
 		if arg.begins_with("--level="):
 			requested = arg.trim_prefix("--level=")
 	return requested
+
+func _setup_encounters() -> void:
+	if data.encounter == null or not data.encounter.enabled:
+		return
+	combat_health = CombatHealth.new()
+	combat_health.name = "CombatHealth"
+	player.add_child(combat_health)
+	combat_health.setup(data.encounter.player_health)
+	encounter_director = EncounterDirector.new()
+	encounter_director.name = "EncounterDirector"
+	add_child(encounter_director)
+	encounter_director.setup(data, player)
+	encounter_director.report.connect(_feedback)
+	combat_health.died.connect(func(_cause: String):
+		encounter_director.stop()
+		_feedback("生命归零，战斗结束；重新试玩开启新一轮"))
+	var layer := CanvasLayer.new()
+	layer.name = "EncounterLayer"
+	add_child(layer)
+	var hud := EncounterHUD.new()
+	hud.name = "EncounterHUD"
+	layer.add_child(hud)
+	hud.setup(encounter_director, combat_health, runtime_font())
+	encounter_director.control_ready = true
 
 func _setup_camera() -> void:
 	camera_rig = FollowCameraRig.new()
@@ -181,6 +208,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			attempt_interact()
 		KEY_J:
 			attempt_damage()
+		KEY_K:
+			if encounter_director != null and attack_cooldown <= 0 \
+					and not combat_health.dead:
+				attack_cooldown = 0.62
+				encounter_director.attack_nearest()
 		KEY_R:
 			reset_player()
 		KEY_C:
@@ -243,6 +275,11 @@ func attempt_interact() -> bool:
 	if climbing:
 		_end_climb(false)
 		return true
+	if encounter_director != null and not combat_health.dead:
+		var message := encounter_director.interact()
+		if not message.is_empty():
+			_feedback(message)
+			return true
 	focused_prop = _nearest_prop()
 	if focused_prop == null:
 		return false
@@ -424,6 +461,8 @@ func _prop_broken(prop: Node3D) -> void:
 				node.set_state("broken")
 			node.queue_free()
 	_feedback("岩石已破坏" if before.size() == 1 else "岩石已破坏，支撑的物件与附件已清除")
+	if encounter_director != null:
+		encounter_director.invalidate_navigation()
 
 static func runtime_font() -> Font:
 	if _runtime_font_cache != null:
@@ -450,6 +489,10 @@ static func runtime_font() -> Font:
 
 func _physics_process(delta: float) -> void:
 	if player == null:
+		return
+	attack_cooldown = maxf(0, attack_cooldown - delta)
+	if combat_health != null and combat_health.dead:
+		player.velocity = Vector3.ZERO
 		return
 	if climbing:
 		_step_climb(delta)

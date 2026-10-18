@@ -1,18 +1,13 @@
 class_name SurfaceZone
-extends Area3D
+extends Node3D
 
 @export var tags: PackedStringArray = PackedStringArray(["fluid"])
 
 var _box: BoxShape3D
-var _shape_node: CollisionShape3D
 
 
 func _ready() -> void:
 	add_to_group("surface_zone")
-	monitoring = false
-	monitorable = false
-	collision_layer = 0
-	collision_mask = 0
 
 
 func bind_volume(size: Vector3) -> void:
@@ -23,9 +18,6 @@ func bind_volume(size: Vector3) -> void:
 func setup(size: Vector3, zone_tags: PackedStringArray, tint: Color) -> void:
 	tags = zone_tags
 	bind_volume(size)
-	_shape_node = CollisionShape3D.new()
-	_shape_node.shape = _box
-	add_child(_shape_node)
 	var mesh := MeshInstance3D.new()
 	var box_mesh := BoxMesh.new()
 	box_mesh.size = size

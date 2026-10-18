@@ -24,8 +24,8 @@ func _initialize() -> void:
 	if loadout.speed_on(PackedStringArray(["hard"])) != 0.0:
 		_fail("fish should stop on hard ground")
 		return
-	if loadout.speed_on(PackedStringArray(["fluid"])) != PartDefinition.speed_value(PartDefinition.Band.HIGH):
-		_fail("fish should be fast in fluid")
+	if loadout.speed_on(PackedStringArray(["fluid"])) != TerrainMovementRules.speed("fish_tail", "ocean"):
+		_fail("fish should use the design-table ocean speed in fluid")
 		return
 	loadout.equip("octopus_arm", "wolf_leg")
 	if loadout.can_stick_on(PackedStringArray(["desert", "hard"])):
@@ -62,6 +62,7 @@ func _initialize() -> void:
 	if not zone.covers(Vector3(3, 1, 0)) or zone.covers(Vector3(8, 1, 0)):
 		_fail("surface zone bounds")
 		return
+	zone.free()
 	_main = (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	root.add_child(_main)
 	process_frame.connect(_finish, CONNECT_ONE_SHOT)

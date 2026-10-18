@@ -88,6 +88,9 @@ func validate_asset() -> PackedStringArray:
 func behaviour_label() -> String:
 	return ["装饰", "可登顶", "可破坏", "可交互", "可攀爬"][behaviour]
 
+func supports_quarter_turns() -> bool:
+	return carrier in [Carrier.GROUND, Carrier.MULTI_FACE]
+
 func footprint(scale_value: float, yaw: float) -> Vector2:
 	var size := Vector2(collision_size.x, collision_size.z)
 	if not spatial_cells.is_empty():

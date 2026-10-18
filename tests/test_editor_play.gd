@@ -17,7 +17,15 @@ var _switch_step := 0
 func _initialize() -> void:
 	_level = (load("res://scenes/level_playtest.tscn") as PackedScene).instantiate()
 	root.add_child(_level)
-	process_frame.connect(_tick)
+	_drive.call_deferred()
+
+func _drive() -> void:
+	while true:
+		# Advance physics and flush queued input/appearance before assertions.
+		# Multiple catch-up physics steps can otherwise outrun one input frame.
+		await physics_frame
+		await process_frame
+		_tick()
 
 
 func _tick() -> void:

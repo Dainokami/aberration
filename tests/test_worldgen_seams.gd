@@ -110,11 +110,11 @@ func run() -> void:
 		"res://data/details/painted_upright.tres", str(detail_set.variants[0].id),
 		camp_copy.fragment.world_center(Vector2i(2, 4), 0), "camp_detail"))
 	var camp_before := camp_copy.fragment.clone_data()
-	for turns in 4:
-		var camp_result := generator._stamp_prefab(camp_copy, anchor, turns, {}, 1)
-		check(str(camp_result.error).is_empty(), "camp objects stairs and detail lift and rotate: %d" % turns)
-		if not str(camp_result.error).is_empty():
-			continue
+	check(not str(generator._stamp_prefab(camp_copy, anchor, 1, {}, 1).error).is_empty(),
+		"fixed-camera camp cannot rotate during height-aligned stamping")
+	var camp_result := generator._stamp_prefab(camp_copy, anchor, 0, {}, 1)
+	check(str(camp_result.error).is_empty(), "camp objects stairs and detail lift in authored direction")
+	if str(camp_result.error).is_empty():
 		var actual := LevelData.new()
 		actual.restore_data(camp_result.snapshot)
 		var intact := actual.objects.size() == camp_copy.fragment.objects.size()
@@ -128,7 +128,7 @@ func run() -> void:
 			and is_equal_approx(actual.details[0].position.y,
 				camp_copy.fragment.details[0].position.y + LevelData.ELEVATION_STEP)
 		intact = intact and actual.stairs[0].layer == camp_copy.fragment.stairs[0].layer + 1
-		check(intact and actual.validate().is_empty(), "all content anchors translate exactly two meters: %d" % turns)
+		check(intact and actual.validate().is_empty(), "all content anchors translate exactly two meters")
 	check(camp_copy.fragment.clone_data() == camp_before, "height alignment keeps original content data unchanged")
 
 	var reference := load("res://data/levels/final_generated_special_world_64.tres") as LevelData

@@ -105,9 +105,11 @@ func prepare(config: WorldGenConfig) -> String:
 				return title + " 无法对齐世界地面：\n" + str(shifted.error)
 		if entries.is_empty():
 			return title + " 没有可接入边缘：需要无物件/阶梯阻挡的 0～2 层实体顶面"
+		var rotation_blocker := LevelPrefab.fixed_view_rotation_blocker(prefab.fragment)
 		_sources.append({"prefab": prefab, "rule": rule, "entries": entries,
 			"padding": padding, "height_offset": height_offset,
 			"collectibles": resource_cells, "name": title,
+			"rotation_blocker": rotation_blocker,
 			"digest": var_to_str(prefab.fragment.clone_data()).sha256_text()})
 	for folder in DirAccess.get_directories_at("res://assets/generated"):
 		if not folder.begins_with("scene1016_"):
@@ -190,6 +192,12 @@ func _shift_prefab(prefab: LevelPrefab, height_offset: int) -> Dictionary:
 					layers.pop_front()
 	for stair: Dictionary in snapshot.stairs:
 		stair.layer = int(stair.layer) + height_offset
+	var shifted_regions := {}
+	for index: Vector3i in snapshot.get("encounter_regions", {}):
+		var layer := index.y + height_offset
+		if layer >= 0 and layer < LevelData.MAX_LAYERS:
+			shifted_regions[Vector3i(index.x, layer, index.z)] = snapshot.encounter_regions[index]
+	snapshot.encounter_regions = shifted_regions
 	for record: Dictionary in snapshot.objects + snapshot.details:
 		record.anchor_layer = int(record.anchor_layer) + height_offset
 		record.position += Vector3.UP * height_offset * LevelData.ELEVATION_STEP
@@ -245,6 +253,10 @@ func generate() -> Dictionary:
 	_roads.clear()
 	_placements.clear()
 	_warnings.clear()
+	for source in _sources:
+		if bool(source.rule.get("rotate", true)) and not str(source.rotation_blocker).is_empty():
+			_warnings.append("特殊地块「%s」包含固定视角物件「%s」，已保持原方向" % [
+				source.name, source.rotation_blocker])
 	_data = LevelData.new()
 	_data.setup_blank(Vector2i(_config.width, _config.height))
 	_data.spawn_cell = _data.map_size / 2
@@ -419,7 +431,9 @@ func _try_place(source_index: int) -> bool:
 	for attempt in 100:
 		if _stopped():
 			return false
-		var turns := _rng.randi_range(0, 3) if bool(rule.get("rotate", true)) else 0
+		var can_rotate := bool(rule.get("rotate", true)) \
+			and str(source.rotation_blocker).is_empty()
+		var turns := _rng.randi_range(0, 3) if can_rotate else 0
 		var size := prefab.rotated_size(turns)
 		if size.x + 4 > _config.width or size.y + 4 > _config.height:
 			return false
@@ -566,11 +580,13 @@ func _scatter(collectible: bool, density: float) -> void:
 			continue
 		var definition := pool[_rng.randi_range(0, pool.size() - 1)]
 		var layer := 0 if _data.is_water_layer(cell, 1) else 1
+		var yaw := -_rng.randi_range(0, 3) * PI * 0.5 \
+			if definition.supports_quarter_turns() else 0.0
 		var record := {"id": "scatter_%d" % _data.objects.size(),
 			"definition": definition.resource_path, "anchor_kind": "top",
 			"anchor_cell": cell, "anchor_layer": layer,
 			"position": _data.world_center(cell, layer),
-			"yaw": -_rng.randi_range(0, 3) * PI * 0.5, "scale": 1.0}
+			"yaw": yaw, "scale": 1.0}
 		var valid := true
 		for previous in positions:
 			if Vector2(cell).distance_to(previous) < _config.item_gap:

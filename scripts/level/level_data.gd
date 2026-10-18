@@ -35,6 +35,9 @@ const DEFAULT_SOLID_TILE := "grass"
 @export var terrain_tints: Dictionary = {}
 ## Generation provenance and per-cell zone labels; edits retain the original recipe.
 @export var generation: Dictionary = {}
+@export var encounter: EncounterConfig
+## Sparse authored region overrides keyed by Vector3i(x, support_layer, z).
+@export var encounter_regions: Dictionary = {}
 
 var _ensuring_layout := false
 ## Read-only surface views share the source columns for terrain art generation.
@@ -55,6 +58,8 @@ func setup_blank(size := Vector2i(16, 16)) -> void:
 	details.clear()
 	terrain_tints.clear()
 	generation.clear()
+	encounter = null
+	encounter_regions.clear()
 	spawn_cell = Vector2i(-1, -1)
 	spawn_layer = -1
 	format_version = FORMAT_VERSION
@@ -571,6 +576,9 @@ func validate_content(check_assets := true) -> PackedStringArray:
 			errors.append("阶梯 %d：%s" % [i + 1, error])
 	errors.append_array(ObjectRules.validate_all(self, check_assets))
 	errors.append_array(DetailRules.validate_all(self, check_assets))
+	errors.append_array(EncounterRegions.errors(self))
+	if encounter != null and encounter.enabled:
+		errors.append_array(encounter.errors())
 	return errors
 
 ## Copy the index, share unchanged columns, and copy only columns on write.
@@ -591,6 +599,8 @@ func fork_for_edit() -> LevelData:
 	copy.spawn_layer = spawn_layer
 	copy.terrain_tints = terrain_tints
 	copy.generation = generation.duplicate(true)
+	copy.encounter = encounter.duplicate(true) as EncounterConfig if encounter != null else null
+	copy.encounter_regions = encounter_regions.duplicate(true)
 	return copy
 
 ## Read-only bounded view for chunk texture generation; world coordinates stay fixed.
@@ -644,6 +654,8 @@ func clone_data() -> Dictionary:
 		"details": details.duplicate(true),
 		"terrain_tints": terrain_tints.duplicate(true),
 		"generation": generation.duplicate(true),
+		"encounter": encounter.snapshot() if encounter != null else null,
+		"encounter_regions": encounter_regions.duplicate(true),
 		"format_version": FORMAT_VERSION,
 	}
 
@@ -661,6 +673,10 @@ func restore_data(snapshot: Dictionary) -> void:
 	details.assign(snapshot.get("details", []).duplicate(true))
 	terrain_tints = snapshot.get("terrain_tints", {}).duplicate(true)
 	generation = snapshot.get("generation", {}).duplicate(true)
+	var encounter_values: Variant = snapshot.get("encounter")
+	encounter = EncounterConfig.from_snapshot(encounter_values.duplicate(true)) \
+		if encounter_values is Dictionary else null
+	encounter_regions = snapshot.get("encounter_regions", {}).duplicate(true)
 	format_version = int(snapshot.get("format_version", 2))
 	ensure_layout()
 	_normalize_anchors()

@@ -5,6 +5,7 @@ extends Node3D
 const DEFAULT_STYLE := "res://data/terrain_style_profile.tres"
 const TerrainBlendMapClass := preload("res://scripts/level/terrain_blend_map.gd")
 const PLAYER_AVATAR_SCENE := preload("res://scenes/player_avatar_visual.tscn")
+const CollisionBatch := preload("res://scripts/level/terrain_collision_batch.gd")
 const CHUNK_SIZE := 8
 
 @export var level_data: LevelData
@@ -40,6 +41,8 @@ var _object_signatures: Dictionary = {}
 var _affordance_nodes: Dictionary = {}
 var _applied_slice_limit := -1
 var detail_renderer: DetailRenderer
+var _collision_batch: RefCounted
+var _slice_collision_batches := {}
 
 func _ready() -> void:
 	rebuild()
@@ -51,7 +54,7 @@ func set_data(value: LevelData) -> void:
 func rebuild() -> void:
 	if generated and is_instance_valid(generated):
 		remove_child(generated)
-		generated.queue_free()
+		generated.free()
 	generated = Node3D.new()
 	generated.name = "Generated"
 	add_child(generated)
@@ -109,6 +112,7 @@ func _build_chunk(chunk: Vector2i) -> void:
 	_top_groups.clear()
 	_blend_groups.clear()
 	_overlay_groups.clear()
+	_collision_batch = CollisionBatch.new(generated)
 	_prepare_multi_blend_levels()
 	for y in range(_build_region.position.y, _build_region.end.y):
 		for x in range(_build_region.position.x, _build_region.end.x):
@@ -131,6 +135,7 @@ func _build_chunk(chunk: Vector2i) -> void:
 		if _chunk_for(stair["cell"]) == chunk:
 			_build_stair(stair)
 	_mark_limb_surfaces(_build_region)
+	_collision_batch = null
 	var nodes: Array[Node] = []
 	for i in range(first_child, generated.get_child_count()):
 		var node := generated.get_child(i)
@@ -637,11 +642,6 @@ func _update_blend_pixels(changed_cells: Array[Vector2i]) -> void:
 			blend, _surface(key.y).region_view(blend["region"]), key.y, style_profile, dirty, cache)
 
 func _add_top_collision(top: Node3D) -> void:
-	var body := StaticBody3D.new()
-	body.set_meta("terrain_cell", top.get_meta("terrain_cell"))
-	body.set_meta("terrain_layer", top.get_meta("terrain_layer"))
-	body.set_meta("slice_cap", top.get_meta("slice_cap", false))
-	var shape := CollisionShape3D.new()
 	var cell: Vector2i = top.get_meta("terrain_cell")
 	var layer := int(top.get_meta("terrain_layer"))
 	var tile := TileRegistry.find(level_data.solid_tile_id(cell, layer))
@@ -653,9 +653,14 @@ func _add_top_collision(top: Node3D) -> void:
 		points.append(Vector3(point.x, 0, point.y))
 		points.append(Vector3(point.x, -0.1, point.y))
 	prism.points = points
-	shape.shape = prism
-	body.add_child(shape)
-	top.add_child(body)
+	var batch := _collision_batch
+	var cap := bool(top.get_meta("slice_cap", false))
+	if cap:
+		var chunk := _chunk_for(cell)
+		if not _slice_collision_batches.has(chunk):
+			_slice_collision_batches[chunk] = CollisionBatch.new(_slice_caps)
+		batch = _slice_collision_batches[chunk]
+	batch.add_shape(cell, layer, prism, top.transform, cap)
 
 func _build_side_collisions(cell: Vector2i) -> void:
 	for layer in level_data.layer_count(cell):
@@ -672,17 +677,10 @@ func _build_side_collisions(cell: Vector2i) -> void:
 			faces.append_array(mesh.get_faces())
 		if faces.is_empty():
 			continue
-		var body := StaticBody3D.new()
-		body.name = "CliffCollision"
-		body.set_meta("terrain_cell", cell)
-		body.set_meta("terrain_layer", layer)
-		var collision := CollisionShape3D.new()
 		var shape := ConcavePolygonShape3D.new()
 		shape.backface_collision = true
 		shape.set_faces(faces)
-		collision.shape = shape
-		body.add_child(collision)
-		generated.add_child(body)
+		_collision_batch.add_shape(cell, layer, shape)
 
 func _build_bottoms(cell: Vector2i) -> void:
 	for layer in level_data.layer_count(cell):
@@ -990,6 +988,7 @@ func _apply_slice_visibility() -> void:
 	if is_instance_valid(_slice_caps):
 		_slice_caps.free()
 	_slice_caps = null
+	_slice_collision_batches.clear()
 	for child in generated.get_children():
 		if child.has_meta("terrain_layer"):
 			var visible := slice_layer_limit < 0 \
@@ -1077,7 +1076,7 @@ func _add_slice_cap_collision(cell: Vector2i, layer: int) -> void:
 	body.set_meta("terrain_layer", layer)
 	body.set_meta("slice_cap", true)
 	_add_top_collision(body)
-	_slice_caps.add_child(body)
+	body.free()
 
 func _box(label: String, position_value: Vector3, size: Vector3,
 		material: Material, collision: bool) -> MeshInstance3D:

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3]
+[ext_resource type="Script" path="res://scripts/encounters/monster_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+monster_id = "gibbon"
+display_name = "长臂猿"
+ecosystems = PackedStringArray("grass", "rock")
+movement = "land"
+source_aggressive = false
+group_living = false
+attack = "stone"
+max_health = 40.0
+damage = 14.0
+speed = 8.4
+attack_interval = 0.34
+source_row = 7
+image_height = 1.8
+drops = PackedStringArray("gibbon_limb")
+source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"
+image_path = "res://assets/derived_art/monsters_20261018/gibbon/composite.png"
+parts = Array[Dictionary]([])
+attack_reach = 6.0

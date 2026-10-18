@@ -6,6 +6,18 @@ extends Resource
 @export var fragment: LevelData
 @export var version := 3
 
+static func fixed_view_rotation_blocker(data: LevelData) -> String:
+	if data == null:
+		return ""
+	for record in data.objects:
+		var definition := ObjectRules.definition(record)
+		if definition == null or definition.supports_quarter_turns():
+			continue
+		var label := definition.display_name if not definition.display_name.is_empty() \
+			else definition.asset_id
+		return label if not label.is_empty() else str(record.get("definition", "")).get_file()
+	return ""
+
 static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	if region.size.x <= 0 or region.size.y <= 0 or not source.in_bounds(region.position) or not source.in_bounds(region.end - Vector2i.ONE):
 		return {"error": "选区超出地图"}
@@ -14,6 +26,10 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	prefab.fragment.setup_blank(region.size)
 	var target := prefab.fragment
 	target.terrain_tints = source.terrain_tints.duplicate(true)
+	for index: Vector3i in source.encounter_regions:
+		if region.has_point(Vector2i(index.x, index.z)):
+			target.encounter_regions[Vector3i(index.x - region.position.x, index.y,
+				index.z - region.position.y)] = source.encounter_regions[index].duplicate(true)
 	for y in region.size.y:
 		for x in region.size.x:
 			var local := Vector2i(x, y)
@@ -79,11 +95,22 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 	if fragment == null:
 		return {"error": "预制数据缺失"}
 	fragment.ensure_layout()
+	var blocker := fixed_view_rotation_blocker(fragment)
+	if posmod(turns, 4) != 0 and not blocker.is_empty():
+		return {"error": "预制包含固定视角物件「%s」，只能按原方向投放" % blocker}
 	var area := Rect2i(anchor, rotated_size(turns))
 	if not destination.in_bounds(anchor) or not destination.in_bounds(area.end - Vector2i.ONE):
 		return {"error": "预制超出地图"}
 	var candidate := LevelData.new()
 	candidate.restore_data(destination.clone_data())
+	for index: Vector3i in fragment.encounter_regions:
+		var local := Vector2i(index.x, index.z) - fragment.map_origin
+		var target := anchor + rotate_cell(local, turns)
+		var layer := index.y
+		if objects_only:
+			layer += candidate.top_layer(target) - fragment.top_layer(Vector2i(index.x, index.z))
+		candidate.encounter_regions[Vector3i(target.x, layer, target.y)] = \
+			fragment.encounter_regions[index].duplicate(true)
 	if not objects_only:
 		if area.has_point(candidate.spawn_cell):
 			return {"error": "预制覆盖玩家出生点，请先移动出生点"}

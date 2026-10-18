@@ -207,6 +207,7 @@ func _rebuild_sources() -> void:
 		var panel := VBoxContainer.new()
 		_source_rows.add_child(panel)
 		var description := str(rule.path).get_file()
+		var rotation_blocker := ""
 		if ResourceLoader.exists(str(rule.path)):
 			var source := load(str(rule.path))
 			var fragment: LevelData
@@ -216,6 +217,7 @@ func _rebuild_sources() -> void:
 				fragment = source.fragment
 			if fragment != null:
 				description += " · %d×%d 格" % [fragment.map_size.x, fragment.map_size.y]
+				rotation_blocker = LevelPrefab.fixed_view_rotation_blocker(fragment)
 		_label(panel, description).tooltip_text = str(rule.path)
 		var row := HBoxContainer.new()
 		panel.add_child(row)
@@ -241,8 +243,12 @@ func _rebuild_sources() -> void:
 			_changed())
 		options.add_child(zone)
 		var rotate := CheckBox.new()
-		rotate.text = "旋转"
-		rotate.button_pressed = rule.get("rotate", true)
+		rotate.name = "RotatePrefab"
+		rotate.text = "旋转" if rotation_blocker.is_empty() else "固定朝向"
+		rotate.button_pressed = rule.get("rotate", true) and rotation_blocker.is_empty()
+		rotate.disabled = not rotation_blocker.is_empty()
+		rotate.tooltip_text = "允许特殊地块随机四向旋转" if rotation_blocker.is_empty() \
+			else "包含固定视角物件「%s」，只能按原方向生成" % rotation_blocker
 		rotate.toggled.connect(func(value: bool):
 			rule.rotate = value
 			_changed())

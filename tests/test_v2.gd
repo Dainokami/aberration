@@ -40,16 +40,23 @@ func run() -> void:
 		and two_camps.objects.size() == prefab.fragment.objects.size() * 2,
 		"two camp stamps preserve exactly two copies of prefab objects")
 	var before := empty.clone_data()
+	check(not prefab.stamp(empty, Vector2i(3, 3), 1)["error"].is_empty(),
+		"fixed-camera camp rejects quarter-turn placement")
+	var rotatable := LevelPrefab.new()
+	rotatable.fragment = LevelData.new()
+	rotatable.fragment.restore_data(prefab.fragment.clone_data())
+	rotatable.fragment.objects.clear()
 	for rotation in 4:
-		var result := prefab.stamp(empty, Vector2i(3, 3), rotation)
-		check(result["error"].is_empty(), "stamp rotation %d" % rotation)
+		var result := rotatable.stamp(empty, Vector2i(3, 3), rotation)
+		check(result["error"].is_empty(), "terrain and stair rotation %d" % rotation)
 		check(empty.clone_data() == before, "stamp is transaction %d" % rotation)
 		if result["error"].is_empty():
 			var candidate := LevelData.new()
 			candidate.restore_data(result["snapshot"])
 			var stair: Dictionary = candidate.stairs[0]
 			check(stair["direction"] == rotation, "stair direction rotates %d" % rotation)
-			check(ObjectRules.validate_all(candidate).is_empty(), "rotated objects valid %d" % rotation)
+			check(ObjectRules.validate_all(candidate).is_empty(),
+				"rotated terrain has no object validation errors %d" % rotation)
 	check(not prefab.stamp(empty, Vector2i(15, 15), 0)["error"].is_empty(), "prefab bounds rejected")
 	check(not prefab.stamp(map, Vector2i(2, 2), 0)["error"].is_empty(), "existing camp protected")
 	check(map.clone_data() == snapshot, "failed stamp leaves map unchanged")
@@ -57,6 +64,9 @@ func run() -> void:
 	loaded.restore_data(snapshot)
 	check(loaded.clone_data() == snapshot, "snapshot undo restores deleted object")
 	var d := load("res://assets/generated/demo_rock/definition.tres") as PlaceableDefinition
+	var multi_face := load("res://assets/generated/painted_rock/definition.tres") as PlaceableDefinition
+	check(not d.supports_quarter_turns() and multi_face.supports_quarter_turns(),
+		"rotation policy distinguishes fixed-camera cards from true multi-face assets")
 	var analyzed := ImageDefaults.analyze((load(d.source_image) as Texture2D).get_image(), 256)
 	check(analyzed["error"].is_empty() and analyzed["pixels"] == Vector2i(256, 256),
 		"generic image alpha analysis")
@@ -72,6 +82,8 @@ func run() -> void:
 	for carrier in [PlaceableDefinition.Carrier.PROJECTED_BOX, PlaceableDefinition.Carrier.PROJECTED_WEDGE]:
 		var projected := d.duplicate(true) as PlaceableDefinition
 		projected.carrier = carrier
+		check(not projected.supports_quarter_turns(),
+			"camera-projected carrier stays in authored orientation %d" % carrier)
 		var node := AssetFactory.make_asset(projected)
 		var arrays: Array = node.get_child(0).mesh.surface_get_arrays(0)
 		var basis := projected.profile.camera_basis()

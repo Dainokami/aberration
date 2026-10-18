@@ -1,0 +1,5677 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" path="res://scripts/encounters/encounter_config.gd" id="1_ucm0y"]
+[ext_resource type="Script" path="res://scripts/level/level_data.gd" id="2_te1yo"]
+
+[sub_resource type="Resource" id="Resource_rakjn"]
+script = ExtResource("1_ucm0y")
+enabled = true
+monster_pool = Array[Dictionary]([{
+"enabled": false,
+"path": "res://data/monsters/albatross.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/bat.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/demon_dog.tres",
+"weight": 1.0
+}, {
+"enabled": false,
+"path": "res://data/monsters/eagle.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/gerbil.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/gibbon.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/goose.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/gorilla.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/kangaroo.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/octopus.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/ostrich.tres",
+"weight": 1.0
+}, {
+"enabled": false,
+"path": "res://data/monsters/piranha.tres",
+"weight": 1.0
+}, {
+"enabled": false,
+"path": "res://data/monsters/water_snake.tres",
+"weight": 1.0
+}, {
+"enabled": true,
+"path": "res://data/monsters/wolf.tres",
+"weight": 1.0
+}])
+elite_one_ecosystems = PackedStringArray("grass", "rock")
+elite_two_ecosystems = PackedStringArray("grass", "rock")
+
+[resource]
+script = ExtResource("2_te1yo")
+map_size = Vector2i(32, 32)
+grid_world_origin = Vector2(-32, -32)
+has_grid_world_origin = true
+columns = Array[Dictionary]([{
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}, {
+"rotation": 0,
+"tile_id": "water"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}, {
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "ground_stone"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "painted_grass"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}, {
+"layers": [{
+"rotation": 0,
+"tile_id": "sand"
+}]
+}])
+stairs = Array[Dictionary]([{
+"cell": Vector2i(15, 11),
+"direction": 0,
+"layer": 0
+}])
+spawn_cell = Vector2i(16, 16)
+spawn_layer = 0
+format_version = 9
+objects = Array[Dictionary]([{
+"anchor_cell": Vector2i(19, 16),
+"anchor_kind": "top",
+"anchor_layer": 0,
+"definition": "res://assets/generated/painted_rock/definition.tres",
+"id": "encounter_rock_(19, 16)",
+"position": Vector3(7, 2, 1),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"anchor_cell": Vector2i(19, 17),
+"anchor_kind": "top",
+"anchor_layer": 0,
+"definition": "res://assets/generated/painted_rock/definition.tres",
+"id": "encounter_rock_(19, 17)",
+"position": Vector3(7, 2, 3),
+"scale": 1.0,
+"yaw": 0.0
+}, {
+"anchor_cell": Vector2i(19, 18),
+"anchor_kind": "top",
+"anchor_layer": 0,
+"definition": "res://assets/generated/painted_rock/definition.tres",
+"id": "encounter_rock_(19, 18)",
+"position": Vector3(7, 2, 5),
+"scale": 1.0,
+"yaw": 0.0
+}])
+encounter = SubResource("Resource_rakjn")
+encounter_regions = {
+Vector3i(12, 0, 12): {
+&"zone": 1
+},
+Vector3i(12, 0, 13): {
+&"zone": 1
+},
+Vector3i(12, 0, 14): {
+&"zone": 1
+},
+Vector3i(12, 0, 15): {
+&"zone": 1
+},
+Vector3i(13, 0, 12): {
+&"zone": 1
+},
+Vector3i(13, 0, 13): {
+&"zone": 1
+},
+Vector3i(13, 0, 14): {
+&"zone": 1
+},
+Vector3i(13, 0, 15): {
+&"zone": 1
+},
+Vector3i(14, 0, 12): {
+&"zone": 1
+},
+Vector3i(14, 0, 13): {
+&"zone": 1
+},
+Vector3i(14, 0, 14): {
+&"zone": 1
+},
+Vector3i(14, 0, 15): {
+&"zone": 1
+},
+Vector3i(14, 0, 20): {
+&"forbidden": true
+},
+Vector3i(14, 0, 21): {
+&"forbidden": true
+},
+Vector3i(14, 0, 22): {
+&"forbidden": true
+},
+Vector3i(15, 0, 12): {
+&"zone": 1
+},
+Vector3i(15, 0, 13): {
+&"zone": 1
+},
+Vector3i(15, 0, 14): {
+&"zone": 1
+},
+Vector3i(15, 0, 15): {
+&"zone": 1
+},
+Vector3i(15, 0, 20): {
+&"forbidden": true
+},
+Vector3i(15, 0, 21): {
+&"forbidden": true
+},
+Vector3i(15, 0, 22): {
+&"forbidden": true
+},
+Vector3i(16, 0, 20): {
+&"forbidden": true
+},
+Vector3i(16, 0, 21): {
+&"forbidden": true
+},
+Vector3i(16, 0, 22): {
+&"forbidden": true
+},
+Vector3i(17, 0, 20): {
+&"forbidden": true
+},
+Vector3i(17, 0, 21): {
+&"forbidden": true
+},
+Vector3i(17, 0, 22): {
+&"forbidden": true
+}
+}

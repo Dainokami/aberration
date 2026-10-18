@@ -18,6 +18,12 @@ static func tags_at(point: Vector3) -> PackedStringArray:
 		for tag in zone.tags:
 			if not found.has(tag):
 				found.append(tag)
+	if found.has("fluid") or found.has("ocean"):
+		# The ground beneath a water volume is not the actor's movement surface.
+		for tag in ["grass", "rock", "desert"]:
+			var index := found.find(tag)
+			if index >= 0:
+				found.remove_at(index)
 	if found.is_empty():
 		found.append("hard")
 	return found
