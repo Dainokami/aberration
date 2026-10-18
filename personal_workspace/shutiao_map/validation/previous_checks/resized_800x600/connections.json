@@ -1,0 +1,322 @@
+{
+  "connections": [
+    {
+      "id": "T1",
+      "biome_id": 2,
+      "low_relative_m": 0,
+      "high_relative_m": 2,
+      "near_normalized": [
+        0.29,
+        0.28
+      ],
+      "width_m": 12,
+      "type": "stair_bank",
+      "rise_m": 2,
+      "stair_run_m": 4,
+      "landing_depth_each_m": 2,
+      "low_world_xyz_m": [
+        -170.0,
+        4.0,
+        -136.0
+      ],
+      "high_world_xyz_m": [
+        -170.0,
+        6.0,
+        -140.0
+      ],
+      "endpoint_meaning": "outer_edges_of_two_cell_stair_run; landings_extend_2m_beyond_each_endpoint",
+      "footprint_with_landings": {
+        "cell_rect_x_z_width_depth": [
+          112,
+          79,
+          6,
+          4
+        ],
+        "world_min_xz_m": [
+          -176.0,
+          -142.0
+        ],
+        "size_m": [
+          12,
+          8
+        ]
+      },
+      "parallel_lanes": [
+        {
+          "low_cell_xz": [
+            112,
+            81
+          ],
+          "high_cell_xz": [
+            112,
+            80
+          ]
+        },
+        {
+          "low_cell_xz": [
+            113,
+            81
+          ],
+          "high_cell_xz": [
+            113,
+            80
+          ]
+        },
+        {
+          "low_cell_xz": [
+            114,
+            81
+          ],
+          "high_cell_xz": [
+            114,
+            80
+          ]
+        },
+        {
+          "low_cell_xz": [
+            115,
+            81
+          ],
+          "high_cell_xz": [
+            115,
+            80
+          ]
+        },
+        {
+          "low_cell_xz": [
+            116,
+            81
+          ],
+          "high_cell_xz": [
+            116,
+            80
+          ]
+        },
+        {
+          "low_cell_xz": [
+            117,
+            81
+          ],
+          "high_cell_xz": [
+            117,
+            80
+          ]
+        }
+      ],
+      "status": "planned_not_instantiated_or_physics_verified",
+      "counted_for_required_reachability": false
+    },
+    {
+      "id": "T2",
+      "biome_id": 2,
+      "low_relative_m": 2,
+      "high_relative_m": 4,
+      "near_normalized": [
+        0.15,
+        0.14
+      ],
+      "width_m": 12,
+      "type": "stair_bank",
+      "rise_m": 2,
+      "stair_run_m": 4,
+      "landing_depth_each_m": 2,
+      "low_world_xyz_m": [
+        -296.0,
+        6.0,
+        -214.0
+      ],
+      "high_world_xyz_m": [
+        -296.0,
+        8.0,
+        -218.0
+      ],
+      "endpoint_meaning": "outer_edges_of_two_cell_stair_run; landings_extend_2m_beyond_each_endpoint",
+      "footprint_with_landings": {
+        "cell_rect_x_z_width_depth": [
+          49,
+          40,
+          6,
+          4
+        ],
+        "world_min_xz_m": [
+          -302.0,
+          -220.0
+        ],
+        "size_m": [
+          12,
+          8
+        ]
+      },
+      "parallel_lanes": [
+        {
+          "low_cell_xz": [
+            49,
+            42
+          ],
+          "high_cell_xz": [
+            49,
+            41
+          ]
+        },
+        {
+          "low_cell_xz": [
+            50,
+            42
+          ],
+          "high_cell_xz": [
+            50,
+            41
+          ]
+        },
+        {
+          "low_cell_xz": [
+            51,
+            42
+          ],
+          "high_cell_xz": [
+            51,
+            41
+          ]
+        },
+        {
+          "low_cell_xz": [
+            52,
+            42
+          ],
+          "high_cell_xz": [
+            52,
+            41
+          ]
+        },
+        {
+          "low_cell_xz": [
+            53,
+            42
+          ],
+          "high_cell_xz": [
+            53,
+            41
+          ]
+        },
+        {
+          "low_cell_xz": [
+            54,
+            42
+          ],
+          "high_cell_xz": [
+            54,
+            41
+          ]
+        }
+      ],
+      "status": "planned_not_instantiated_or_physics_verified",
+      "counted_for_required_reachability": false
+    },
+    {
+      "id": "T3",
+      "biome_id": 1,
+      "low_relative_m": 0,
+      "high_relative_m": 2,
+      "near_normalized": [
+        0.89,
+        0.2
+      ],
+      "width_m": 12,
+      "type": "stair_bank",
+      "rise_m": 2,
+      "stair_run_m": 4,
+      "landing_depth_each_m": 2,
+      "low_world_xyz_m": [
+        334.0,
+        4.0,
+        -180.0
+      ],
+      "high_world_xyz_m": [
+        334.0,
+        6.0,
+        -184.0
+      ],
+      "endpoint_meaning": "outer_edges_of_two_cell_stair_run; landings_extend_2m_beyond_each_endpoint",
+      "footprint_with_landings": {
+        "cell_rect_x_z_width_depth": [
+          364,
+          57,
+          6,
+          4
+        ],
+        "world_min_xz_m": [
+          328.0,
+          -186.0
+        ],
+        "size_m": [
+          12,
+          8
+        ]
+      },
+      "parallel_lanes": [
+        {
+          "low_cell_xz": [
+            364,
+            59
+          ],
+          "high_cell_xz": [
+            364,
+            58
+          ]
+        },
+        {
+          "low_cell_xz": [
+            365,
+            59
+          ],
+          "high_cell_xz": [
+            365,
+            58
+          ]
+        },
+        {
+          "low_cell_xz": [
+            366,
+            59
+          ],
+          "high_cell_xz": [
+            366,
+            58
+          ]
+        },
+        {
+          "low_cell_xz": [
+            367,
+            59
+          ],
+          "high_cell_xz": [
+            367,
+            58
+          ]
+        },
+        {
+          "low_cell_xz": [
+            368,
+            59
+          ],
+          "high_cell_xz": [
+            368,
+            58
+          ]
+        },
+        {
+          "low_cell_xz": [
+            369,
+            59
+          ],
+          "high_cell_xz": [
+            369,
+            58
+          ]
+        }
+      ],
+      "status": "planned_not_instantiated_or_physics_verified",
+      "counted_for_required_reachability": false
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+﻿id,type,cell_x,cell_z,world_x_m,world_y_m,world_z_m,width_m,depth_m
+S1,spawn,59,200,-181.0,4,101.0,20,20
+G1,growth_space,75,170,-149.0,4,41.0,16,16
+G2,growth_space,101,120,-97.0,4,-59.0,16,16
+G3,growth_space,230,165,161.0,4,31.0,16,16
+C1,challenge,39,120,-222.0,4,-60.0,100,100
+C2,challenge,129,201,-42.0,4,102.0,100,100
+C3,challenge,246,114,192.0,4,-72.0,100,100
+P1,portal,180,179,61.0,4,59.0,30,30
