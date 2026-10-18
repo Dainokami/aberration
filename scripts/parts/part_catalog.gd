@@ -9,6 +9,23 @@ static var _uppers: Array[PartDefinition] = []
 static var _lowers: Array[PartDefinition] = []
 
 
+static func find(part_id: String) -> PartDefinition:
+	for part in uppers():
+		if part.id == part_id:
+			return part
+	for part in lowers():
+		if part.id == part_id:
+			return part
+	return null
+
+
+static func texture_for(part_id: String) -> Texture2D:
+	var part := find(part_id)
+	if part == null or part.texture_path.is_empty():
+		return null
+	return load(part.texture_path) as Texture2D
+
+
 static func uppers() -> Array[PartDefinition]:
 	if not _uppers.is_empty():
 		return _uppers
@@ -65,6 +82,7 @@ static func uppers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "bat_wing",
+			"texture": "res://assets/source_art/limbs_20261018/bat_wing/primary.png",
 			"name": "类蝙蝠翅膀",
 			"slot": PartDefinition.Slot.UPPER,
 			"power": PartDefinition.Band.LOW,
@@ -77,6 +95,7 @@ static func uppers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "albatross_wing",
+			"texture": "res://assets/source_art/limbs_20261018/albatross_wing/primary.png",
 			"name": "类信天翁翅膀",
 			"slot": PartDefinition.Slot.UPPER,
 			"power": PartDefinition.Band.NORMAL,
@@ -90,6 +109,7 @@ static func uppers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "eagle_wing",
+			"texture": "res://assets/source_art/limbs_20261018/eagle_wing/primary.png",
 			"name": "类鹰翅膀",
 			"slot": PartDefinition.Slot.UPPER,
 			"power": PartDefinition.Band.HIGH,
@@ -124,6 +144,7 @@ static func lowers() -> Array[PartDefinition]:
 	_lowers = [
 		_part({
 			"id": "wolf_leg",
+			"texture": "res://assets/source_art/limbs_20261018/wolf_leg/body.png",
 			"name": "类草原狼腿",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R1,
@@ -134,6 +155,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "ostrich_leg",
+			"texture": "res://assets/source_art/limbs_20261018/ostrich_leg/body.png",
 			"name": "类鸵鸟腿",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R1,
@@ -144,6 +166,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "gerbil_leg",
+			"texture": "res://assets/source_art/limbs_20261018/gerbil_leg/body.png",
 			"name": "类沙鼠腿",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R2,
@@ -155,6 +178,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "kangaroo_leg",
+			"texture": "res://assets/source_art/limbs_20261018/kangaroo_leg/body.png",
 			"name": "类袋鼠腿",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R2,
@@ -205,6 +229,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "fish_tail",
+			"texture": "res://assets/source_art/limbs_20261018/fish_tail/primary.png",
 			"name": "类鱼尾",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R1,
@@ -227,6 +252,7 @@ static func _part(data: Dictionary) -> PartDefinition:
 	part.rank = data.get("rank", PartDefinition.Rank.R1)
 	part.spawn_scenes = PackedStringArray(data.get("scenes", PackedStringArray()))
 	part.blurb = data.get("blurb", "")
+	part.texture_path = data.get("texture", "")
 	part.speed_band = data.get("speed", PartDefinition.Band.NONE)
 	part.allowed_surfaces = PackedStringArray(data.get("surfaces", PackedStringArray()))
 	part.jump_count = data.get("jumps", 0)

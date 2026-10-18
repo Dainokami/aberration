@@ -1,0 +1,200 @@
+{
+  "files": [
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品 3.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/gerbil_leg/feet.png",
+      "sha256": "356b584faf018c94a3c2df7690dc102e97361b0df315e161e2eaee842bb1f8bc",
+      "bytes": 27824
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品 2.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/ostrich_leg/preview.png",
+      "sha256": "94e9e6c7d4b1abebd3c05164f96d389e1217a5dd70e1d96b72e278307e3620aa",
+      "bytes": 109313
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品 5.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/kangaroo_leg/body.png",
+      "sha256": "00efe1ca1365af86560941f163715c94452c152d1732fcc292e23b5291fae708",
+      "bytes": 44494
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品 4.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/gerbil_leg/preview.png",
+      "sha256": "fff9f196894099541e262bdc8a0b9923b8a321d4380e822636a0d786983f726e",
+      "bytes": 104870
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品 6.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/kangaroo_leg/preview.png",
+      "sha256": "f507c387eb093a92aefb92b5302af5f17a45adb2e973bde9af9faee15234b25c",
+      "bytes": 110770
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1 3.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/ostrich_leg/body.png",
+      "sha256": "25e1b834ae1a0673d4188290f16783c52baef3ea8ffd13696b169116a4490e4f",
+      "bytes": 45770
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1 4.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/ostrich_leg/feet.png",
+      "sha256": "006c873ea8fd4165cdf529e7326368f9c7291e137d45ad267c43eced0bb1b7ff",
+      "bytes": 20559
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1 6.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/kangaroo_leg/tail.png",
+      "sha256": "ac22127a23312d4167b253b94c94857849c541c9783e714ae71ef4cd363474bd",
+      "bytes": 17284
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1 7.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/kangaroo_leg/forelimbs.png",
+      "sha256": "903bcf0044cc731db5cd14d58d6062318330a059e93c0fab2d4fd752cdb65d12",
+      "bytes": 35971
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1 5.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/gerbil_leg/body.png",
+      "sha256": "7ac078fc481a6ce14c697ccb00525aed28e07f68d3205c9960214bfb429bf358",
+      "bytes": 39261
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/wolf_leg/body.png",
+      "sha256": "f368808ef8b84817eabc99104a2a7af1724a10d85cced901a2a8085242373c79",
+      "bytes": 64870
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-2.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/kangaroo_leg/feet.png",
+      "sha256": "767d966ca56d2cf04a129266b662939d380667a7b08e7fc563c51512a0829179",
+      "bytes": 24577
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品-1 2.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/wolf_leg/feet.png",
+      "sha256": "972946724716290828a10693add9427f524ddbda5fd84b81c2392d168e8d42a2",
+      "bytes": 26082
+    },
+    {
+      "archive": "怪物肢体.zip",
+      "original_entry": "未命名作品.PNG",
+      "asset": "res://assets/source_art/limbs_20261018/wolf_leg/preview.png",
+      "sha256": "1a28af11b6fe82721dacd2fe324216c047ef9ef13b8aa75f13864b9ca2dea993",
+      "bytes": 130804
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/bianfu preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/bat_wing/preview.png",
+      "sha256": "d412e0a5d411b0af818f338f776f5d8f42e17d6c0ebc51a813f1acbe09b2d2cb",
+      "bytes": 144068
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/bianfu.png",
+      "asset": "res://assets/source_art/limbs_20261018/bat_wing/primary.png",
+      "sha256": "272461a5464d21b44df377039df24c89dda8ed7ea95996bd3be1d2c25d3ebe10",
+      "bytes": 84467
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/chuanshanjia preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/pangolin_claw_unmapped/preview.png",
+      "sha256": "31020c568e4e5c3dd38fde5d6da39131600af7982813a4203e61bd4e17110a16",
+      "bytes": 143274
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/chuanshanjia.png",
+      "asset": "res://assets/source_art/limbs_20261018/pangolin_claw_unmapped/primary.png",
+      "sha256": "16c297307fb716470458f2aa76ce3bf26296a4b85f61ef705c668037c53a3d9f",
+      "bytes": 85578
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/laoying preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/eagle_wing/preview.png",
+      "sha256": "80c74d730646a3be8ecb3641be85099e7420f97bae6ef659462a4fc2ac19ef5b",
+      "bytes": 146229
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/laoying.png",
+      "asset": "res://assets/source_art/limbs_20261018/eagle_wing/primary.png",
+      "sha256": "f0313ad0c2542e586c5ea2b0ffdbdce5dc3e54614b83d8075ca23c8f5516314f",
+      "bytes": 88065
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/laoying_white preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/eagle_wing/white_preview.png",
+      "sha256": "342fba3bf64df3d2da5d28b0c44fec616a20e4fc7cf7b8fac71bea49e5e996ad",
+      "bytes": 132799
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/laoying_white.png",
+      "asset": "res://assets/source_art/limbs_20261018/eagle_wing/white.png",
+      "sha256": "9995c416f66ab4885865d21e467ba2dbef6e83bc3e39d477ce9ffebc3b69cc5c",
+      "bytes": 83928
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/shiren_yu preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/fish_tail/preview.png",
+      "sha256": "cc668bce0e9a56dd60b07a8e196a0fb66c2a0325be3449c09b58c7afa9259608",
+      "bytes": 100957
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/shiren_yu.png",
+      "asset": "res://assets/source_art/limbs_20261018/fish_tail/primary.png",
+      "sha256": "47e37eb42573ee0229eda51a6718dae7d53a26cc996b5a0d1aabacab4f7d2b24",
+      "bytes": 64832
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/xintianweng preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/albatross_wing/preview.png",
+      "sha256": "756f2a47e28883d959bf278c5bf7f860c9d0fb2f377597e3a10464120eaf2c45",
+      "bytes": 133900
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/xintianweng.png",
+      "asset": "res://assets/source_art/limbs_20261018/albatross_wing/primary.png",
+      "sha256": "9646238c7b33be72171112fed7bdd1d82f3d9a5a882aa6431066b49b4d8830f5",
+      "bytes": 72874
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/xintianweng_white preview.png",
+      "asset": "res://assets/source_art/limbs_20261018/albatross_wing/white_preview.png",
+      "sha256": "d9268fe11592020b1ff5f9dc9b967dfe99a6ab280b70e468c724f115d250a110",
+      "bytes": 123915
+    },
+    {
+      "archive": "肢体2.zip",
+      "original_entry": "肢体 2/xintianweng_white.png",
+      "asset": "res://assets/source_art/limbs_20261018/albatross_wing/white.png",
+      "sha256": "5eeac06b17d3cbc0a7dcd2ab4caf13e7c2d053da6439c16746ea79298576b66a",
+      "bytes": 77511
+    }
+  ]
+}

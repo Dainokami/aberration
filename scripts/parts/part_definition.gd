@@ -17,6 +17,7 @@ var attack_shape := AttackShape.NONE
 var rank := Rank.R1
 var spawn_scenes: PackedStringArray = PackedStringArray()
 var blurb := ""
+var texture_path := ""
 
 var speed_band := Band.NONE
 var allowed_surfaces: PackedStringArray = PackedStringArray()

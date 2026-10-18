@@ -36,7 +36,7 @@ func drop_items() -> PackedStringArray:
 		"gibbon":["gibbon_arm"], "gorilla":["gorilla_arm"], "kangaroo":["kangaroo_leg"],
 		"demon_dog":["demon_dog_leg"], "goose":["goose_foot","goose_wing"],
 		"octopus":["octopus_leg"], "bat":["bat_wing"], "albatross":["albatross_wing"],
-		"eagle":["eagle_wing"], "piranha":["piranha_gill"], "water_snake":["water_snake"]
+		"eagle":["eagle_wing"], "piranha":["fish_tail"], "water_snake":["water_snake"]
 	}.get(monster_id, []))
 
 func errors() -> PackedStringArray:
