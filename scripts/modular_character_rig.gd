@@ -7,6 +7,11 @@ const ANCHOR := Vector2(515.0, 536.0)
 const ANIM_PIXEL := 0.0022
 const ANIM_NECK := Vector2(1064.14, 718.11)
 const ANIM_LOWEST_Y := 1117.0
+const BANDAGE_CENTER := Vector2(1067.0, 746.5)
+const BANDAGE_HEIGHT := 203.0
+const HEAD_CENTER := Vector2(1054.0, 617.0)
+const HEAD_HEIGHT := 452.0
+const JOINT_TUCK := 0.045
 
 const HEAD_TEXTURE := preload("res://art/characters/psd/head.png")
 const TORSO_TEXTURE := preload("res://art/characters/psd/torso.png")
@@ -93,6 +98,7 @@ func _process(delta: float) -> void:
 	_animate_locomotion()
 	_animate_wings()
 	_animate_attack()
+	_apply_facing()
 
 
 func set_motion_state(horizontal_velocity: Vector3, grounded: bool, vertical_speed: float, screen_direction: float, delta: float) -> void:
@@ -117,6 +123,15 @@ func set_motion_state(horizontal_velocity: Vector3, grounded: bool, vertical_spe
 			_head_roll_angle += _roll_sign * speed * delta / HEAD_ROLL_RADIUS
 	if absf(screen_direction) > 0.05:
 		_screen_direction = signf(screen_direction)
+
+
+func _apply_facing() -> void:
+	# 小怪贴图都是侧面。屏幕右侧为正，往左走时整副骨架镜像，脸朝行进方向。
+	if absf(_screen_direction) < 0.05:
+		return
+	var mirror := -1.0 if _screen_direction < 0.0 else 1.0
+	if not is_equal_approx(scale.x, mirror):
+		scale.x = mirror
 
 
 func _build_skeleton() -> void:
@@ -213,8 +228,8 @@ func _build_anim_skeleton() -> void:
 	_add_bone("anim_scythe_grip", "body", _anim_delta(grip_joint, neck, 0.0))
 	_add_bone("anim_scythe_shaft", "anim_scythe_grip", _anim_delta(shaft_joint, grip_joint, 0.0))
 	_add_bone("anim_scythe_blade", "anim_scythe_shaft", _anim_delta(blade_joint, shaft_joint, 0.0))
-	_bind_anim_sprite("body", "AnimBandage", ANIM_BANDAGE, neck, Vector2(1067.0, 746.5), 0.01, 5)
-	_bind_anim_sprite("anim_head", "AnimHead", ANIM_HEAD, neck, Vector2(1054.0, 617.0), 0.03, 9)
+	_bind_anim_sprite("body", "AnimBandage", ANIM_BANDAGE, neck, BANDAGE_CENTER, 0.01, 5)
+	_bind_anim_sprite("anim_head", "AnimHead", ANIM_HEAD, neck, HEAD_CENTER, 0.03, 9)
 	_bind_anim_sprite("anim_ear", "AnimEar", ANIM_EAR, ear_joint, Vector2(920.5, 343.5), 0.0, 6)
 	_bind_anim_sprite("anim_hood", "AnimHood", ANIM_HOOD, hood_joint, Vector2(1295.0, 468.5), -0.02, 3)
 	_bind_anim_sprite("anim_tail", "AnimTail", ANIM_TAIL, tail_joint, Vector2(820.5, 835.5), -0.01, 2)
@@ -223,6 +238,8 @@ func _build_anim_skeleton() -> void:
 	_bind_anim_sprite("anim_scythe_grip", "AnimScytheGrip", ANIM_SCYTHE_GRIP, grip_joint, Vector2(755.5, 488.0), 0.04, 10)
 	_bind_anim_sprite("anim_scythe_shaft", "AnimScytheShaft", ANIM_SCYTHE_SHAFT, shaft_joint, Vector2(537.0, 246.5), 0.045, 10)
 	_bind_anim_sprite("anim_scythe_blade", "AnimScytheBlade", ANIM_SCYTHE_BLADE, blade_joint, Vector2(203.0, 453.5), 0.05, 10)
+	_separate_head_from_torso()
+	_clear_arm_from_head()
 
 
 func _add_bone(bone_name: String, parent_name: String, rest_position: Vector3) -> void:
@@ -348,8 +365,7 @@ func _show_named_limb(limb_id: String, upper: bool) -> void:
 		"fish_tail":
 			_style_limb("AnimTail", Color(0.35, 0.75, 0.95), 1.0)
 		"goose_foot":
-			_show_scaled("LeftLegSocket", 1.35, Color(0.95, 0.72, 0.28))
-			_show_scaled("RightLegSocket", 1.35, Color(0.95, 0.72, 0.28))
+			_show_legs(Color(0.95, 0.72, 0.28), 1.35)
 		"wolf_leg":
 			_show_legs(Color(0.55, 0.55, 0.58), 1.0)
 		"ostrich_leg":
@@ -363,11 +379,31 @@ func _show_named_limb(limb_id: String, upper: bool) -> void:
 		"octopus_leg":
 			_show_legs(Color(0.4, 0.48, 0.78), 0.85)
 		_:
-			if upper:
-				_show_plain("AnimArmUpper")
-				_show_plain("AnimArmFore")
-			else:
-				_show_legs(Color.WHITE, 1.0)
+			# 合成矩阵里缺少正式美术的产物，根据目录中的占位类型复用现有骨骼。
+			# 这里只做清楚可见的代理，不改动任何源贴图。
+			var limb := LimbCatalog.find(limb_id)
+			if limb == null:
+				if upper:
+					_show_plain("AnimArmUpper")
+					_show_plain("AnimArmFore")
+				else:
+					_show_legs(Color.WHITE, 1.0)
+				return
+			match limb.visual:
+				"wing":
+					_show_wings(limb.tint)
+				"hop":
+					_show_scaled("HopArmSocket", limb.visual_scale, limb.tint)
+				"crawl":
+					_show_scaled("CrawlLeftSocket", limb.visual_scale, limb.tint)
+					_show_scaled("CrawlRightSocket", limb.visual_scale, limb.tint)
+				"tail":
+					_style_limb("AnimTail", limb.tint, limb.visual_scale)
+				"leg":
+					_show_legs(limb.tint, limb.visual_scale)
+				_:
+					_style_limb("AnimArmUpper", limb.tint, limb.visual_scale)
+					_style_limb("AnimArmFore", limb.tint, limb.visual_scale)
 
 
 func _show_plain(socket_name: String) -> void:
@@ -377,11 +413,13 @@ func _show_plain(socket_name: String) -> void:
 func _show_wings(tint: Color) -> void:
 	_show_scaled("LeftWingSocket", 1.0, tint)
 	_show_scaled("RightWingSocket", 1.0, tint)
+	_tuck_against_torso("LeftWingSocket", "left_wing", -1.0)
+	_tuck_against_torso("RightWingSocket", "right_wing", 1.0)
 
 
 func _show_legs(tint: Color, sprite_scale: float) -> void:
-	_show_scaled("LeftLegSocket", sprite_scale, tint)
-	_show_scaled("RightLegSocket", sprite_scale, tint)
+	_place_leg("LeftLegSocket", sprite_scale, tint)
+	_place_leg("RightLegSocket", sprite_scale, tint)
 
 
 func _show_scaled(socket_name: String, sprite_scale: float, tint: Color) -> void:
@@ -425,8 +463,8 @@ func _animate_locomotion() -> void:
 
 	match assembly.resolve_locomotion():
 		CharacterAssemblyController.LocomotionMode.HEAD_ROLL:
-			var center := _anim_delta(Vector2(1054.0, 617.0), ANIM_NECK, 0.0)
-			_set_bone_position("root", Vector3(0.0, 0.02 + 1.08 - _base_positions["body"].y - center.y, 0.0))
+			var center := _anim_delta(HEAD_CENTER, ANIM_NECK, 0.0)
+			_set_bone_position("root", Vector3(0.0, 0.02 + 1.08 - _base_positions["body"].y - _base_positions["anim_head"].y - center.y, 0.0))
 
 		CharacterAssemblyController.LocomotionMode.SINGLE_ARM_HOP:
 			# 起跳抬根，落地时当前这条手臂多弯一点。身体保持朝向镜头。
@@ -460,7 +498,7 @@ func _animate_locomotion() -> void:
 
 		CharacterAssemblyController.LocomotionMode.QUADRUPED_WALK:
 			var trot := sin(phase) if moving else 0.0
-			_set_bone_position("root", Vector3(0.0, _anim_ground(848.0) + absf(trot) * 0.03 * amount, 0.0))
+			_set_bone_position("root", Vector3(0.0, _leg_ground() + absf(trot) * 0.03 * amount, 0.0))
 			_set_bone_rotation("left_leg", trot * 0.34 * amount)
 			_set_bone_rotation("right_leg", -trot * 0.34 * amount)
 
@@ -469,7 +507,7 @@ func _animate_locomotion() -> void:
 			var wave := sin(phase) if moving else 0.0
 			var contraction := absf(wave) if moving else 0.0
 			var weave := _weave_offset(wave * 0.055 * amount * gait)
-			_set_bone_position("root", Vector3(weave.x, _anim_ground(848.0) - contraction * 0.035 * amount * gait + weave.y, weave.z))
+			_set_bone_position("root", Vector3(weave.x, _leg_ground() - contraction * 0.035 * amount * gait + weave.y, weave.z))
 			_set_bone_position("left_leg", Vector3(-0.07 - maxf(wave, 0.0) * 0.08 * amount * gait, maxf(-wave, 0.0) * 0.055 * amount * gait, 0.0))
 			_set_bone_position("right_leg", Vector3(0.07 + maxf(-wave, 0.0) * 0.08 * amount * gait, maxf(wave, 0.0) * 0.055 * amount * gait, 0.0))
 			_set_bone_rotation("left_leg", -0.38 + wave * 0.24 * amount * gait)
@@ -496,7 +534,7 @@ func _animate_locomotion() -> void:
 
 func _animate_biped(phase: float, amount: float, moving: bool) -> void:
 	var step := sin(phase) if moving else 0.0
-	var ground := _anim_ground(848.0)
+	var ground := _leg_ground()
 	match _shown_lower():
 		"kangaroo_leg":
 			var hop := maxf(sin(phase), 0.0) if moving else 0.0
@@ -650,9 +688,113 @@ func _anim_ground(lowest_psd_y: float) -> float:
 	return 0.02 - _base_positions["body"].y - (ANIM_NECK.y - lowest_psd_y) * ANIM_PIXEL
 
 
-func _ground_root(lowest_psd_y: float) -> float:
-	# 把指定 PSD 像素的底边放到骨架原点上方一点点。身体骨骼本身在 0.92。
-	return 0.02 - _base_positions["body"].y - (ANCHOR.y - lowest_psd_y) * PIXEL
+func _leg_ground() -> float:
+	var scale := _shown_leg_scale()
+	var lowest := minf(
+		_leg_foot_y("left_leg", "LeftLegSocket", scale),
+		_leg_foot_y("right_leg", "RightLegSocket", scale))
+	return 0.02 - _base_positions["body"].y - lowest
+
+
+func _shown_leg_scale() -> float:
+	match _shown_lower():
+		"ostrich_leg":
+			return 1.25
+		"kangaroo_leg":
+			return 1.15
+		"goose_foot":
+			return 1.35
+		"gerbil_leg":
+			return 0.62
+		"octopus_leg":
+			return 0.85
+		_:
+			return 1.0
+
+
+func _clear_arm_from_head() -> void:
+	var shoulder := Vector2(1264.18, 739.11)
+	var arm_center := Vector2(1500.0, 672.5)
+	var bone := _anim_delta(shoulder, ANIM_NECK, 0.0)
+	var local := _anim_delta(arm_center, shoulder, 0.0)
+	var arm_left := bone.x + local.x - 568.0 * ANIM_PIXEL * 0.5
+	var head_right := _anim_horizontal_span(HEAD_CENTER, 466.0).y
+	var shift := (head_right - JOINT_TUCK) - arm_left
+	if shift > 0.0:
+		_shift_bone("anim_arm_upper", Vector3(shift, 0.0, 0.0))
+
+
+func _separate_head_from_torso() -> void:
+	var torso := _anim_vertical_span(BANDAGE_CENTER, BANDAGE_HEIGHT)
+	var head := _anim_vertical_span(HEAD_CENTER, HEAD_HEIGHT)
+	var lift := (torso.y - JOINT_TUCK) - head.x
+	if lift <= 0.0:
+		return
+	_shift_bone("anim_head", Vector3(0.0, lift, 0.0))
+	# 触手肩接在原来的下巴上，头抬高后一起上移，避免留在胸口里。
+	_shift_bone("crawl_left", Vector3(0.0, lift, 0.0))
+	_shift_bone("crawl_right", Vector3(0.0, lift, 0.0))
+
+
+func _place_leg(socket_name: String, sprite_scale: float, tint: Color) -> void:
+	var sprite: Sprite3D = _sprites[socket_name]
+	sprite.modulate = tint
+	sprite.scale = Vector3(sprite_scale, sprite_scale, 1.0)
+	var half_h := sprite.texture.get_height() * sprite.pixel_size * 0.5
+	var pos: Vector3 = _sprite_rest_position[socket_name]
+	pos.y = _sprite_rest_position[socket_name].y + _leg_drop() - (sprite_scale - 1.0) * half_h
+	sprite.position = pos
+	_attachments[socket_name].visible = true
+
+
+func _leg_foot_y(bone_name: String, socket_name: String, sprite_scale: float) -> float:
+	var sprite: Sprite3D = _sprites[socket_name]
+	var half_h := sprite.texture.get_height() * sprite.pixel_size * 0.5
+	var top: float = float(_base_positions[bone_name].y) + float(_sprite_rest_position[socket_name].y) + half_h + _leg_drop()
+	return top - half_h * 2.0 * sprite_scale
+
+
+func _leg_drop() -> float:
+	var hip := _anim_vertical_span(BANDAGE_CENTER, BANDAGE_HEIGHT).x + JOINT_TUCK
+	var highest := maxf(
+		_leg_top_at_rest("left_leg", "LeftLegSocket"),
+		_leg_top_at_rest("right_leg", "RightLegSocket"))
+	return hip - highest
+
+
+func _leg_top_at_rest(bone_name: String, socket_name: String) -> float:
+	var sprite: Sprite3D = _sprites[socket_name]
+	var half_h := sprite.texture.get_height() * sprite.pixel_size * 0.5
+	return float(_base_positions[bone_name].y) + float(_sprite_rest_position[socket_name].y) + half_h
+
+
+func _tuck_against_torso(socket_name: String, bone_name: String, side_sign: float) -> void:
+	var sprite: Sprite3D = _sprites[socket_name]
+	var half_w := sprite.texture.get_width() * sprite.pixel_size * absf(sprite.scale.x) * 0.5
+	var torso := _anim_horizontal_span(BANDAGE_CENTER, 494.0)
+	var inner := torso.y - JOINT_TUCK if side_sign > 0.0 else torso.x + JOINT_TUCK
+	var pos: Vector3 = _sprite_rest_position[socket_name]
+	pos.x = inner - _base_positions[bone_name].x + (half_w if side_sign > 0.0 else -half_w)
+	sprite.position = pos
+
+
+func _anim_vertical_span(center: Vector2, height: float) -> Vector2:
+	var center_y := (ANIM_NECK.y - center.y) * ANIM_PIXEL
+	var half := height * ANIM_PIXEL * 0.5
+	return Vector2(center_y - half, center_y + half)
+
+
+func _anim_horizontal_span(center: Vector2, width: float) -> Vector2:
+	var center_x := (center.x - ANIM_NECK.x) * ANIM_PIXEL
+	var half := width * ANIM_PIXEL * 0.5
+	return Vector2(center_x - half, center_x + half)
+
+
+func _shift_bone(bone_name: String, offset: Vector3) -> void:
+	_base_positions[bone_name] = _base_positions[bone_name] + offset
+	var rest := Transform3D(Basis.IDENTITY, _base_positions[bone_name])
+	_skeleton.set_bone_rest(_bones[bone_name], rest)
+	_skeleton.set_bone_pose_position(_bones[bone_name], _base_positions[bone_name])
 
 
 func _restore_rolled_sprites() -> void:

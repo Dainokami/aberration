@@ -1,9 +1,13 @@
 extends CanvasLayer
 
-# 属性页是背包和装配，培养页是同一份背包和五个培养皿。
+# 属性页是角色和四条已装配肢体，培养页是背包和五个培养皿。
 # 骨骼图层盖在底板上；能拖的格子再盖在骨骼上。
 
 const CANVAS := Vector2(3840.0, 2160.0)
+const RecycleTable := preload("res://scripts/recycle_table.gd")
+const Playtest := preload("res://scripts/runtime/level_playtest.gd")
+const RECYCLE_BIN := preload("res://art/ui/inventory/recycle_bin.png")
+const DISH_LOCK := preload("res://art/ui/inventory/dish_lock.png")
 const TEXTURES := {
 	"sheet": {
 		"board": preload("res://art/ui/sheet/board.png"),
@@ -16,12 +20,20 @@ const TEXTURES := {
 }
 const HOTSPOTS := {
 	"sheet": [
-		{"box": Rect2(2890, 0, 230, 360), "page": "inventory"},
+		{"box": Rect2(2890, 0, 250, 380), "page": "inventory", "tip": "培养皿"},
+		{"box": Rect2(3140, 0, 300, 400), "page": "inventory", "tip": "培养皿"},
 	],
 	"inventory": [
-		{"box": Rect2(0, 376, 360, 210), "page": "sheet"},
+		{"box": Rect2(0, 150, 420, 280), "page": "sheet", "tip": "回到背包"},
+		{"box": Rect2(16, 8, 280, 58), "action": "close", "tip": "回到主界面"},
 	],
 }
+const SHEET_SOCKETS := [
+	{"title": "左上肢", "slot": "upper", "center": 689.0},
+	{"title": "右上肢", "slot": "upper", "center": 1019.0},
+	{"title": "左下肢", "slot": "lower", "center": 1361.0},
+	{"title": "右下肢", "slot": "lower", "center": 1705.0},
+]
 const SHEET_EQUIP := [
 	{"box": Rect2(476, 812, 268, 240), "slot": "upper"},
 	{"box": Rect2(1828, 812, 264, 236), "slot": "upper"},
@@ -51,12 +63,15 @@ var _page := "sheet"
 var _open := false
 var _bag: LimbBag
 var _bag_slots: Array[LimbSlot] = []
-var _sheet_bag_slots: Array[LimbSlot] = []
 var _equip_slots: Array[LimbSlot] = []
+var _socket_labels: Array[Label] = []
+var _socket_icons: Array[TextureRect] = []
 var _dish_sides: Array[LimbSlot] = []
 var _dish_bars: Array[ColorRect] = []
-var _attributes: Label
+var _dish_captions: Array[Label] = []
 var _note: Label
+var _hover: ColorRect
+var _hover_label: Label
 
 
 func _ready() -> void:
@@ -64,6 +79,9 @@ func _ready() -> void:
 	_bag = get_parent().get_node("Player/LimbBag") as LimbBag
 	_bag.changed.connect(_refresh_items)
 	_bag.note.connect(_show_note)
+	var player := get_parent().get_node_or_null("Player") as PlayerController
+	if player != null and player.parts != null:
+		player.parts.changed_loadout.connect(_refresh_items)
 	_refresh_items()
 	get_viewport().size_changed.connect(_fit)
 	_fit()
@@ -74,11 +92,19 @@ func _process(_delta: float) -> void:
 		return
 	for index in _bag.dishes.size():
 		var dish: Dictionary = _bag.dishes[index]
-		var running := not str(dish["a"]).is_empty() and not str(dish["b"]).is_empty()
+		var box: Rect2 = DISH_BOXES[index]
+		var running := index < LimbBag.UNLOCKED_DISHES and not str(dish["a"]).is_empty() and not str(dish["b"]).is_empty()
 		var bar := _dish_bars[index]
+		var caption := _dish_captions[index]
 		bar.visible = running
-		if running:
-			bar.size.x = DISH_BOXES[index].size.x * clampf(float(dish["time"]) / LimbBag.CULTURE_SECONDS, 0.0, 1.0)
+		caption.visible = running
+		if not running:
+			continue
+		var ratio := clampf(float(dish["time"]) / LimbBag.CULTURE_SECONDS, 0.0, 1.0)
+		var height := (box.size.y - 28.0) * ratio
+		bar.position = box.position + Vector2(12.0, box.size.y - 14.0 - height)
+		bar.size = Vector2(box.size.x - 24.0, height)
+		caption.text = "正在合成\n%s" % _clock(LimbBag.CULTURE_SECONDS - float(dish["time"]))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -130,6 +156,15 @@ func _build() -> void:
 		_pages[page_name] = page
 	_note = _make_label(_stage, Rect2(640, 2048, 2560, 90), 48)
 	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hover = ColorRect.new()
+	_hover.name = "Hover"
+	_hover.visible = false
+	_hover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hover.color = Color(0.08, 0.045, 0.04, 0.94)
+	_hover.size = Vector2(620, 190)
+	_hover.z_index = 40
+	_stage.add_child(_hover)
+	_hover_label = _make_label(_hover, Rect2(24, 16, 572, 158), 44)
 	_show_page(_page)
 
 
@@ -145,12 +180,28 @@ func _make_page(page_name: String, spec: Dictionary) -> Control:
 		var button := Button.new()
 		button.flat = true
 		button.focus_mode = Control.FOCUS_NONE
-		button.modulate = Color(1, 1, 1, 0)
 		button.position = hotspot["box"].position
 		button.size = hotspot["box"].size
-		button.tooltip_text = "培养皿" if hotspot["page"] == "inventory" else "属性"
-		var target: String = hotspot["page"]
-		button.pressed.connect(_show_page.bind(target))
+		button.tooltip_text = str(hotspot.get("tip", ""))
+		button.add_theme_font_override("font", Playtest.runtime_font())
+		button.add_theme_font_size_override("font_size", 32)
+		button.add_theme_color_override("font_color", Color(0.96, 0.9, 0.78))
+		button.add_theme_color_override("font_hover_color", Color.WHITE)
+		if str(hotspot.get("action", "")) == "close":
+			var plate := StyleBoxFlat.new()
+			plate.bg_color = Color(0.16, 0.05, 0.05, 0.92)
+			plate.set_corner_radius_all(10)
+			plate.content_margin_left = 12
+			plate.content_margin_right = 12
+			button.add_theme_stylebox_override("normal", plate)
+			button.add_theme_stylebox_override("hover", plate)
+			button.add_theme_stylebox_override("pressed", plate)
+			button.flat = false
+			button.text = "回到主界面"
+			button.pressed.connect(_set_open.bind(false))
+		else:
+			button.modulate = Color(1, 1, 1, 0)
+			button.pressed.connect(_show_page.bind(str(hotspot["page"])))
 		page.add_child(button)
 	if page_name == "sheet":
 		_build_sheet(page)
@@ -160,14 +211,20 @@ func _make_page(page_name: String, spec: Dictionary) -> Control:
 
 
 func _build_sheet(page: Control) -> void:
-	_attributes = _make_label(page, Rect2(2460, 470, 1120, 280), 46)
 	for spec: Dictionary in SHEET_EQUIP:
 		_equip_slots.append(_bind_equip(page, spec["box"], spec["slot"]))
-	for index in LimbBag.CAPACITY:
-		var column := index % 4
-		var row := index / 4
-		var box := Rect2(2500 + column * 220, 780 + row * 230, 200, 210)
-		_sheet_bag_slots.append(_bind_bag(page, box, index))
+	for spec: Dictionary in SHEET_SOCKETS:
+		var center := float(spec["center"])
+		var icon := TextureRect.new()
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.position = Vector2(2590, center - 70.0)
+		icon.size = Vector2(140, 140)
+		page.add_child(icon)
+		_socket_icons.append(icon)
+		var label := _make_label(page, Rect2(2760, center - 110.0, 900, 240), 34)
+		_socket_labels.append(label)
 
 
 func _build_culture(page: Control) -> void:
@@ -175,28 +232,47 @@ func _build_culture(page: Control) -> void:
 		_equip_slots.append(_bind_equip(page, spec["box"], spec["slot"]))
 	for index in DISH_BOXES.size():
 		var box: Rect2 = DISH_BOXES[index]
-		var top := _bind_dish(page, Rect2(box.position.x, box.position.y, box.size.x, box.size.y * 0.46), index)
-		var bottom := _bind_dish(page, Rect2(box.position.x, box.position.y + box.size.y * 0.48, box.size.x, box.size.y * 0.42), index)
-		_dish_sides.append(top)
-		_dish_sides.append(bottom)
 		var bar := ColorRect.new()
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		bar.color = Color(0.86, 0.16, 0.12, 0.9)
-		bar.position = box.position + Vector2(0, box.size.y - 18)
-		bar.size = Vector2(0, 16)
+		bar.color = Color(0.72, 0.08, 0.07, 0.94)
+		bar.visible = false
+		bar.z_index = 1
 		page.add_child(bar)
 		_dish_bars.append(bar)
+		var top := _bind_dish(page, Rect2(box.position.x, box.position.y, box.size.x, box.size.y * 0.46), index)
+		var bottom := _bind_dish(page, Rect2(box.position.x, box.position.y + box.size.y * 0.48, box.size.x, box.size.y * 0.42), index)
+		top.z_index = 2
+		bottom.z_index = 2
+		if index >= LimbBag.UNLOCKED_DISHES:
+			top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_dish_sides.append(top)
+		_dish_sides.append(bottom)
+		var caption := _make_label(page, Rect2(box.position.x + 4.0, box.position.y + 18.0, box.size.x - 8.0, 160.0), 34)
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.add_theme_constant_override("outline_size", 6)
+		caption.add_theme_color_override("font_outline_color", Color(0.2, 0.02, 0.02))
+		caption.visible = false
+		caption.z_index = 5
+		_dish_captions.append(caption)
+	var locked: Rect2 = DISH_BOXES[LimbBag.UNLOCKED_DISHES]
+	var lock := TextureRect.new()
+	lock.texture = DISH_LOCK
+	lock.mouse_filter = Control.MOUSE_FILTER_STOP
+	lock.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	lock.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	lock.position = locked.position
+	lock.size = locked.size
+	lock.z_index = 6
+	page.add_child(lock)
 	for index in GRID_COLUMNS.size():
 		for row in GRID_ROWS.size():
 			var band: Rect2 = GRID_ROWS[row]
 			var box := Rect2(GRID_COLUMNS[index], band.position.y, GRID_WIDTHS[index], band.size.y)
 			_bag_slots.append(_bind_bag(page, box, row * GRID_COLUMNS.size() + index))
-	var recycle := _add_slot(page, Rect2(3160, 1080, 500, 250))
+	_add_art(page, RECYCLE_BIN, Rect2(3432, 360, 408, 1400))
+	var recycle := _add_slot(page, Rect2(3460, 860, 360, 820))
 	recycle.item_dropped.connect(_drop_on_recycle)
-	var recycle_label := _make_label(page, Rect2(3160, 1160, 500, 80), 42)
-	recycle_label.text = "拖到这里回收"
-	recycle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_make_label(page, Rect2(760, 1968, 2200, 70), 40).text = "两个肢体放进同一个培养皿。相近的会变强，小概率出稀有；不相干会变成残肢。"
 
 
 func _bind_bag(page: Control, box: Rect2, index: int) -> LimbSlot:
@@ -227,6 +303,8 @@ func _add_slot(page: Control, box: Rect2) -> LimbSlot:
 	slot.position = box.position
 	slot.size = box.size
 	page.add_child(slot)
+	slot.mouse_entered.connect(_on_slot_hover.bind(slot))
+	slot.mouse_exited.connect(_on_slot_unhover.bind(slot))
 	return slot
 
 
@@ -235,23 +313,23 @@ func _refresh_items() -> void:
 		return
 	for slot in _bag_slots:
 		_show_bag_slot(slot)
-	for slot in _sheet_bag_slots:
-		_show_bag_slot(slot)
 	for slot in _equip_slots:
 		var slot_name := str(slot.get_meta("equip_slot"))
 		var equipped := _bag.equipped_upper if slot_name == "upper" else _bag.equipped_lower
-		_show_limb(slot, _worn_id(slot_name), {"kind": "equip", "slot": slot_name, "id": equipped})
+		var worn := _worn_id(slot_name)
+		# Z/X 产生的目录预览可以显示，但它不是背包实物，不能从装备框拖出。
+		_show_limb(slot, worn, {"kind": "equip", "slot": slot_name, "id": equipped})
 	for index in _bag.DISH_COUNT:
 		var dish: Dictionary = _bag.dishes[index]
 		_show_limb(_dish_sides[index * 2], str(dish["a"]), {"kind": "dish", "dish": index, "side": "a", "id": dish["a"]})
 		_show_limb(_dish_sides[index * 2 + 1], str(dish["b"]), {"kind": "dish", "dish": index, "side": "b", "id": dish["b"]})
-	_attributes.text = _attribute_text()
-
-
-func _attribute_text() -> String:
-	return "上肢  %s\n下肢  %s\n\n把背包里的肢体拖到骨框上替换。\nZ / X 仍可直接切换。右键回收背包里装上的肢体。" % [
-		_limb_line(_worn_id("upper")), _limb_line(_worn_id("lower"))
-	]
+	for index in SHEET_SOCKETS.size():
+		var spec: Dictionary = SHEET_SOCKETS[index]
+		var limb_id := _worn_id(str(spec["slot"]))
+		var limb := LimbCatalog.find(limb_id)
+		_socket_labels[index].text = _socket_text(str(spec["title"]), limb_id)
+		_socket_icons[index].texture = LimbCatalog.texture_for(limb_id) if limb != null else null
+		_socket_icons[index].modulate = limb.tint if limb != null else Color.WHITE
 
 
 func _worn_id(slot_name: String) -> String:
@@ -265,12 +343,37 @@ func _worn_id(slot_name: String) -> String:
 	return part.id if part != null else ""
 
 
-func _limb_line(limb_id: String) -> String:
+func _socket_text(title: String, limb_id: String) -> String:
 	var limb := LimbCatalog.find(limb_id)
-	if limb == null:
-		return "空"
-	var mark := "稀有  " if limb.rare else ""
-	return "%s%s  %s" % [mark, limb.display_name, limb.blurb]
+	var part := PartCatalog.find(limb_id)
+	if limb == null or part == null:
+		return "%s\n空" % title
+	var lines := PackedStringArray()
+	lines.append("%s  %s  %s" % [title, limb.display_name, part.rank_label()])
+	lines.append(part.attack_text())
+	var move := _move_line(part)
+	if not move.is_empty():
+		lines.append(move)
+	if not part.blurb.is_empty():
+		lines.append(part.blurb)
+	return "\n".join(lines)
+
+
+func _move_line(part: PartDefinition) -> String:
+	var bits := PackedStringArray()
+	if part.speed_band != PartDefinition.Band.NONE:
+		bits.append("移速" + ["无", "慢", "中", "快"][part.speed_band])
+	if part.jump_count > 0:
+		bits.append("%d段跳" % part.jump_count)
+	if part.burrow:
+		bits.append("遁地")
+	if not part.swim.is_empty():
+		bits.append("游动")
+	if not part.air_mode.is_empty():
+		bits.append("空中")
+	if part.can_stick:
+		bits.append("吸附")
+	return "  ".join(bits)
 
 
 func _show_bag_slot(slot: LimbSlot) -> void:
@@ -283,7 +386,10 @@ func _show_limb(slot: LimbSlot, limb_id: String, data: Dictionary) -> void:
 	var limb := LimbCatalog.find(limb_id)
 	slot.icon.texture = LimbCatalog.texture_for(limb_id) if limb else null
 	slot.icon.modulate = limb.tint if limb else Color.WHITE
-	slot.tooltip_text = limb.display_name if limb else ""
+	if limb == null:
+		slot.tooltip_text = ""
+	else:
+		slot.tooltip_text = "%s\n可回收为%d血液" % [limb.display_name, RecycleTable.amount(limb_id)]
 
 
 func _drop_on_bag(data: Dictionary, index: int) -> void:
@@ -354,6 +460,7 @@ func _make_label(parent: Control, box: Rect2, font_size: int) -> Label:
 	label.position = box.position
 	label.size = box.size
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_font_override("font", Playtest.runtime_font())
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", Color(0.96, 0.9, 0.78))
 	parent.add_child(label)
@@ -366,8 +473,38 @@ func _bounds(box: Array) -> Rect2:
 
 func _show_page(page_name: String) -> void:
 	_page = page_name
+	if _hover != null:
+		_hover.visible = false
 	for name: String in _pages:
 		(_pages[name] as Control).visible = name == page_name
+
+
+func _on_slot_hover(slot: LimbSlot) -> void:
+	if _hover == null:
+		return
+	var limb_id := str(slot.drag_data.get("id", ""))
+	var limb := LimbCatalog.find(limb_id)
+	if limb == null:
+		_hover.visible = false
+		return
+	_hover_label.text = "%s\n可回收为%d血液" % [limb.display_name, RecycleTable.amount(limb_id)]
+	var origin: Vector2 = _stage.get_global_transform().affine_inverse() * slot.global_position
+	var place := origin + Vector2(slot.size.x + 16.0, 8.0)
+	if place.x + _hover.size.x > CANVAS.x - 24.0:
+		place.x = origin.x - _hover.size.x - 16.0
+	place.y = clampf(place.y, 24.0, CANVAS.y - _hover.size.y - 24.0)
+	_hover.position = place
+	_hover.visible = true
+
+
+func _on_slot_unhover(_slot: LimbSlot) -> void:
+	if _hover != null:
+		_hover.visible = false
+
+
+func _clock(seconds: float) -> String:
+	var total := maxi(int(ceil(seconds)), 0)
+	return "%d:%02d" % [int(total / 60.0), total % 60]
 
 
 func _set_open(should_open: bool) -> void:

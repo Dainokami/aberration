@@ -1,6 +1,8 @@
 class_name CharacterAssemblyController
 extends Node
 
+const MovementConfig := preload("res://scripts/movement_table.gd")
+
 signal loadout_changed
 signal attack_started(channel: StringName, interrupted_movement: bool)
 signal conflict_reported(message: String)
@@ -60,6 +62,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		cycle_loadout()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("toggle_wings"):
+		var bag := get_node_or_null("../LimbBag")
+		if bag != null and bag.has_method("has_equipped") and bool(bag.call("has_equipped")):
+			return
 		wings_equipped = not wings_equipped
 		loadout_changed.emit()
 		get_viewport().set_input_as_handled()
@@ -148,27 +153,12 @@ func resolve_locomotion() -> LocomotionMode:
 
 
 func get_speed_multiplier() -> float:
-	match resolve_locomotion():
-		LocomotionMode.HEAD_ROLL:
-			return 0.72
-		LocomotionMode.SINGLE_ARM_HOP:
-			return 0.68
-		LocomotionMode.DOUBLE_ARM_WALK:
-			return 0.82
-		LocomotionMode.BIPED_WALK:
-			return 1.0
-		LocomotionMode.QUADRUPED_WALK:
-			return 1.18
-		LocomotionMode.SNAKE_SLITHER:
-			var snake_scale := 1.0
-			if limbs_equipped:
-				var lower := LimbCatalog.find(limb_lower_id)
-				if lower != null:
-					snake_scale = lower.speed_scale
-			return 0.9 * snake_scale
-		LocomotionMode.TENTACLE_CRAWL:
-			return 0.9
-	return 1.0
+	var scale := _gait("speed", 1.0)
+	if resolve_locomotion() == LocomotionMode.SNAKE_SLITHER and limbs_equipped:
+		var lower := LimbCatalog.find(limb_lower_id)
+		if lower != null:
+			scale *= lower.speed_scale
+	return scale
 
 
 func advance_locomotion(delta: float, motion_amount: float) -> void:
@@ -184,83 +174,59 @@ func get_locomotion_phase() -> float:
 
 
 func get_cadence() -> float:
-	match resolve_locomotion():
-		LocomotionMode.HEAD_ROLL:
-			return 9.5
-		LocomotionMode.SINGLE_ARM_HOP:
-			return 5.2
-		LocomotionMode.DOUBLE_ARM_WALK:
-			return 7.2
-		LocomotionMode.BIPED_WALK:
-			return 9.0
-		LocomotionMode.QUADRUPED_WALK:
-			return 11.5
-		LocomotionMode.SNAKE_SLITHER:
-			return 6.2
-		LocomotionMode.TENTACLE_CRAWL:
-			return 6.8
-	return 8.0
+	return _gait("cadence", 8.0)
 
 
 func get_drive_multiplier() -> float:
 	# 速度脉冲负责手感差异；平均速度仍由 get_speed_multiplier 控制。
+	var phase := _locomotion_phase
 	match resolve_locomotion():
 		LocomotionMode.HEAD_ROLL:
-			return 1.0
+			return _gait("drive_base", 1.0)
 		LocomotionMode.SINGLE_ARM_HOP:
-			var hop_push := maxf(sin(_locomotion_phase), 0.0)
-			return 0.28 + hop_push * 1.18
+			var hop_push := maxf(sin(phase), 0.0)
+			return _gait("drive_base", 0.28) + hop_push * _gait("drive_pulse", 1.18)
 		LocomotionMode.DOUBLE_ARM_WALK:
-			return 0.62 + absf(cos(_locomotion_phase)) * 0.46
+			return _gait("drive_base", 0.62) + absf(cos(phase)) * _gait("drive_pulse", 0.46)
 		LocomotionMode.BIPED_WALK:
-			return 0.96 + absf(sin(_locomotion_phase * 2.0)) * 0.08
+			return _gait("drive_base", 0.96) + absf(sin(phase * _gait("drive_frequency", 2.0))) * _gait("drive_pulse", 0.08)
 		LocomotionMode.QUADRUPED_WALK:
-			return 0.92 + absf(sin(_locomotion_phase * 2.0)) * 0.16
+			return _gait("drive_base", 0.92) + absf(sin(phase * _gait("drive_frequency", 2.0))) * _gait("drive_pulse", 0.16)
 		LocomotionMode.SNAKE_SLITHER:
 			# 只留很轻的起伏。大幅一冲一停会让身体看起来在跟路线较劲。
-			return 0.92 + sin(_locomotion_phase) * 0.08
+			return _gait("drive_base", 0.92) + sin(phase) * _gait("drive_pulse", 0.08)
 		LocomotionMode.TENTACLE_CRAWL:
 			# 两侧触手轮流吸附、收缩。低谷仍保留推进，避免操作完全停顿。
-			return 0.68 + pow(absf(sin(_locomotion_phase)), 1.35) * 0.48
+			return _gait("drive_base", 0.68) + pow(absf(sin(phase)), _gait("drive_power", 1.35)) * _gait("drive_pulse", 0.48)
 	return 1.0
 
 
 func get_acceleration_multiplier() -> float:
-	match resolve_locomotion():
-		LocomotionMode.HEAD_ROLL:
-			return 0.34
-		LocomotionMode.SINGLE_ARM_HOP:
-			return 0.88
-		LocomotionMode.DOUBLE_ARM_WALK:
-			return 0.72
-		LocomotionMode.BIPED_WALK:
-			return 1.0
-		LocomotionMode.QUADRUPED_WALK:
-			return 1.28
-		LocomotionMode.SNAKE_SLITHER:
-			return 0.56
-		LocomotionMode.TENTACLE_CRAWL:
-			return 0.7
-	return 1.0
+	return _gait("acceleration", 1.0)
 
 
 func get_deceleration_multiplier() -> float:
+	return _gait("deceleration", 1.0)
+
+
+func _gait(key: String, fallback: float) -> float:
+	var mode := "biped_walk"
 	match resolve_locomotion():
 		LocomotionMode.HEAD_ROLL:
-			return 0.18
+			mode = "head_roll"
 		LocomotionMode.SINGLE_ARM_HOP:
-			return 0.72
+			mode = "single_arm_hop"
 		LocomotionMode.DOUBLE_ARM_WALK:
-			return 1.18
+			mode = "double_arm_walk"
 		LocomotionMode.BIPED_WALK:
-			return 1.0
+			mode = "biped_walk"
 		LocomotionMode.QUADRUPED_WALK:
-			return 1.22
+			mode = "quadruped_walk"
 		LocomotionMode.SNAKE_SLITHER:
-			return 0.42
+			mode = "snake_slither"
 		LocomotionMode.TENTACLE_CRAWL:
-			return 0.58
-	return 1.0
+			mode = "tentacle_crawl"
+	return MovementConfig.gait(mode, key, fallback)
 
 
 func get_collision_height() -> float:

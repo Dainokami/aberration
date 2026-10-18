@@ -1,6 +1,8 @@
 class_name PartLoadout
 extends Node
 
+const MovementConfig := preload("res://scripts/movement_table.gd")
+
 signal changed_loadout
 signal note(message: String)
 signal attacked(around: bool)
@@ -34,6 +36,7 @@ var _coyote := 0.0
 var _was_floor := true
 var _air_peak_y := 0.0
 var _auto_timer := 0.0
+var _auto_arm := 0.0
 var _rings: Array[Dictionary] = []
 var _limb_part_cache: Dictionary = {}
 
@@ -122,6 +125,8 @@ func controls_vertical() -> bool:
 		return true
 	if jump_count() > 0:
 		return true
+	if upper.has_ability("grab_climb", breakthrough):
+		return true
 	return _swim_controls_air()
 
 
@@ -146,7 +151,7 @@ func speed_on(tags: PackedStringArray) -> float:
 			return PartDefinition.speed_value(PartDefinition.Band.NORMAL)
 		return 0.0
 	if lower.speed_band == PartDefinition.Band.NONE:
-		return UNSPECIFIED_SPEED
+		return MovementConfig.band("unspecified", UNSPECIFIED_SPEED)
 	if not _tags_overlap(lower.allowed_surfaces, tags):
 		return 0.0
 	return PartDefinition.speed_value(lower.speed_band)
@@ -200,9 +205,8 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 	if _hold_mode == "throw":
 		return current.move_toward(Vector3.ZERO, 48.0 * delta)
 	if _climbing:
-		var axes := player.camera_planar_axes()
 		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-		return axes[0] * input.x * 3.2
+		return _climb_tangent(player) * input.x * MovementConfig.number("part", "climb_strafe_speed", 3.2)
 	if _diving:
 		var flat := _dive_point - player.global_position
 		flat.y = 0.0
@@ -219,7 +223,7 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 		drive = _biped_drive(assembly)
 	var target := wish * speed_on(_tags()) * drive
 	var moving := wish.length_squared() > 0.01
-	var accel := 34.0 if moving else 40.0
+	var accel := MovementConfig.number("part", "acceleration", 34.0) if moving else MovementConfig.number("part", "deceleration", 40.0)
 	if tentacle_crawl:
 		accel *= assembly.get_acceleration_multiplier() if moving else assembly.get_deceleration_multiplier()
 	elif mode == CharacterAssemblyController.LocomotionMode.BIPED_WALK:
@@ -227,7 +231,7 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 	if is_burrowed():
 		accel *= 0.75
 	if not player.is_on_floor() and not _flying and not _stuck:
-		accel *= 0.55
+		accel *= MovementConfig.number("body", "air_control", 0.55)
 	return current.move_toward(target, accel * delta)
 
 
@@ -239,16 +243,21 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 		_glide_left = 0.0
 		_glide_armed = false
 	if Input.is_action_just_pressed("air_action"):
-		_jump_buffer = 0.12
+		_jump_buffer = MovementConfig.number("part", "jump_buffer_time", 0.12)
 	else:
 		_jump_buffer = maxf(_jump_buffer - delta, 0.0)
 	if on_floor:
-		_coyote = 0.12
+		_coyote = MovementConfig.number("part", "coyote_time", 0.12)
 	else:
 		_coyote = maxf(_coyote - delta, 0.0)
+	if not _climbing and _try_grab_on_jump(player):
+		return
 
 	if _climbing:
-		if _climb_target != null and _climb_target.ledge_height >= 0.0 and player.global_position.y >= _climb_target.ledge_height - 0.2:
+		if _climb_target == null:
+			_climbing = false
+			return
+		if _climb_target.ledge_height >= 0.0 and player.global_position.y >= _climb_target.ledge_height - 0.2:
 			var landed := _climb_target.ledge_point
 			_climbing = false
 			_climb_target = null
@@ -257,13 +266,16 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 			note.emit("爬上去了")
 			return
 		var climb := Input.get_action_strength("move_forward") - Input.get_action_strength("move_back")
-		player.velocity.y = climb * 3.4
+		player.velocity.y = climb * MovementConfig.number("part", "climb_vertical_speed", 3.4)
+		var base_y := _climb_target.global_position.y - 1.0
+		if player.global_position.y <= base_y and player.velocity.y < 0.0:
+			player.velocity.y = 0.0
 		return
 	if _diving:
 		_tick_dive(player)
 		return
 	if _stuck:
-		player.velocity.y = move_toward(player.velocity.y, 0.0, 24.0 * delta)
+		player.velocity.y = move_toward(player.velocity.y, 0.0, MovementConfig.number("part", "stuck_deceleration", 24.0) * delta)
 		return
 	if upper.air_mode == "flight":
 		_apply_flight(player, delta)
@@ -274,8 +286,8 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 		return
 	if not on_floor and upper.air_mode == "hover":
 		var descending := Input.is_action_pressed("air_action")
-		var target := -2.6 if descending else 0.0
-		player.velocity.y = move_toward(player.velocity.y, target, 16.0 * delta)
+		var target := -MovementConfig.number("part", "hover_fall_speed", 2.6) if descending else 0.0
+		player.velocity.y = move_toward(player.velocity.y, target, MovementConfig.number("part", "hover_acceleration", 16.0) * delta)
 		return
 	if not on_floor and upper.air_mode == "glide":
 		if not _glide_armed:
@@ -283,10 +295,10 @@ func apply_vertical(player: PlayerController, delta: float) -> void:
 			_glide_left = 0.85
 		if _glide_left > 0.0:
 			_glide_left -= delta
-			player.velocity.y = move_toward(player.velocity.y, -1.25, 18.0 * delta)
+			player.velocity.y = move_toward(player.velocity.y, -MovementConfig.number("part", "glide_fall_speed", 1.25), MovementConfig.number("part", "glide_acceleration", 18.0) * delta)
 			return
 	if not player.is_on_floor():
-		player.velocity.y -= 18.0 * delta
+		player.velocity.y -= MovementConfig.number("part", "gravity", 18.0) * delta
 	elif player.velocity.y < 0.0:
 		player.velocity.y = 0.0
 
@@ -317,6 +329,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_maintain_climb()
 	_attack_cooldown = maxf(_attack_cooldown - delta, 0.0)
 	if _swing > 0.0:
 		_swing = maxf(_swing - delta, 0.0)
@@ -420,6 +433,68 @@ func _interact() -> void:
 	note.emit("附近没有这个部件能用的东西")
 
 
+func _climb_outward() -> Vector3:
+	if _climb_target == null:
+		return Vector3.BACK
+	var outward := _climb_target.global_position - _climb_target.ledge_point
+	outward.y = 0.0
+	if outward.length_squared() < 0.0001:
+		outward = Vector3.BACK
+	return outward.normalized()
+
+
+func _climb_tangent(player: PlayerController) -> Vector3:
+	var tangent := _climb_outward().cross(Vector3.UP)
+	if tangent.length_squared() < 0.0001:
+		return player.camera_planar_axes()[0]
+	tangent = tangent.normalized()
+	if tangent.dot(player.camera_planar_axes()[0]) < 0.0:
+		tangent = -tangent
+	return tangent
+
+
+func _maintain_climb() -> void:
+	var player := _player()
+	if player == null or not _climbing or _climb_target == null or not is_instance_valid(_climb_target):
+		return
+	_retarget_climb(player)
+	var outward := _climb_outward()
+	var marker := _climb_target.global_position
+	var along := player.global_position - marker
+	along -= outward * along.dot(outward)
+	along.y = 0.0
+	var stuck := marker + outward * 0.95 + along
+	stuck.y = maxf(player.global_position.y, marker.y - 1.0)
+	player.global_position = stuck
+
+
+func _retarget_climb(player: PlayerController) -> void:
+	var outward := _climb_outward()
+	var best := _climb_target
+	var best_distance := _climb_planar_distance(player.global_position, best.global_position)
+	for node in player.get_tree().get_nodes_in_group("affordance"):
+		if not node is AffordanceProp or node == _climb_target:
+			continue
+		var marker := node as AffordanceProp
+		if marker.kind != "climbable":
+			continue
+		var other := marker.global_position - marker.ledge_point
+		other.y = 0.0
+		if other.length_squared() < 0.0001 or other.normalized().dot(outward) < 0.99:
+			continue
+		var distance := _climb_planar_distance(player.global_position, marker.global_position)
+		if distance + 0.15 < best_distance:
+			best_distance = distance
+			best = marker
+	_climb_target = best
+
+
+func _climb_planar_distance(a: Vector3, b: Vector3) -> float:
+	a.y = 0.0
+	b.y = 0.0
+	return a.distance_to(b)
+
+
 func _attach_climb(player: PlayerController, pillar: AffordanceProp) -> void:
 	_climbing = true
 	_climb_target = pillar
@@ -431,7 +506,7 @@ func _attach_climb(player: PlayerController, pillar: AffordanceProp) -> void:
 	parked.y = maxf(player.global_position.y, 0.45)
 	player.global_position = parked
 	player.velocity = Vector3.ZERO
-	note.emit("抓住了，W/S 上下，再按 G 松开")
+	note.emit("抓住了，W 上 S 下 A 左 D 右，再按 G 松开")
 
 
 func _try_throw_grab(origin: Vector3) -> bool:
@@ -500,21 +575,45 @@ func _watch_landing() -> void:
 
 
 func _auto_combat() -> void:
+	var delta := get_physics_process_delta_time()
 	if _auto_timer > 0.0:
-		_auto_timer -= get_physics_process_delta_time()
+		_auto_timer -= delta
 		return
 	var player := _player()
 	if player == null:
 		return
 	var upper := current_upper()
-	# 环境破坏全部由 G 主动触发。这里只保留遁地状态自身的战斗伏击。
+	var lower := current_lower()
+	var smash: AffordanceProp = null
+	var smash_kind := ""
+	if upper.has_ability("smash_hard", breakthrough):
+		smash = SceneProbe.nearest_reachable(player, 2.1, PackedStringArray(["destructible_hard"]))
+		smash_kind = "hard"
+	if smash == null and lower.has_ability("smash_near", breakthrough):
+		smash = SceneProbe.nearest_reachable(player, 2.1, PackedStringArray(["destructible_hard", "destructible_soft"]))
+		smash_kind = "near"
+	var ambush: AffordanceProp = null
 	if is_burrowed() and upper.has_ability("burrow_ambush", breakthrough):
-		var enemy := SceneProbe.nearest_reachable(player, 1.55, ENEMY_KINDS)
-		if enemy:
-			var ambushed := enemy.take_hit(PartDefinition.power_value(upper.attack_power) + 6)
-			_auto_timer = 0.45
-			if ambushed:
-				note.emit("从下面突袭")
+		ambush = SceneProbe.nearest_reachable(player, 1.55, ENEMY_KINDS)
+	if smash == null and ambush == null:
+		_auto_arm = 0.0
+		return
+	_auto_arm += delta
+	if _auto_arm < 0.3:
+		return
+	_auto_arm = 0.0
+	_auto_timer = 0.45
+	if smash != null and smash_kind == "hard":
+		var destroyed := smash.take_hit(PartDefinition.power_value(upper.attack_power))
+		note.emit("砸碎了" if destroyed else "砸了一下")
+		return
+	if smash != null:
+		var smashed := smash.take_hit(10)
+		note.emit("震碎了" if smashed else "震击了一下")
+		return
+	var ambushed := ambush.take_hit(PartDefinition.power_value(upper.attack_power) + 6)
+	if ambushed:
+		note.emit("从下面突袭")
 
 
 func _follow_held(delta: float) -> void:
@@ -539,17 +638,17 @@ func _apply_flight(player: PlayerController, delta: float) -> void:
 	var grounded := player.is_on_floor()
 	if not _flying and Input.is_action_just_pressed("air_action") and (grounded or _coyote > 0.0):
 		_flying = true
-		player.velocity.y = 3.2
+		player.velocity.y = MovementConfig.number("part", "flight_launch_speed", 3.2)
 		return
 	if _flying:
-		var target := 4.0 if Input.is_action_pressed("air_action") else -3.2
-		player.velocity.y = move_toward(player.velocity.y, target, 14.0 * delta)
+		var target := MovementConfig.number("part", "flight_climb_speed", 4.0) if Input.is_action_pressed("air_action") else -MovementConfig.number("part", "flight_fall_speed", 3.2)
+		player.velocity.y = move_toward(player.velocity.y, target, MovementConfig.number("part", "flight_acceleration", 14.0) * delta)
 		if grounded and player.velocity.y <= 0.0:
 			_flying = false
 			player.velocity.y = 0.0
 		return
 	if not grounded:
-		player.velocity.y -= 18.0 * delta
+		player.velocity.y -= MovementConfig.number("part", "gravity", 18.0) * delta
 	else:
 		player.velocity.y = 0.0
 
@@ -559,12 +658,12 @@ func _apply_swim_vertical(player: PlayerController, delta: float) -> bool:
 		return false
 	match current_lower().swim:
 		"hover_fast", "skim":
-			player.velocity.y = move_toward(player.velocity.y, 0.0, 22.0 * delta)
+			player.velocity.y = move_toward(player.velocity.y, 0.0, MovementConfig.number("part", "swim_skim_acceleration", 22.0) * delta)
 			return true
 		"sink":
 			var moving := Input.get_vector("move_left", "move_right", "move_forward", "move_back").length() > 0.1
-			var target := 0.0 if moving else -1.8
-			player.velocity.y = move_toward(player.velocity.y, target, 8.0 * delta)
+			var target := 0.0 if moving else -MovementConfig.number("part", "swim_sink_speed", 1.8)
+			player.velocity.y = move_toward(player.velocity.y, target, MovementConfig.number("part", "swim_acceleration", 8.0) * delta)
 			return true
 		_:
 			return false
@@ -577,7 +676,7 @@ func _try_jump(player: PlayerController, on_floor: bool) -> bool:
 	var air_jump := _jump_buffer > 0.0 and not on_floor and _coyote <= 0.0 and _jumps_left > 0 and jump_count() > 1
 	if not ground_jump and not air_jump:
 		return false
-	player.velocity.y = 7.4
+	player.velocity.y = MovementConfig.number("part", "jump_speed", 7.4)
 	_jump_buffer = 0.0
 	_coyote = 0.0
 	if ground_jump:
@@ -690,7 +789,37 @@ func _attack_channel(limb_id: String) -> StringName:
 
 
 func _lock_attack_target(player: PlayerController) -> AffordanceProp:
-	return SceneProbe.nearest_reachable(player, ATTACK_RANGE, ATTACK_KINDS)
+	var facing := _facing(player)
+	var around := current_upper().attack_shape == PartDefinition.AttackShape.AROUND
+	var best: AffordanceProp = null
+	var best_distance := ATTACK_RANGE
+	for prop in SceneProbe.each_kind(ATTACK_KINDS):
+		var offset := prop.interaction_point() - player.global_position
+		var distance := offset.length()
+		if distance > best_distance:
+			continue
+		if not around:
+			var flat := Vector3(offset.x, 0.0, offset.z)
+			if flat.length_squared() > 0.0001 and flat.normalized().dot(facing) < 0.0:
+				continue
+		if not SceneProbe.is_reachable(player, prop):
+			continue
+		best_distance = distance
+		best = prop
+	return best
+
+
+func _try_grab_on_jump(player: PlayerController) -> bool:
+	if not Input.is_action_just_pressed("air_action"):
+		return false
+	if not current_upper().has_ability("grab_climb", breakthrough):
+		return false
+	var pillar := SceneProbe.nearest_reachable(player, 1.9, PackedStringArray(["climbable"]))
+	if pillar == null:
+		return false
+	_jump_buffer = 0.0
+	_attach_climb(player, pillar)
+	return true
 
 
 func _slam(player: PlayerController) -> void:

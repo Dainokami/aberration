@@ -1,0 +1,20 @@
+{
+  "_说明": "主动回收得到的血液。改 blood 后，鼠标悬浮和拖进回收箱都读这里。",
+  "gorilla_arm": { "name": "类猩猩胳膊", "blood": 18 },
+  "gibbon_arm": { "name": "类长臂猿胳膊", "blood": 10 },
+  "goose_wing": { "name": "类鹅翅膀", "blood": 10 },
+  "octopus_arm": { "name": "类章鱼触手", "blood": 18 },
+  "bat_wing": { "name": "类蝙蝠翅膀", "blood": 15 },
+  "albatross_wing": { "name": "类信天翁翅膀", "blood": 12 },
+  "eagle_wing": { "name": "类鹰翅膀", "blood": 15 },
+  "gerbil_paw": { "name": "类沙鼠前肢", "blood": 27 },
+  "wolf_leg": { "name": "类草原狼腿", "blood": 10 },
+  "ostrich_leg": { "name": "类鸵鸟腿", "blood": 23 },
+  "gerbil_leg": { "name": "类沙鼠腿", "blood": 27 },
+  "kangaroo_leg": { "name": "类袋鼠腿", "blood": 27 },
+  "demon_dog_leg": { "name": "类恶魔犬腿", "blood": 12 },
+  "octopus_leg": { "name": "类章鱼触手", "blood": 18 },
+  "goose_foot": { "name": "类鹅蹼", "blood": 15 },
+  "water_snake": { "name": "类水蛇尾", "blood": 15 },
+  "fish_tail": { "name": "类鱼尾", "blood": 15 }
+}

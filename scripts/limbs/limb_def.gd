@@ -16,3 +16,8 @@ var visual_scale := 1.0
 var tint := Color.WHITE
 var blurb := ""
 var speed_scale := 1.0
+# 只有飞书能力表中的 17 个基础部件可以再次放进培养皿。
+var culture_ingredient := false
+# 缺少正式素材的合成结果使用现有代理图，并明确保留占位状态。
+var placeholder_art := false
+var result_kind := "ordinary"

@@ -101,7 +101,7 @@ func _tick() -> void:
 			bag.try_add("mantis_arm")
 			bag.move_bag_to_equip(bag.slots.find("mantis_arm"), "upper")
 			if not _on("AnimScytheBlade") or _on("AnimArmUpper"):
-				_fail("installed mantis should show the scythe before the key")
+				_fail("installed mantis should show the scythe before the key; equipped=%s empty=%s mantis=%s" % [bag.equipped_upper, bag.slots.find(""), bag.slots.find("mantis_arm")])
 				return
 			_tap("cycle_upper_part")
 		18:
@@ -113,7 +113,7 @@ func _tick() -> void:
 				return
 			var bag := _player.get_node("LimbBag") as LimbBag
 			if bag.equipped_upper != "" or not bag.slots.has("mantis_arm"):
-				_fail("the key should put the installed mantis back in the bag")
+				_fail("the key should preview gibbon and put mantis back in the bag")
 				return
 			print("LIMB_SWITCH: PASS")
 			quit(0)

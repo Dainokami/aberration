@@ -6,15 +6,15 @@ signal note(message: String)
 
 const CAPACITY := 16
 const DISH_COUNT := 5
+const UNLOCKED_DISHES := 4
 const CULTURE_SECONDS := 6.0
+const RecycleTable := preload("res://scripts/recycle_table.gd")
 
 var slots: Array[String] = []
 var equipped_upper := ""
+var blood := 0
 var equipped_lower := ""
 var dishes: Array[Dictionary] = []
-var rare_roll := -1.0
-
-var _rng := RandomNumberGenerator.new()
 
 
 func _init() -> void:
@@ -27,13 +27,16 @@ func _init() -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_rng.randomize()
 
 
 func _process(delta: float) -> void:
 	var finished := false
 	for dish: Dictionary in dishes:
-		if str(dish["a"]).is_empty() or str(dish["b"]).is_empty():
+		var left := str(dish["a"])
+		var right := str(dish["b"])
+		if left.is_empty() or right.is_empty():
+			continue
+		if not LimbCatalog.can_culture(left) or not LimbCatalog.can_culture(right):
 			continue
 		dish["time"] = float(dish["time"]) + delta
 		if float(dish["time"]) >= CULTURE_SECONDS:
@@ -74,9 +77,17 @@ func report(message: String) -> void:
 	note.emit(message)
 
 
+func set_starting_loadout(upper_id: String, lower_id: String) -> void:
+	equipped_upper = upper_id
+	equipped_lower = lower_id
+
+
 func stock_spares() -> void:
-	# 身上默认穿着猩猩臂和狼腿。恶魔犬腿仍用 X 切换。留下空格，培养和拾取才放得进去。
-	var skip := PackedStringArray(["gorilla_arm", "wolf_leg", "demon_dog_leg"])
+	# 当前穿戴不重复放入背包；缺省测试件仍可在场景拾取或用 Z/X 预览。
+	# 至少留四格，保证两次快捷键卸装后仍有拾取和培养空间。
+	var skip := PackedStringArray([
+		equipped_upper, equipped_lower, "demon_dog_leg", "bat_wing", "goose_foot",
+	])
 	for part in PartCatalog.uppers():
 		_stock_one(part.id, skip)
 	for part in PartCatalog.lowers():
@@ -104,6 +115,7 @@ func try_add(limb_id: String) -> bool:
 	return true
 
 
+
 func cycle_slot(slot_name: String) -> bool:
 	var owned: Array[String] = []
 	var current := _equipped(slot_name)
@@ -121,15 +133,9 @@ func cycle_slot(slot_name: String) -> bool:
 	if next == current:
 		note.emit("只有这一件%s：%s" % [label, LimbCatalog.find(current).display_name])
 		return true
-	if not current.is_empty():
-		var empty := _first_empty()
-		if empty < 0:
-			note.emit("背包满了，卸不下当前的肢体")
-			return true
-		slots[empty] = current
 	var bag_index := slots.find(next)
-	if bag_index >= 0:
-		slots[bag_index] = ""
+	# 直接与目标所在格交换，不依赖空格；换下来的肢体必定回到背包。
+	slots[bag_index] = current
 	_set_equipped(slot_name, next)
 	_sync_body()
 	note.emit("装上了" + LimbCatalog.find(next).display_name)
@@ -174,12 +180,17 @@ func move_equip_to_bag(slot_name: String, index: int) -> void:
 func move_bag_to_dish(index: int, dish_index: int) -> void:
 	if not _bag_index(index) or not _dish_index(dish_index):
 		return
+	if not _dish_unlocked(dish_index):
+		note.emit("这个培养皿还锁着")
+		return
 	var dish := dishes[dish_index]
 	if not str(dish["a"]).is_empty() and not str(dish["b"]).is_empty():
 		note.emit("这个培养皿已经有两件了")
 		return
 	var limb_id := slots[index]
 	if limb_id.is_empty():
+		return
+	if not _dish_accepts(dish, limb_id):
 		return
 	slots[index] = ""
 	if str(dish["a"]).is_empty():
@@ -202,6 +213,9 @@ func move_dish_to_bag(dish_index: int, side: String, index: int) -> void:
 	if limb_id.is_empty():
 		return
 	var occupant := slots[index]
+	if not occupant.is_empty() and not LimbCatalog.can_culture(occupant):
+		note.emit("这个产物不能放回培养皿，请先找一个空背包格")
+		return
 	slots[index] = limb_id
 	dish[side] = occupant
 	dish["time"] = 0.0
@@ -211,12 +225,17 @@ func move_dish_to_bag(dish_index: int, side: String, index: int) -> void:
 func move_equip_to_dish(slot_name: String, dish_index: int) -> void:
 	if not _dish_index(dish_index):
 		return
+	if not _dish_unlocked(dish_index):
+		note.emit("这个培养皿还锁着")
+		return
 	var limb_id := _equipped(slot_name)
 	if limb_id.is_empty():
 		return
 	var dish := dishes[dish_index]
 	if not str(dish["a"]).is_empty() and not str(dish["b"]).is_empty():
 		note.emit("这个培养皿已经有两件了")
+		return
+	if not _dish_accepts(dish, limb_id):
 		return
 	_set_equipped(slot_name, "")
 	if str(dish["a"]).is_empty():
@@ -236,9 +255,14 @@ func move_dish_to_dish(from_index: int, side: String, to_index: int) -> void:
 	var limb_id := str(source[side])
 	if limb_id.is_empty():
 		return
+	if not _dish_unlocked(to_index):
+		note.emit("这个培养皿还锁着")
+		return
 	var dest: Dictionary = dishes[to_index]
 	if not str(dest["a"]).is_empty() and not str(dest["b"]).is_empty():
 		note.emit("这个培养皿已经有两件了")
+		return
+	if not _dish_accepts(dest, limb_id):
 		return
 	source[side] = ""
 	source["time"] = 0.0
@@ -261,8 +285,13 @@ func move_dish_to_equip(dish_index: int, side: String, slot_name: String) -> voi
 		note.emit("这个肢体装不到这里")
 		return
 	var previous := _equipped(slot_name)
-	dish[side] = previous
+	if not previous.is_empty() and _first_empty() < 0:
+		note.emit("背包满了，换下来的肢体没有位置")
+		return
+	dish[side] = ""
 	dish["time"] = 0.0
+	if not previous.is_empty():
+		slots[_first_empty()] = previous
 	_set_equipped(slot_name, limb_id)
 	_sync_body()
 	note.emit("装上了" + limb.display_name)
@@ -312,7 +341,11 @@ func recycle_dish(dish_index: int, side: String) -> void:
 func _finish_dish(dish: Dictionary) -> void:
 	var left := str(dish["a"])
 	var right := str(dish["b"])
-	var result_id := LimbCatalog.combine(left, right, _next_roll())
+	var result_id := LimbCatalog.combine(left, right)
+	if result_id.is_empty():
+		dish["time"] = 0.0
+		note.emit("这两件不是有效的培养原料")
+		return
 	dish["a"] = ""
 	dish["b"] = ""
 	dish["time"] = 0.0
@@ -326,9 +359,21 @@ func _finish_dish(dish: Dictionary) -> void:
 	if result != null and result.rare:
 		note.emit("培养出稀有肢体：" + result_name)
 	elif result_id == "scrap":
-		note.emit("这两件对不上，养成了残肢")
+		note.emit("培养出了畸变废肢")
 	else:
 		note.emit("培养完成：" + result_name)
+
+
+func _dish_accepts(dish: Dictionary, limb_id: String) -> bool:
+	if not LimbCatalog.can_culture(limb_id):
+		note.emit("只有能力表中的17种基础部件可以投入培养皿")
+		return false
+	for side in ["a", "b"]:
+		var existing := str(dish[side])
+		if not existing.is_empty() and not LimbCatalog.can_culture(existing):
+			note.emit("请先取出培养皿里的不可合成产物")
+			return false
+	return true
 
 
 func _collect_nearby() -> bool:
@@ -354,7 +399,13 @@ func _collect_nearby() -> bool:
 
 func _recycle(limb_id: String) -> void:
 	var limb := LimbCatalog.find(limb_id)
-	note.emit("回收了" + (limb.display_name if limb else limb_id))
+	var name := limb.display_name if limb else limb_id
+	var amount := RecycleTable.amount(limb_id)
+	if amount > 0:
+		blood += amount
+		note.emit("肢解了%s，获得 %d 血液" % [name, amount])
+	else:
+		note.emit("回收了" + name)
 
 
 func _sync_body() -> void:
@@ -390,13 +441,9 @@ func _dish_index(index: int) -> bool:
 	return index >= 0 and index < dishes.size()
 
 
+func _dish_unlocked(index: int) -> bool:
+	return index >= 0 and index < UNLOCKED_DISHES
+
+
 func _dish_side(side: String) -> bool:
 	return side == "a" or side == "b"
-
-
-func _next_roll() -> float:
-	if rare_roll >= 0.0:
-		var roll := rare_roll
-		rare_roll = -1.0
-		return roll
-	return _rng.randf()

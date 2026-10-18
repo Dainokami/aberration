@@ -1,9 +1,8 @@
 class_name LimbCatalog
 extends RefCounted
 
-# 同一族两件合成下一档。roll 低于 RARE_CHANCE 时改出该族稀有肢体。
-# 不同族，或残肢参与，结果是更弱的残肢。
-const RARE_CHANCE := 0.12
+# 培养结果由 17×17 策划矩阵唯一决定；随机数不再参与产物选择。
+const RecipeCatalog := preload("res://scripts/limbs/limb_recipe_catalog.gd")
 
 static var _defs: Dictionary = {}
 
@@ -20,38 +19,59 @@ static func texture_for(limb_id: String) -> Texture2D:
 	return load(limb.texture_path) as Texture2D
 
 
-static func combine(left_id: String, right_id: String, roll: float) -> String:
-	var left := find(left_id)
-	var right := find(right_id)
-	if left == null or right == null:
-		return "scrap"
-	if left.family.is_empty() or left.family != right.family or left.family == "scrap":
-		return "scrap"
-	var rare_id := left.rare_id if not left.rare_id.is_empty() else right.rare_id
-	if not rare_id.is_empty() and roll < RARE_CHANCE and not (left.rare and right.rare):
-		return rare_id
-	if left.rare and right.rare:
-		return left.id
-	if left.tier >= 2 and right.tier >= 2:
-		return left.id if left.tier >= right.tier else right.id
-	if left.tier <= right.tier and not left.upgrade_id.is_empty():
-		return left.upgrade_id
-	if not right.upgrade_id.is_empty():
-		return right.upgrade_id
-	return left.id if left.tier >= right.tier else right.id
+static func can_culture(limb_id: String) -> bool:
+	var limb := find(limb_id)
+	return limb != null and limb.culture_ingredient and RecipeCatalog.is_ingredient(limb_id)
+
+
+static func combine(left_id: String, right_id: String, _unused_roll := -1.0) -> String:
+	if not can_culture(left_id) or not can_culture(right_id):
+		return ""
+	return RecipeCatalog.combine(left_id, right_id)
 
 
 static func _ensure() -> void:
 	if not _defs.is_empty():
 		return
-	_add("snake_body", "蛇身", "lower", "serpent", 1, false, "python_body", "crowned_snake", "res://art/characters/anim/tail.png", "tail", 1.0, Color.WHITE, "贴地蠕动", 1.0)
-	_add("python_body", "巨蟒身", "lower", "serpent", 2, false, "", "crowned_snake", "res://art/characters/anim/tail.png", "tail", 1.18, Color(0.78, 0.95, 0.62), "两条蛇身养成的加强蛇身", 1.22)
-	_add("crowned_snake", "冠蛇", "lower", "serpent", 3, true, "", "", "res://art/characters/anim/tail.png", "tail", 1.24, Color(1.0, 0.82, 0.28), "稀有蛇身", 1.4)
-	_add("mantis_arm", "螳螂臂", "upper", "mantis", 1, false, "mantis_blade", "mantis_king", "res://art/characters/anim/scythe_blade.png", "scythe", 1.0, Color.WHITE, "镰状前臂", 1.0)
-	_add("mantis_blade", "巨镰螳臂", "upper", "mantis", 2, false, "", "mantis_king", "res://art/characters/anim/scythe_blade.png", "scythe", 1.16, Color(0.95, 0.55, 0.45), "两条螳螂臂养成的加强臂", 1.0)
-	_add("mantis_king", "王螳臂", "upper", "mantis", 3, true, "", "", "res://art/characters/anim/scythe_blade.png", "scythe", 1.28, Color(1.0, 0.84, 0.32), "稀有螳螂臂", 1.0)
-	_add("scrap", "残肢", "none", "scrap", 0, false, "", "", "res://art/characters/psd/arm_hop.png", "", 1.0, Color(0.55, 0.5, 0.48), "对不上的肢体养成的废物，只能回收", 1.0)
+	# 旧白盒肢体继续保留给移动/骨骼验证，但不属于 17 个培养原料。
+	_add("snake_body", "蛇身", "lower", "serpent", 1, false, "python_body", "crowned_snake", "res://art/characters/anim/tail.png", "tail", 1.0, Color.WHITE, "旧白盒蛇身，不可投入培养皿", 1.0)
+	_add("python_body", "巨蟒身", "lower", "serpent", 2, false, "", "crowned_snake", "res://art/characters/anim/tail.png", "tail", 1.18, Color(0.78, 0.95, 0.62), "旧白盒加强蛇身，不可投入培养皿", 1.22)
+	_add("crowned_snake", "冠蛇", "lower", "serpent", 3, true, "", "", "res://art/characters/anim/tail.png", "tail", 1.24, Color(1.0, 0.82, 0.28), "旧白盒稀有蛇身，不可投入培养皿", 1.4)
+	_add("mantis_arm", "螳螂臂", "upper", "mantis", 1, false, "mantis_blade", "mantis_king", "res://art/characters/anim/scythe_blade.png", "scythe", 1.0, Color.WHITE, "旧白盒螳螂臂，不可投入培养皿", 1.0)
+	_add("mantis_blade", "巨镰螳臂", "upper", "mantis", 2, false, "", "mantis_king", "res://art/characters/anim/scythe_blade.png", "scythe", 1.16, Color(0.95, 0.55, 0.45), "旧白盒加强螳臂，不可投入培养皿", 1.0)
+	_add("mantis_king", "王螳臂", "upper", "mantis", 3, true, "", "", "res://art/characters/anim/scythe_blade.png", "scythe", 1.28, Color(1.0, 0.84, 0.32), "旧白盒稀有螳臂，不可投入培养皿", 1.0)
+	_add("scrap", "畸变废肢", "none", "scrap", 0, false, "", "", "res://art/characters/proxy/arm.svg", "", 1.0, Color(0.55, 0.5, 0.48), "培养失败产生的废肢，只能回收", 1.0, false, true, "scrap")
 	_add_playable_parts()
+	_add_matrix_results()
+
+
+static func _add_matrix_results() -> void:
+	# 尚未收到独立美术的结果统一使用现有代理图或最接近的基础部件作占位。
+	_add_placeholder("pangolin_dig_claw", "类穿山甲掘爪", "upper", "res://art/characters/proxy/arm.svg", "hop", Color(0.58, 0.48, 0.34), "original")
+	_add_placeholder("kangaroo_hind_limb", "袋鼠后肢", "lower", "res://art/characters/proxy/leg.svg", "leg", Color(0.64, 0.46, 0.3), "original")
+	_add_placeholder("antelope_hind_limb", "类羚羊后肢", "lower", "res://art/characters/proxy/leg.svg", "leg", Color(0.76, 0.62, 0.4), "original")
+	_add_placeholder("flying_squirrel_membrane", "类飞鼠翼膜", "upper", "res://art/characters/proxy/wing.svg", "wing", Color(0.55, 0.42, 0.34), "original")
+	_add_placeholder("jellyfish_tentacle_wing", "类水母触翼", "upper", "res://art/characters/proxy/wing.svg", "crawl", Color(0.72, 0.62, 0.92), "original")
+	_add_placeholder("albino_gorilla_arm", "白化的类猩猩胳膊", "upper", "res://art/characters/anim/arm_upper.png", "arm", Color(1.0, 0.94, 0.91), "albino")
+	_add_placeholder("albino_albatross_wing", "白化的类信天翁翅膀", "upper", "res://art/characters/psd/wing_left.png", "wing", Color(1.0, 0.96, 0.92), "albino")
+	_add_placeholder("albino_eagle_wing", "白化的类鹰翅膀", "upper", "res://art/characters/psd/wing_left.png", "wing", Color(1.0, 0.9, 0.82), "albino")
+	_add_placeholder("albino_gerbil_paw", "白化的类沙鼠前肢", "upper", "res://art/characters/psd/arm_hop.png", "hop", Color(1.0, 0.94, 0.88), "albino")
+	_add_placeholder("albino_kangaroo_leg", "白化的类袋鼠腿", "lower", "res://art/characters/psd/leg_left.png", "leg", Color(1.0, 0.93, 0.86), "albino")
+	_add_placeholder("albino_octopus_lower", "白化的类章鱼触手（下肢）", "lower", "res://art/characters/psd/leg_left.png", "leg", Color(0.92, 0.9, 1.0), "albino")
+
+
+static func _add_placeholder(
+	limb_id: String,
+	display_name: String,
+	slot_name: String,
+	texture_path: String,
+	visual: String,
+	tint: Color,
+	result_kind: String
+) -> void:
+	_add(limb_id, display_name, slot_name, "matrix_result", 3, true, "", "", texture_path,
+		visual, 1.0, tint, "合成结果；当前使用程序占位美术，不可再次合成", 1.0,
+		false, true, result_kind)
 
 
 static func _add_playable_parts() -> void:
@@ -67,7 +87,7 @@ static func _add_playable(part: PartDefinition, slot_name: String) -> void:
 	var style := _pickup_style(part.id, slot_name)
 	_add(part.id, part.display_name, slot_name, "play_" + part.id,
 		int(part.rank) + 1, false, "", "", style["texture"], style["visual"],
-		style["scale"], style["tint"], part.blurb, 1.0)
+		style["scale"], style["tint"], part.blurb, 1.0, true, false, "ordinary")
 
 
 static func _pickup_style(limb_id: String, slot_name: String) -> Dictionary:
@@ -113,7 +133,10 @@ static func _add(
 	visual_scale: float,
 	tint: Color,
 	blurb: String,
-	speed_scale: float
+	speed_scale: float,
+	culture_ingredient := false,
+	placeholder_art := false,
+	result_kind := "legacy"
 ) -> void:
 	var limb := LimbDef.new()
 	limb.id = limb_id
@@ -130,4 +153,7 @@ static func _add(
 	limb.tint = tint
 	limb.blurb = blurb
 	limb.speed_scale = speed_scale
+	limb.culture_ingredient = culture_ingredient
+	limb.placeholder_art = placeholder_art
+	limb.result_kind = result_kind
 	_defs[limb_id] = limb

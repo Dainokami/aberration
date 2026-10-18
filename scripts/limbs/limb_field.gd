@@ -1,7 +1,8 @@
 class_name LimbField
 extends RefCounted
 
-# 正式关卡在出生点前摆完整玩法肢体；旧白盒仍保留蛇身/螳螂培养样例。
+# 正式关卡在出生点前摆完整玩法肢体；旧白盒仍保留蛇身/螳螂骨骼样例，
+# 但它们不属于培养矩阵原料。
 
 
 static func scatter(parent: Node) -> void:
@@ -29,7 +30,7 @@ static func scatter_ahead(parent: Node, origin: Vector3) -> void:
 		layout.append([upper_ids[index], Vector3(-7.0 + index * 2.0, 0.15, -1.8)])
 	for index in lower_ids.size():
 		layout.append([lower_ids[index], Vector3(-7.0 + index * 2.0, 0.15, -5.4)])
-	# 留下两组培养系统原料，但不再用它们冒充完整肢体测试。
+	# 留下两组旧骨骼测试件；培养系统只接受上面的 17 个基础部件。
 	layout.append(["snake_body", Vector3(-2.0, 0.15, -7.2)])
 	layout.append(["snake_body", Vector3(-0.4, 0.15, -7.2)])
 	layout.append(["mantis_arm", Vector3(1.2, 0.15, -7.2)])

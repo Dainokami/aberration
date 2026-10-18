@@ -16,6 +16,7 @@ var parts: PartLoadout
 
 var _goal_reached := false
 var _conflict_timer := 0.0
+var _key_help: ColorRect
 
 
 func _ready() -> void:
@@ -39,6 +40,39 @@ func _ready() -> void:
 		if limbs:
 			limbs.note.connect(_on_conflict_reported)
 	_apply_playtest_caption()
+	_build_key_help()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("toggle_wings"):
+		return
+	if _key_help == null:
+		return
+	_key_help.visible = not _key_help.visible
+	get_viewport().set_input_as_handled()
+
+
+func _build_key_help() -> void:
+	var dim := ColorRect.new()
+	dim.name = "KeyHelp"
+	dim.visible = false
+	dim.color = Color(0.05, 0.035, 0.04, 0.82)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(dim)
+	var card := Label.new()
+	card.set_anchors_preset(Control.PRESET_CENTER)
+	card.offset_left = -560.0
+	card.offset_top = -380.0
+	card.offset_right = 560.0
+	card.offset_bottom = 380.0
+	card.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	card.add_theme_font_size_override("font_size", 28)
+	card.add_theme_color_override("font_color", Color(0.97, 0.91, 0.8))
+	card.text = "W A S D 移动\nSpace 跳跃 / 起飞\nG 捡肢体、推拉砸挖\nJ 攻击\nZ 上肢  X 下肢  T 突破\nTab 背包  1 属性  2 培养\n右键回收  Esc 关闭\nQ 打开或关闭这份说明"
+	dim.add_child(card)
+	_key_help = dim
 
 
 func _process(delta: float) -> void:
@@ -81,7 +115,7 @@ func _apply_playtest_caption() -> void:
 	if not _is_level_playtest():
 		return
 	$SafeArea/TopLeft/Content/Title.text = "关卡试玩"
-	$SafeArea/TopLeft/Content/Controls.text = "WASD移动  C旧拼接  R重置  Z上肢  X下肢  T突破  G捡肢体/交互  J攻击  Tab背包"
+	$SafeArea/TopLeft/Content/Controls.text = "按 Q 查看按键"
 	objective_label.text = "蓝块是流体，黄块是沙漠。长臂猿对崖壁按 G，再按 W 爬上去。"
 
 

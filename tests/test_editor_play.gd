@@ -230,7 +230,7 @@ func _tick() -> void:
 		bag.try_add("mantis_arm")
 		bag.move_bag_to_equip(bag.slots.find("mantis_arm"), "upper")
 		if not _on("AnimScytheBlade") or _on("HopArmSocket"):
-			_fail("mantis equip did not replace the gibbon arm")
+			_fail("mantis equip did not replace the gibbon arm; equipped=%s empty=%s mantis=%s" % [bag.equipped_upper, bag.slots.find(""), bag.slots.find("mantis_arm")])
 			return
 		_goto("scythe_hit")
 		_spawn_prop(_player.global_position + Vector3(1.6, 0.0, 0.0), 40)
@@ -335,6 +335,12 @@ func _tick() -> void:
 		if _player.parts.current_lower().id != "wolf_leg" or not _on("LeftLegSocket"):
 			_fail("could not switch back to the wolf legs, got %s" % _player.parts.current_lower().id)
 			return
+		# 本测试已把全部 Z/X 调试肢体都轮换进 16 格背包，并额外装过螳螂臂；
+		# 释放一个测试备件后再验证地图拾取，避免把满包误判成 G 输入失败。
+		var pickup_bag := _player.get_node("LimbBag") as LimbBag
+		if not pickup_bag.slots.has(""):
+			var disposable := pickup_bag.slots.find("mantis_arm")
+			pickup_bag.recycle_bag(disposable if disposable >= 0 else 0)
 		_goto("pickup")
 		var pickup := _first_pickup("snake_body")
 		if pickup == null:

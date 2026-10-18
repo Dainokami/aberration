@@ -32,9 +32,11 @@ static func uppers() -> Array[PartDefinition]:
 			"shape": PartDefinition.AttackShape.FACING,
 			"rank": PartDefinition.Rank.R2,
 			"scenes": ["岩石"],
-			"blurb": "推拉、举起一起跳；按 G 砸击硬破坏物",
+			"blurb": "推拉、举起一起跳；靠近硬破坏物会自动砸碎",
 			"abilities": ["push_pull", "lift_jump", "smash_hard"],
 			"breakthrough": ["slam_end", "slam_fall"],
+			"natural": 15,
+			"active": 18,
 		}),
 		_part({
 			"id": "gibbon_arm",
@@ -45,8 +47,10 @@ static func uppers() -> Array[PartDefinition]:
 			"shape": PartDefinition.AttackShape.FACING,
 			"rank": PartDefinition.Rank.R1,
 			"scenes": ["岩石", "草原"],
-			"blurb": "靠近可爬面时抓住，W/S 上下",
+			"blurb": "靠近可爬面并跳跃时抓住，W/S 上下",
 			"abilities": ["grab_climb"],
+			"natural": 8,
+			"active": 10,
 		}),
 		_part({
 			"id": "goose_wing",
@@ -58,6 +62,8 @@ static func uppers() -> Array[PartDefinition]:
 			"rank": PartDefinition.Rank.R1,
 			"scenes": ["草原"],
 			"blurb": "表里只有朝向攻击，没有场景能力",
+			"natural": 0,
+			"active": 10,
 		}),
 		_part({
 			"id": "octopus_arm",
@@ -72,6 +78,8 @@ static func uppers() -> Array[PartDefinition]:
 			"abilities": ["grab_throw"],
 			"can_stick": true,
 			"stick_blocked": ["desert"],
+			"natural": 15,
+			"active": 18,
 		}),
 		_part({
 			"id": "bat_wing",
@@ -84,6 +92,8 @@ static func uppers() -> Array[PartDefinition]:
 			"scenes": ["岩石"],
 			"blurb": "脚离地后短滑行",
 			"air": "glide",
+			"natural": 12,
+			"active": 15,
 		}),
 		_part({
 			"id": "albatross_wing",
@@ -97,6 +107,8 @@ static func uppers() -> Array[PartDefinition]:
 			"blurb": "离地后悬停，按住空格滑向地面",
 			"air": "hover",
 			"breakthrough": ["hurricane"],
+			"natural": 10,
+			"active": 12,
 		}),
 		_part({
 			"id": "eagle_wing",
@@ -110,6 +122,8 @@ static func uppers() -> Array[PartDefinition]:
 			"blurb": "空格代替跳跃，自由飞行",
 			"air": "flight",
 			"breakthrough": ["dive"],
+			"natural": 12,
+			"active": 15,
 		}),
 		_part({
 			"id": "gerbil_paw",
@@ -123,6 +137,8 @@ static func uppers() -> Array[PartDefinition]:
 			"blurb": "在流体里快速挖软破坏物",
 			"abilities": ["dig_soft"],
 			"breakthrough": ["burrow_ambush"],
+			"natural": 22,
+			"active": 27,
 		}),
 	]
 	return _uppers
@@ -141,6 +157,8 @@ static func lowers() -> Array[PartDefinition]:
 			"blurb": "只在硬表面上中速移动",
 			"speed": PartDefinition.Band.NORMAL,
 			"surfaces": ["hard"],
+			"natural": 8,
+			"active": 10,
 		}),
 		_part({
 			"id": "ostrich_leg",
@@ -151,6 +169,8 @@ static func lowers() -> Array[PartDefinition]:
 			"blurb": "只在硬表面上高速移动",
 			"speed": PartDefinition.Band.HIGH,
 			"surfaces": ["hard"],
+			"natural": 19,
+			"active": 23,
 		}),
 		_part({
 			"id": "gerbil_leg",
@@ -162,6 +182,8 @@ static func lowers() -> Array[PartDefinition]:
 			"speed": PartDefinition.Band.NORMAL,
 			"surfaces": ["hard"],
 			"burrow": true,
+			"natural": 22,
+			"active": 27,
 		}),
 		_part({
 			"id": "kangaroo_leg",
@@ -169,12 +191,14 @@ static func lowers() -> Array[PartDefinition]:
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R2,
 			"scenes": ["沙漠"],
-			"blurb": "硬表面高速，一段跳；突破后按 G 震击物件",
+			"blurb": "硬表面高速，一段跳；突破后靠近破坏物会自动震碎",
 			"speed": PartDefinition.Band.HIGH,
 			"surfaces": ["hard"],
 			"jumps": 1,
 			"breakthrough_jumps": 2,
 			"breakthrough": ["smash_near"],
+			"natural": 22,
+			"active": 27,
 		}),
 		_part({
 			"id": "demon_dog_leg",
@@ -183,6 +207,8 @@ static func lowers() -> Array[PartDefinition]:
 			"rank": PartDefinition.Rank.R2,
 			"scenes": ["草原", "岩石"],
 			"blurb": "表里没写移动，暂时慢速占位",
+			"natural": 10,
+			"active": 12,
 		}),
 		_part({
 			"id": "octopus_leg",
@@ -194,6 +220,8 @@ static func lowers() -> Array[PartDefinition]:
 			"speed": PartDefinition.Band.NORMAL,
 			"swim": "fluid_and_hard",
 			"breakthrough_stick_any": true,
+			"natural": 15,
+			"active": 18,
 		}),
 		_part({
 			"id": "goose_foot",
@@ -203,6 +231,8 @@ static func lowers() -> Array[PartDefinition]:
 			"scenes": ["海岸边"],
 			"blurb": "流体表面高速或停住，硬表面慢",
 			"swim": "skim",
+			"natural": 12,
+			"active": 15,
 		}),
 		_part({
 			"id": "water_snake",
@@ -212,6 +242,8 @@ static func lowers() -> Array[PartDefinition]:
 			"scenes": ["海洋", "海岸边"],
 			"blurb": "流体里停住会沉，硬表面中速",
 			"swim": "sink",
+			"natural": 12,
+			"active": 15,
 		}),
 		_part({
 			"id": "fish_tail",
@@ -221,6 +253,8 @@ static func lowers() -> Array[PartDefinition]:
 			"scenes": ["海洋"],
 			"blurb": "只在流体里高速游，或停住悬浮",
 			"swim": "hover_fast",
+			"natural": 12,
+			"active": 15,
 		}),
 	]
 	return _lowers
@@ -249,4 +283,6 @@ static func _part(data: Dictionary) -> PartDefinition:
 	part.breakthrough_stick_any = data.get("breakthrough_stick_any", false)
 	part.abilities = PackedStringArray(data.get("abilities", PackedStringArray()))
 	part.breakthrough = PackedStringArray(data.get("breakthrough", PackedStringArray()))
+	part.natural_blood = int(data.get("natural", 0))
+	part.active_blood = int(data.get("active", 0))
 	return part

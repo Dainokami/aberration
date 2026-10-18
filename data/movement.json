@@ -1,0 +1,112 @@
+{
+  "body": {
+    "move_speed": 6.0,
+    "ground_acceleration": 34.0,
+    "ground_deceleration": 42.0,
+    "air_control": 0.55,
+    "jump_height": 1.8,
+    "jump_time_to_peak": 0.38,
+    "jump_time_to_fall": 0.32,
+    "coyote_time": 0.12,
+    "jump_buffer_time": 0.12,
+    "flight_climb_speed": 4.0,
+    "flight_fall_speed": 3.2,
+    "flight_vertical_acceleration": 14.0
+  },
+  "part": {
+    "acceleration": 34.0,
+    "deceleration": 40.0,
+    "jump_speed": 7.4,
+    "coyote_time": 0.12,
+    "jump_buffer_time": 0.12,
+    "gravity": 18.0,
+    "flight_launch_speed": 3.2,
+    "flight_climb_speed": 4.0,
+    "flight_fall_speed": 3.2,
+    "flight_acceleration": 14.0,
+    "hover_fall_speed": 2.6,
+    "hover_acceleration": 16.0,
+    "glide_fall_speed": 1.25,
+    "glide_acceleration": 18.0,
+    "swim_sink_speed": 1.8,
+    "swim_acceleration": 8.0,
+    "swim_skim_acceleration": 22.0,
+    "climb_vertical_speed": 3.4,
+    "climb_strafe_speed": 3.2,
+    "surface_climb_speed": 3.0,
+    "stuck_deceleration": 24.0
+  },
+  "speed_bands": {
+    "low": 3.2,
+    "normal": 5.6,
+    "high": 8.4,
+    "unspecified": 2.4
+  },
+  "tail_pulse": {
+    "fish_base": 0.82,
+    "fish_amplitude": 0.36,
+    "fish_frequency": 3.0,
+    "snake_base": 0.9,
+    "snake_amplitude": 0.1
+  },
+  "gaits": {
+    "head_roll": {
+      "speed": 0.72,
+      "cadence": 9.5,
+      "acceleration": 0.34,
+      "deceleration": 0.18,
+      "drive_base": 1.0
+    },
+    "single_arm_hop": {
+      "speed": 0.68,
+      "cadence": 5.2,
+      "acceleration": 0.88,
+      "deceleration": 0.72,
+      "drive_base": 0.28,
+      "drive_pulse": 1.18
+    },
+    "double_arm_walk": {
+      "speed": 0.82,
+      "cadence": 7.2,
+      "acceleration": 0.72,
+      "deceleration": 1.18,
+      "drive_base": 0.62,
+      "drive_pulse": 0.46
+    },
+    "biped_walk": {
+      "speed": 1.0,
+      "cadence": 9.0,
+      "acceleration": 1.0,
+      "deceleration": 1.0,
+      "drive_base": 0.96,
+      "drive_pulse": 0.08,
+      "drive_frequency": 2.0
+    },
+    "quadruped_walk": {
+      "speed": 1.18,
+      "cadence": 11.5,
+      "acceleration": 1.28,
+      "deceleration": 1.22,
+      "drive_base": 0.92,
+      "drive_pulse": 0.16,
+      "drive_frequency": 2.0
+    },
+    "snake_slither": {
+      "speed": 0.9,
+      "cadence": 6.2,
+      "acceleration": 0.56,
+      "deceleration": 0.42,
+      "drive_base": 0.92,
+      "drive_pulse": 0.08
+    },
+    "tentacle_crawl": {
+      "speed": 0.9,
+      "cadence": 6.8,
+      "acceleration": 0.7,
+      "deceleration": 0.58,
+      "drive_base": 0.68,
+      "drive_pulse": 0.48,
+      "drive_power": 1.35
+    }
+  }
+}

@@ -1,5 +1,7 @@
 extends Node3D
 
+const MovementConfig := preload("res://scripts/movement_table.gd")
+
 # 正常启动进入包含宝箱、可推岩石、可破坏岩石与攀爬面的完整交互样例。
 # acceptance_map.tres 保留为阶梯和悬崖的纯地形自动化夹具。
 const DEFAULT_LEVEL := "res://data/levels/art_acceptance.tres"
@@ -19,6 +21,7 @@ var focused_prop: GameplayProp
 var interaction_label: Label
 var feedback_label: Label
 var feedback_until := 0
+var _key_help: ColorRect
 var climbing := false
 var climb_target := Vector3.ZERO
 var climb_prop: GameplayProp
@@ -30,7 +33,6 @@ var test_climb_input := Vector2.ZERO
 const PLAYER_HALF_HEIGHT := 0.8
 const INTERACTION_REACH := 1.7
 const CLIMB_WALL_OFFSET := 0.38
-const CLIMB_MOVE_SPEED := 3.0
 const CLIMB_LINK_TOLERANCE := 0.35
 ## Set before entering the tree to bypass the editor's playtest request file.
 var level_override := ""
@@ -130,8 +132,7 @@ func _setup_ui(path: String) -> void:
 	var label := Label.new()
 	label.position = Vector2(18, 18)
 	label.text = "地形编辑器试玩 · " + path.get_file().get_basename() \
-		+ "\nWASD 移动　Space 跳跃 / 起飞　E 开宝箱或攀爬　G 推、砸、挖　J 攻击　R 回到出生点" \
-		+ "\nZ 切换上肢　X 切换下肢　T 开关突破　Tab 打开背包，拖到骨框上替换"
+		+ "\n按 Q 查看按键"
 	label.add_theme_font_override("font", runtime_font())
 	label.add_theme_font_size_override("font_size", 18)
 	layer.add_child(label)
@@ -154,6 +155,53 @@ func _setup_ui(path: String) -> void:
 	feedback_label.position = Vector2(18, 182)
 	feedback_label.add_theme_font_override("font", runtime_font())
 	layer.add_child(feedback_label)
+	_build_key_help(layer)
+
+
+func _build_key_help(layer: CanvasLayer) -> void:
+	var dim := ColorRect.new()
+	dim.name = "KeyHelp"
+	dim.visible = false
+	dim.color = Color(0.05, 0.035, 0.04, 0.82)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	layer.add_child(dim)
+	var card := Label.new()
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.set_anchors_preset(Control.PRESET_CENTER)
+	card.offset_left = -560.0
+	card.offset_top = -380.0
+	card.offset_right = 560.0
+	card.offset_bottom = 380.0
+	card.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	card.add_theme_font_override("font", runtime_font())
+	card.add_theme_font_size_override("font_size", 28)
+	card.add_theme_color_override("font_color", Color(0.97, 0.91, 0.8))
+	card.text = "\n".join([
+		"按键",
+		"",
+		"W A S D / 方向键    移动",
+		"W / S    攀着的时候上下爬",
+		"Space    跳跃、起飞、滑翔；靠近可爬面时抓住",
+		"E    开宝箱、开始攀爬、从攀爬面脱离",
+		"G    捡肢体，推、拉、砸、挖",
+		"J    攻击",
+		"R    回到出生点",
+		"Z    切换上肢",
+		"X    切换下肢",
+		"T    开关突破",
+		"C    身上没有肢体时，切换旧拼接",
+		"Tab    打开或关闭背包",
+		"1    属性页",
+		"2    培养页",
+		"Esc    关闭菜单，或关闭这份说明",
+		"鼠标拖拽    装配、放进培养皿、拖到回收箱",
+		"右键    回收肢体",
+		"Q    打开或关闭这份说明",
+	])
+	dim.add_child(card)
+	_key_help = dim
 
 func _setup_bag() -> void:
 	var menu := (load("res://scenes/stitch_menu.tscn") as PackedScene).instantiate()
@@ -183,6 +231,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				attempt_damage()
 		KEY_R:
 			reset_player()
+		KEY_Q:
+			_key_help.visible = not _key_help.visible
+			get_viewport().set_input_as_handled()
+		KEY_ESCAPE:
+			if _key_help.visible:
+				_key_help.visible = false
+				get_viewport().set_input_as_handled()
 		KEY_C:
 			if not player is PlayerController:
 				climb_enabled = not climb_enabled
@@ -300,9 +355,19 @@ func request_climb_move(direction: Vector2i) -> bool:
 	climb_moving = true
 	return true
 
+func _screen_wall_tangent(prop: GameplayProp) -> Vector3:
+	var tangent := prop.global_basis.x.normalized()
+	var screen_right := Vector3.RIGHT
+	if camera_rig != null:
+		screen_right = camera_rig.get_planar_axes()[0]
+	if tangent.dot(screen_right) < 0.0:
+		tangent = -tangent
+	return tangent
+
+
 func _adjacent_climb_surface(current: GameplayProp, direction: Vector2i) -> GameplayProp:
 	var normal: Vector3 = current.global_basis.z.normalized()
-	var tangent: Vector3 = current.global_basis.x.normalized()
+	var tangent: Vector3 = _screen_wall_tangent(current)
 	var current_center: Vector3 = _climb_surface_center(current)
 	var nearest: GameplayProp
 	var nearest_error: float = INF
@@ -386,7 +451,7 @@ func _step_climb(delta: float) -> void:
 	if interaction_label != null:
 		interaction_label.text = "WASD / 方向键攀爬　E 脱离　Space 跳离"
 	if climb_moving:
-		var motion: Vector3 = (climb_target - player.position).limit_length(CLIMB_MOVE_SPEED * delta)
+		var motion: Vector3 = (climb_target - player.position).limit_length(MovementConfig.number("part", "surface_climb_speed", 3.0) * delta)
 		var collision: KinematicCollision3D = player.move_and_collide(motion)
 		if collision != null:
 			climb_moving = false
@@ -409,15 +474,105 @@ func _step_climb(delta: float) -> void:
 	if axis.length() < 0.25:
 		climb_input_armed = true
 		return
-	if not climb_input_armed:
-		return
-	climb_input_armed = false
 	var direction := Vector2i.ZERO
 	if absf(axis.x) > absf(axis.y):
 		direction.x = 1 if axis.x > 0 else -1
 	else:
 		direction.y = 1 if axis.y > 0 else -1
-	request_climb_move(direction)
+	var next := _adjacent_climb_surface(climb_prop, direction)
+	if next != null:
+		if not climb_input_armed:
+			return
+		climb_input_armed = false
+		var target := _climb_position(next)
+		if not _player_space_clear(target):
+			_feedback("目标攀爬面前没有足够空间")
+			return
+		climb_next_prop = next
+		climb_target = target
+		climb_moving = true
+		return
+	_slide_on_wall(delta, axis)
+
+func _slide_on_wall(delta: float, axis: Vector2) -> void:
+	var tangent := _screen_wall_tangent(climb_prop)
+	var wish := tangent * axis.x + Vector3.UP * -axis.y
+	if wish.length_squared() < 0.01:
+		return
+	var proposed: Vector3 = player.position + wish.normalized() * MovementConfig.number("part", "surface_climb_speed", 3.0) * delta
+	if not _climb_slide_allowed(climb_prop, proposed):
+		if -axis.y > 0.5 and _try_mount_from_climb(climb_prop):
+			return
+		return
+	player.position = _stick_climb_point(climb_prop, proposed)
+	player.velocity = Vector3.ZERO
+
+
+func _stick_climb_point(prop: GameplayProp, feet: Vector3) -> Vector3:
+	var normal := prop.global_basis.z.normalized()
+	var center := _climb_surface_center(prop)
+	var on_plane := feet - normal * (feet - center).dot(normal)
+	return on_plane + normal * _climb_wall_offset()
+
+
+func _climb_slide_allowed(prop: GameplayProp, feet: Vector3) -> bool:
+	var record := ObjectRules.find_record(data, prop.instance_id)
+	var normal := prop.global_basis.z.normalized()
+	var center := _climb_surface_center(prop)
+	if absf((feet - center).dot(normal)) > 1.2:
+		return false
+	if str(record.get("anchor_kind", "")) != "wall":
+		return _inside_climb_shape(prop, feet)
+	var direction := int(record.get("wall_direction", -1))
+	var layer := int(record.get("anchor_layer", -1))
+	if direction < 0 or layer < 0:
+		return _inside_climb_shape(prop, feet)
+	var inward := feet - normal * (LevelData.CELL_SIZE * 0.5)
+	var cell := data.world_to_cell(inward)
+	if not _exposed_wall_face(cell, layer, direction):
+		return false
+	var bottom := 0.0 if layer == 0 else data.surface_y(layer - 1)
+	return feet.y >= bottom - 0.05 and feet.y <= data.surface_y(layer) - 0.2
+
+
+func _exposed_wall_face(cell: Vector2i, layer: int, direction: int) -> bool:
+	if direction < 0 or direction > 3 or not data.in_bounds(cell):
+		return false
+	if not data.layer_exists(cell, layer) or data.stair_at(cell) >= 0:
+		return false
+	return not data.layer_exists(cell + LevelData.DIRS[direction], layer)
+
+
+func _inside_climb_shape(prop: GameplayProp, feet: Vector3) -> bool:
+	var shape := _interaction_shape(prop)
+	if shape == null or not shape.shape is BoxShape3D:
+		return false
+	var local := shape.to_local(feet)
+	var half := (shape.shape as BoxShape3D).size * 0.5
+	return absf(local.x) <= half.x + 0.08 and absf(local.y) <= half.y + 0.08
+
+
+func _try_mount_from_climb(prop: GameplayProp) -> bool:
+	var record := ObjectRules.find_record(data, prop.instance_id)
+	if str(record.get("anchor_kind", "")) != "wall":
+		return false
+	var direction := int(record.get("wall_direction", -1))
+	var layer := int(record.get("anchor_layer", -1))
+	if direction < 0 or layer < 0:
+		return false
+	var normal := prop.global_basis.z.normalized()
+	var high := data.world_to_cell(player.position - normal * (LevelData.CELL_SIZE * 0.5))
+	if not _exposed_wall_face(high, layer, direction):
+		return false
+	var stand := data.world_center(high) + Vector3(0.0, 0.08, 0.0)
+	if player.position.y < stand.y - 0.45 or not _player_space_clear(stand):
+		return false
+	_end_climb(false)
+	player.velocity = Vector3.ZERO
+	player.position = stand
+	_feedback("爬上去了")
+	return true
+
 
 func _end_climb(jump_away: bool) -> void:
 	if not climbing:

@@ -1,6 +1,8 @@
 class_name PartDefinition
 extends RefCounted
 
+const MovementConfig := preload("res://scripts/movement_table.gd")
+
 # 部件只描述能力和限制。岩石、流体、沙漠都是场景以后回报的标签，
 # 不在这里引用地形、关卡或具体物件脚本。
 enum Slot { UPPER, LOWER }
@@ -30,6 +32,8 @@ var stick_blocked_tags: PackedStringArray = PackedStringArray()
 var breakthrough_stick_any := false
 var abilities: PackedStringArray = PackedStringArray()
 var breakthrough: PackedStringArray = PackedStringArray()
+var natural_blood := 0
+var active_blood := 0
 
 
 static func power_value(band: Band) -> int:
@@ -59,11 +63,11 @@ static func cooldown_for(band: Band) -> float:
 static func speed_value(band: Band) -> float:
 	match band:
 		Band.LOW:
-			return 3.2
+			return MovementConfig.band("low", 3.2)
 		Band.NORMAL:
-			return 5.6
+			return MovementConfig.band("normal", 5.6)
 		Band.HIGH:
-			return 8.4
+			return MovementConfig.band("high", 8.4)
 		_:
 			return 0.0
 

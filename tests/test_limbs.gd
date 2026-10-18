@@ -1,31 +1,43 @@
 extends SceneTree
 
+const RecipeCatalog := preload("res://scripts/limbs/limb_recipe_catalog.gd")
+
 
 func _initialize() -> void:
-	if LimbCatalog.combine("snake_body", "snake_body", 0.5) != "python_body":
-		_fail("two snakes should become a python")
+	var matrix_errors := RecipeCatalog.validate()
+	if not matrix_errors.is_empty():
+		_fail("matrix validation failed: %s" % ", ".join(matrix_errors))
 		return
-	if LimbCatalog.combine("snake_body", "snake_body", 0.0) != "crowned_snake":
-		_fail("two snakes should rarely become a crowned snake")
+	if RecipeCatalog.recipe_count() != 153:
+		_fail("matrix should contain 153 unordered recipes")
 		return
-	if LimbCatalog.combine("mantis_arm", "mantis_arm", 0.5) != "mantis_blade":
-		_fail("two mantis arms should become a greater scythe")
+	var counts := RecipeCatalog.result_counts()
+	if counts != {"ordinary": 103, "original": 14, "albino": 12, "scrap": 24, "rare": 26}:
+		_fail("matrix audit changed: %s" % counts)
 		return
-	if LimbCatalog.combine("mantis_arm", "mantis_arm", 0.0) != "mantis_king":
-		_fail("two mantis arms should rarely become a king arm")
+	for left_id in RecipeCatalog.INGREDIENT_IDS:
+		for right_id in RecipeCatalog.INGREDIENT_IDS:
+			var forward := LimbCatalog.combine(left_id, right_id)
+			var reverse := LimbCatalog.combine(right_id, left_id)
+			if forward.is_empty() or forward != reverse:
+				_fail("recipe order changed for %s + %s" % [left_id, right_id])
+				return
+	if LimbCatalog.combine("gorilla_arm", "gorilla_arm") != "albino_gorilla_arm":
+		_fail("gorilla self recipe should produce the albino arm")
 		return
-	if LimbCatalog.combine("snake_body", "mantis_arm", 0.0) != "scrap":
-		_fail("unrelated limbs should become scrap")
+	if LimbCatalog.combine("gorilla_arm", "gibbon_arm") != "octopus_arm":
+		_fail("gorilla plus gibbon recipe is wrong")
 		return
-	if LimbCatalog.combine("python_body", "python_body", 0.5) != "python_body":
-		_fail("two pythons stay pythons unless the rare roll hits")
+	if LimbCatalog.combine("octopus_arm", "octopus_leg") != "jellyfish_tentacle_wing":
+		_fail("upper/lower octopus ingredients were not kept distinct")
 		return
-	if LimbCatalog.combine("python_body", "python_body", 0.0) != "crowned_snake":
-		_fail("two pythons can still roll the rare snake")
+	if not LimbCatalog.combine("snake_body", "gorilla_arm").is_empty():
+		_fail("legacy limbs must not be accepted as matrix ingredients")
 		return
-	if LimbCatalog.combine("scrap", "snake_body", 0.5) != "scrap":
-		_fail("scrap stays scrap")
-		return
+	for result_id in ["albino_gorilla_arm", "pangolin_dig_claw", "scrap"]:
+		if LimbCatalog.can_culture(result_id):
+			_fail("matrix result can be reused as an ingredient: %s" % result_id)
+			return
 	for limb_id in ["gorilla_arm", "eagle_wing", "octopus_leg", "fish_tail"]:
 		if LimbCatalog.find(limb_id) == null:
 			_fail("playable part is missing from pickup catalog: %s" % limb_id)
@@ -33,37 +45,40 @@ func _initialize() -> void:
 
 	var bag := LimbBag.new()
 	root.add_child(bag)
-	bag.slots[0] = "snake_body"
-	bag.slots[1] = "snake_body"
-	bag.rare_roll = 0.5
+	bag.slots[0] = "gorilla_arm"
+	bag.slots[1] = "gibbon_arm"
 	bag.move_bag_to_dish(0, 0)
 	bag.move_bag_to_dish(1, 0)
 	bag.dishes[0]["time"] = LimbBag.CULTURE_SECONDS - 0.1
 	bag._process(0.2)
-	if bag.slots[0] != "python_body":
-		_fail("culture should put the python in the bag, got %s" % bag.slots[0])
+	if bag.slots[0] != "octopus_arm":
+		_fail("culture should put the matrix result in the bag, got %s" % bag.slots[0])
 		return
-	bag.move_bag_to_equip(0, "lower")
-	if bag.equipped_lower != "python_body" or bag.slots[0] != "":
-		_fail("python should equip into the lower slot")
+	bag.move_bag_to_equip(0, "upper")
+	if bag.equipped_upper != "octopus_arm" or bag.slots[0] != "":
+		_fail("matrix result should equip into its declared slot")
 		return
 	bag.slots[2] = "scrap"
 	bag.move_bag_to_equip(2, "upper")
-	if bag.equipped_upper != "":
+	if bag.equipped_upper != "octopus_arm":
 		_fail("scrap must not equip")
+		return
+	bag.move_bag_to_dish(2, 1)
+	if bag.slots[2] != "scrap" or not str(bag.dishes[1]["a"]).is_empty():
+		_fail("scrap must not enter a dish")
 		return
 	bag.recycle_bag(2)
 	if bag.slots[2] != "":
 		_fail("recycle should clear the slot")
 		return
-	bag.slots[3] = "snake_body"
-	bag.slots[4] = "mantis_arm"
+	bag.slots[3] = "gorilla_arm"
+	bag.slots[4] = "goose_wing"
 	bag.move_bag_to_dish(3, 1)
 	bag.move_bag_to_dish(4, 1)
 	bag.dishes[1]["time"] = LimbBag.CULTURE_SECONDS
 	bag._process(0.1)
 	if not bag.slots.has("scrap"):
-		_fail("snake plus mantis should culture into scrap")
+		_fail("gorilla plus goose wing should culture into scrap")
 		return
 	_main = (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	root.add_child(_main)
@@ -82,6 +97,22 @@ func _check_scene() -> void:
 	var player := _main.get_node("Player") as PlayerController
 	var bag := player.get_node("LimbBag") as LimbBag
 	var rig := player.get_node("ArtRoot/PartSockets") as ModularCharacterRig
+	if bag.equipped_upper != "gorilla_arm" or bag.equipped_lower != "wolf_leg":
+		_fail("starting limbs must be registered as equipped")
+		return
+	var gibbon_index := bag.slots.find("gibbon_arm")
+	bag.move_bag_to_equip(gibbon_index, "upper")
+	if bag.equipped_upper != "gibbon_arm" or bag.slots[gibbon_index] != "gorilla_arm":
+		_fail("replaced upper limb did not return to its source bag slot")
+		return
+	bag.move_bag_to_equip(gibbon_index, "upper")
+	if bag.equipped_upper != "gorilla_arm" or bag.slots[gibbon_index] != "gibbon_arm":
+		_fail("swapping the starting upper limb back failed")
+		return
+	var offset := LimbSlot.drag_preview_offset(Vector2(50, 25), Vector2(200, 100), Vector2(120, 120))
+	if not offset.is_equal_approx(Vector2(-30, -30)):
+		_fail("drag preview no longer follows the source grab point: %s" % offset)
+		return
 	var pickups := get_nodes_in_group("limb_pickup")
 	if pickups.size() != 6:
 		_fail("expected 6 pickups, got %d" % pickups.size())
@@ -102,6 +133,9 @@ func _check_scene() -> void:
 		_fail("standing on a mantis arm did not collect it")
 		return
 	bag.move_bag_to_equip(bag.slots.find("snake_body"), "lower")
+	if not bag.slots.has("wolf_leg"):
+		_fail("replaced starting lower limb did not return to the bag")
+		return
 	if player.assembly.resolve_locomotion() != CharacterAssemblyController.LocomotionMode.SNAKE_SLITHER:
 		_fail("snake equip did not switch locomotion")
 		return
@@ -133,10 +167,19 @@ func _check_scene() -> void:
 		_fail("picked eagle wing did not retain its flight ability")
 		return
 	var menu := _main.get_node("StitchMenu")
-	bag.try_add("snake_body")
-	bag.try_add("mantis_arm")
-	menu._drop_on_dish({"kind": "bag", "index": bag.slots.find("snake_body")}, 0)
-	menu._drop_on_dish({"kind": "bag", "index": bag.slots.find("mantis_arm")}, 0)
+	for equip_slot: LimbSlot in menu._equip_slots:
+		var slot_name := str(equip_slot.get_meta("equip_slot"))
+		var expected := bag.equipped_upper if slot_name == "upper" else bag.equipped_lower
+		if str(equip_slot.drag_data.get("id", "")) != expected:
+			_fail("equipment UI did not refresh %s to %s" % [slot_name, expected])
+			return
+	var first_ingredient := bag.slots.find("gorilla_arm")
+	var second_ingredient := bag.slots.find("gibbon_arm")
+	if first_ingredient < 0 or second_ingredient < 0:
+		_fail("expected base ingredients in the bag for the UI dish test")
+		return
+	menu._drop_on_dish({"kind": "bag", "index": first_ingredient}, 0)
+	menu._drop_on_dish({"kind": "bag", "index": second_ingredient}, 0)
 	if str(bag.dishes[0]["a"]) == "" or str(bag.dishes[0]["b"]) == "":
 		_fail("menu drop did not fill a petri dish")
 		return
