@@ -33,6 +33,8 @@ const DEFAULT_SOLID_TILE := "grass"
 @export var details: Array[Dictionary] = []
 ## Per-map color overrides. Alpha is tint strength; RGB is the target hue.
 @export var terrain_tints: Dictionary = {}
+## Generation provenance and per-cell zone labels; edits retain the original recipe.
+@export var generation: Dictionary = {}
 
 var _ensuring_layout := false
 ## Read-only surface views share the source columns for terrain art generation.
@@ -52,6 +54,7 @@ func setup_blank(size := Vector2i(16, 16)) -> void:
 	objects.clear()
 	details.clear()
 	terrain_tints.clear()
+	generation.clear()
 	spawn_cell = Vector2i(-1, -1)
 	spawn_layer = -1
 	format_version = FORMAT_VERSION
@@ -587,6 +590,7 @@ func fork_for_edit() -> LevelData:
 	copy.spawn_cell = spawn_cell
 	copy.spawn_layer = spawn_layer
 	copy.terrain_tints = terrain_tints
+	copy.generation = generation.duplicate(true)
 	return copy
 
 ## Read-only bounded view for chunk texture generation; world coordinates stay fixed.
@@ -639,6 +643,7 @@ func clone_data() -> Dictionary:
 		"objects": objects.duplicate(true),
 		"details": details.duplicate(true),
 		"terrain_tints": terrain_tints.duplicate(true),
+		"generation": generation.duplicate(true),
 		"format_version": FORMAT_VERSION,
 	}
 
@@ -655,6 +660,7 @@ func restore_data(snapshot: Dictionary) -> void:
 	objects.assign(snapshot.get("objects", []).duplicate(true))
 	details.assign(snapshot.get("details", []).duplicate(true))
 	terrain_tints = snapshot.get("terrain_tints", {}).duplicate(true)
+	generation = snapshot.get("generation", {}).duplicate(true)
 	format_version = int(snapshot.get("format_version", 2))
 	ensure_layout()
 	_normalize_anchors()

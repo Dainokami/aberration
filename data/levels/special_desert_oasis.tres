@@ -1,0 +1,990 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://o3i10tt7y6l4"]
+
+[ext_resource type="Script" uid="uid://dvemtrhbd2svo" path="res://scripts/level/level_data.gd" id="1_l2jcu"]
+
+[resource]
+script = ExtResource("1_l2jcu")
+grid_world_origin = Vector2(-16, -16)
+has_grid_world_origin = true
+columns = Array[Dictionary]([{
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}, {
+"rotation": 0,
+"tile_id": "ground_forest"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "painted_earth"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}])
+format_version = 9

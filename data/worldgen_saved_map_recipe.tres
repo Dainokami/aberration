@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WorldGenConfig" format=3 uid="uid://bkrrrh57s1gkf"]
+
+[ext_resource type="Script" uid="uid://ilxmbfll37if" path="res://scripts/worldgen/world_gen_config.gd" id="1_pcx58"]
+
+[resource]
+script = ExtResource("1_pcx58")
+seed_value = 4242
+prefabs = Array[Dictionary]([{
+"maximum": 1,
+"minimum": 1,
+"path": "res://data/levels/dynamic_splat_acceptance.tres",
+"rotate": true,
+"weight": 1,
+"zone": "any"
+}])

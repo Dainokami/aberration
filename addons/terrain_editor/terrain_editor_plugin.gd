@@ -95,6 +95,8 @@ var tint_panel: PanelContainer
 # Object & import & prefab managed by world_edit_tools
 var world_tools
 var view_settings
+var world_gen_dialog
+var world_gen_target: TerrainBuilder
 var preview_fov := -1.0
 var preview_pitch := -1.0
 var preview_distance := -1.0
@@ -134,6 +136,14 @@ func _enter_tree() -> void:
 		_run_editor_checks.call_deferred()
 	elif "--test-scene-placement" in OS.get_cmdline_user_args():
 		_run_scene_placement_checks.call_deferred()
+	elif "--test-worldgen-editor" in OS.get_cmdline_user_args():
+		_run_worldgen_checks.call_deferred()
+
+func _run_worldgen_checks() -> void:
+	await get_tree().create_timer(1.0).timeout
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
+	await load("res://tests/editor_world_generation_checks.gd").new().run(self)
 
 func _run_scene_placement_checks() -> void:
 	while EditorInterface.get_resource_filesystem().is_scanning():
@@ -150,6 +160,8 @@ func _run_editor_checks() -> void:
 
 func _exit_tree() -> void:
 	_finish_terrain_stroke()
+	if is_instance_valid(world_gen_dialog):
+		world_gen_dialog.queue_free()
 	_disable_2_5d_view()
 	for badge in _view_mode_badges:
 		if is_instance_valid(badge):
@@ -273,6 +285,12 @@ func _build_dock() -> void:
 		"terrain_editor", "default_right_delete", true)
 	default_right_delete.toggled.connect(_right_delete_changed)
 	files.add_child(default_right_delete)
+	var generate_world := Button.new()
+	generate_world.name = "OpenWorldGeneration"
+	generate_world.text = "世界生成…"
+	generate_world.tooltip_text = "用已保存地图作为特殊地块，生成有限世界"
+	generate_world.pressed.connect(_open_world_generation)
+	dock_root.add_child(generate_world)
 	var view_modes := HBoxContainer.new()
 	dock_root.add_child(view_modes)
 	var view_label := Label.new()
@@ -741,6 +759,53 @@ func _make_preview() -> void:
 # ============================================================
 # File operations
 # ============================================================
+func _open_world_generation() -> void:
+	if not _require_builder():
+		return
+	_finish_terrain_stroke()
+	world_gen_target = builder
+	if not is_instance_valid(world_gen_dialog):
+		world_gen_dialog = load("res://addons/terrain_editor/world_gen_dialog.gd").new()
+		world_gen_dialog.map_ready.connect(_apply_generated_world)
+		add_child(world_gen_dialog)
+	world_gen_dialog.popup_centered_clamped(ui_size(Vector2(1120, 760)), 0.9)
+
+func _apply_generated_world(generated: LevelData) -> void:
+	if not is_instance_valid(world_gen_target) or builder != world_gen_target:
+		_set_status("工作场景已切换，请重新打开世界生成窗口")
+		if is_instance_valid(world_gen_dialog):
+			world_gen_dialog._status.text = "工作场景已切换，请关闭并重新打开本窗口后再应用"
+		return
+	var before := {"map": data, "path": current_path, "dirty": dirty}
+	var after := {"map": generated, "path": "", "dirty": true}
+	var history := get_undo_redo()
+	history.create_action("应用生成世界", UndoRedo.MERGE_DISABLE, builder)
+	history.add_do_method(self, "_switch_generated_map", builder, before, after)
+	history.add_undo_method(self, "_switch_generated_map", builder, after, before)
+	history.commit_action()
+	if is_instance_valid(world_gen_dialog):
+		world_gen_dialog.confirm_applied()
+
+func _switch_generated_map(target: TerrainBuilder, outgoing: Dictionary, incoming: Dictionary) -> void:
+	# A stale action must never replace a subsequently opened unrelated map.
+	if not is_instance_valid(target) or target.level_data != outgoing.map:
+		return
+	if builder == target:
+		outgoing.path = current_path
+		outgoing.dirty = dirty
+		_finish_terrain_stroke()
+		if world_tools:
+			world_tools.reset()
+	target.level_data = incoming.map
+	target.rebuild()
+	if builder == target:
+		data = incoming.map
+		current_path = incoming.path
+		_set_dirty(incoming.dirty)
+		_make_preview()
+		_sync_tint_controls()
+		_set_status("已切换地图 · 世界生成支持撤销/重做 · 请另存新地图")
+
 func _require_builder(message := "请先在场景树中选择 TerrainBuilder") -> bool:
 	if builder != null and is_instance_valid(builder):
 		return true

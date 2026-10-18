@@ -1,0 +1,972 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://dae73kove1clc"]
+
+[ext_resource type="Script" uid="uid://dvemtrhbd2svo" path="res://scripts/level/level_data.gd" id="1_og3uk"]
+
+[resource]
+script = ExtResource("1_og3uk")
+grid_world_origin = Vector2(-16, -16)
+has_grid_world_origin = true
+columns = Array[Dictionary]([{
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}, {
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": Array[Dictionary]([{
+"rotation": 0,
+"tile_id": "grass"
+}])
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}, {
+"layers": []
+}])
+format_version = 9
