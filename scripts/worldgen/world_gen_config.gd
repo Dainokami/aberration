@@ -2,7 +2,7 @@
 class_name WorldGenConfig
 extends Resource
 
-const ALGORITHM_VERSION := 5
+const ALGORITHM_VERSION := 6
 const TERRAIN_IDS := ["unset", "grass", "rock", "sand", "water", "any"]
 const TERRAIN_LABELS := ["请选择地形", "草原", "岩石", "沙漠", "海洋", "不限制地形"]
 const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_noise",

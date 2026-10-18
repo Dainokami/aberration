@@ -137,6 +137,21 @@ func run(plugin: EditorPlugin) -> void:
 	check(dialog._thread == null and dialog._apply.disabled
 		and dialog._status.text.contains("选择放置地形"),
 		"generation explains which imported map needs a terrain selection")
+	var saved_config: WorldGenConfig = dialog.config.duplicate(true)
+	dialog.config.prefabs.assign([{"path": "res://data/levels/special_desert_oasis.tres",
+		"minimum": 1, "maximum": 1, "terrain": "sand", "zone": "static", "rotate": false}])
+	dialog.config.static_count = 0
+	dialog._sync()
+	dialog._start()
+	while dialog._thread != null:
+		await tree.process_frame
+	check(dialog._apply.disabled and dialog._status.text.contains("源地图")
+		and dialog._status.text.contains("筛选结果") and dialog._status.text.contains("静止"),
+		"worker failure shows specific prefab placement diagnostics in the editor")
+	dialog.config = saved_config
+	dialog._sync()
+	second_card = dialog._source_rows.get_child(1) as PanelContainer
+	second_terrain = second_card.find_child("PlacementTerrain", true, false)
 	card = dialog._source_rows.get_child(0) as PanelContainer
 	terrain = card.find_child("PlacementTerrain", true, false)
 	terrain.select(1)
