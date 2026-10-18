@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://assets/derived_art/small_monsters/monster_animation.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://assets/derived_art/small_monsters/sprite_frames/bat.tres" id="2_frames"]
+
+[node name="Bat" type="AnimatedSprite2D"]
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+script = ExtResource("1_script")
+monster_id = "bat"

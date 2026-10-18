@@ -1,0 +1,83 @@
+{
+  "description": "Godot 4.7 small-monster animation assets",
+  "frame_size": [
+    512,
+    512
+  ],
+  "sheet_layout": "horizontal, left to right",
+  "animations": {
+    "idle": {
+      "source_action": "attack",
+      "frame": 0
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 10,
+      "loop": true
+    },
+    "attack": {
+      "frames": 8,
+      "fps": 12,
+      "loop": false
+    },
+    "death": {
+      "frames": 10,
+      "fps": 10,
+      "loop": false
+    }
+  },
+  "views": {
+    "octopus": {
+      "display_name": "章鱼",
+      "attack_style": "触手横扫",
+      "source_psd": "zhangyu.psd",
+      "sheet_prefix": "sheets/octopus_",
+      "sprite_frames": "sprite_frames/octopus.tres",
+      "scene": "scenes/octopus.tscn"
+    },
+    "bat": {
+      "display_name": "蝙蝠",
+      "attack_style": "扑击撕咬",
+      "source_psd": "bianfu.psd",
+      "sheet_prefix": "sheets/bat_",
+      "sprite_frames": "sprite_frames/bat.tres",
+      "scene": "scenes/bat.tscn"
+    },
+    "demon_dog": {
+      "display_name": "恶魔犬",
+      "attack_style": "前冲撕咬",
+      "source_psd": "emoquan.psd",
+      "sheet_prefix": "sheets/demon_dog_",
+      "sprite_frames": "sprite_frames/demon_dog.tres",
+      "scene": "scenes/demon_dog.tscn"
+    },
+    "goose": {
+      "display_name": "大鹅",
+      "attack_style": "转颈啄击",
+      "source_psd": "e.psd",
+      "sheet_prefix": "sheets/goose_",
+      "sprite_frames": "sprite_frames/goose.tres",
+      "scene": "scenes/goose.tscn"
+    },
+    "kangaroo_side": {
+      "display_name": "袋鼠·侧面",
+      "attack_style": "侧身重拳",
+      "source_psd": "daishu1.psd",
+      "sheet_prefix": "sheets/kangaroo_side_",
+      "sprite_frames": "sprite_frames/kangaroo_side.tres",
+      "scene": "scenes/kangaroo_side.tscn"
+    },
+    "kangaroo_front": {
+      "display_name": "袋鼠·正面",
+      "attack_style": "双臂连击",
+      "source_psd": "daishu2.psd",
+      "sheet_prefix": "sheets/kangaroo_front_",
+      "sprite_frames": "sprite_frames/kangaroo_front.tres",
+      "scene": "scenes/kangaroo_front.tscn"
+    }
+  },
+  "direction_rule": {
+    "kangaroo_side": "left/right; flip horizontally for left",
+    "kangaroo_front": "up/down"
+  }
+}
