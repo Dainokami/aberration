@@ -793,8 +793,9 @@ func _apply_generated_world(generated: LevelData) -> void:
 		if is_instance_valid(world_gen_dialog):
 			world_gen_dialog._status.text = "工作场景已切换，请关闭并重新打开本窗口后再应用"
 		return
-	generated.encounter = data.encounter.duplicate(true) as EncounterConfig \
-		if data.encounter != null else null
+	if generated.encounter == null:
+		generated.encounter = data.encounter.duplicate(true) as EncounterConfig \
+			if data.encounter != null else null
 	var before := {"map": data, "path": current_path, "dirty": dirty}
 	var after := {"map": generated, "path": "", "dirty": true}
 	var history := get_undo_redo()
@@ -1636,6 +1637,7 @@ func _terrain_aux_snapshot(target: LevelData) -> Dictionary:
 		"spawn_layer": target.spawn_layer,
 		"objects": target.objects.duplicate(true),
 		"details": target.details.duplicate(true),
+		"monster_spawn_points": target.monster_spawn_points.duplicate(true),
 	}
 
 func _ground_brush_region(cell: Vector2i) -> Rect2i:
@@ -1689,6 +1691,7 @@ func _apply_terrain_delta(target: LevelData, cell_values: Dictionary,
 	target.spawn_layer = int(aux.get("spawn_layer", -1))
 	target.objects.assign(aux["objects"].duplicate(true))
 	target.details.assign(aux.get("details", []).duplicate(true))
+	target.monster_spawn_points.assign(aux.get("monster_spawn_points", []).duplicate(true))
 	target.emit_changed()
 	if target == data:
 		if is_instance_valid(builder):
@@ -1696,6 +1699,8 @@ func _apply_terrain_delta(target: LevelData, cell_values: Dictionary,
 			changed.assign(cell_values.keys())
 			builder.rebuild_cells(changed)
 		_refresh_brush_preview()
+		if encounter_tools:
+			encounter_tools.sync()
 		_set_dirty(true)
 
 func _mode_name() -> String:
@@ -1805,6 +1810,7 @@ func _erase_blocks(targets: Array[Vector3i]) -> Array[Dictionary]:
 	var changes := _column_changes(candidate, changed)
 	if not changes.is_empty():
 		DetailRules.prune_invalid(candidate)
+		MonsterSpawnPoints.prune(candidate)
 		_apply_candidate_columns(candidate, changes)
 	return changes
 
@@ -1894,6 +1900,7 @@ func _apply_candidate_columns(candidate: LevelData, changes: Array[Dictionary]) 
 	data.stairs = candidate.stairs
 	data.spawn_cell = candidate.spawn_cell
 	data.spawn_layer = candidate.spawn_layer
+	data.monster_spawn_points = candidate.monster_spawn_points
 	data.emit_changed()
 
 func _move_top_anchors(candidate: LevelData, cell: Vector2i,

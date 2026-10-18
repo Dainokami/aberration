@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="WorldGenConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/worldgen/world_gen_config.gd" id="1_15kv3"]
+
+[resource]
+script = ExtResource("1_15kv3")
+width = 32
+height = 32
+region_count = 1
+grass_weight = 1.0
+rock_weight = 0.0
+sand_weight = 0.0
+water_weight = 0.0
+spawn_radius = 3.0
+static_count = 0
+prefab_budget = 2
+resource_density = 0.0
+environment_density = 0.0
+prefabs = Array[Dictionary]([{
+"align_height": true,
+"blend_edges": true,
+"maximum": 2,
+"minimum": 2,
+"path": "res://data/prefabs/monster_spawn_point_camp.tres",
+"rotate": true,
+"terrain": "grass",
+"weight": 1,
+"zone": "any"
+}])

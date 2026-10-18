@@ -60,6 +60,11 @@ func elite_definition(index: int) -> MonsterDefinition:
 	return definition_for(elite_one if index == 0 else elite_two,
 		{} if ecosystems.is_empty() else {"ecosystems": ecosystems})
 
+func ordinary_definition(rule: Dictionary) -> MonsterDefinition:
+	var values := rule.duplicate(true)
+	values.erase("ecosystems")
+	return definition_for(str(rule.get("path", "")), values)
+
 func snapshot() -> Dictionary:
 	var result := {}
 	for property in get_property_list():
@@ -103,7 +108,7 @@ func errors() -> PackedStringArray:
 			result.append("怪池权重无效")
 			continue
 		var path := str(rule.get("path", ""))
-		var monster := definition_for(path, rule) if ResourceLoader.exists(path) else null
+		var monster := ordinary_definition(rule) if ResourceLoader.exists(path) else null
 		if monster == null:
 			result.append("怪物定义缺失")
 		else:

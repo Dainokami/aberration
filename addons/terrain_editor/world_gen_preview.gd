@@ -5,6 +5,7 @@ const COLORS := [Color("#719965"), Color("#92929e"), Color("#ceae78"), Color("#4
 var data: LevelData
 var mode := 0
 var _texture: ImageTexture
+var point_editor
 
 func show_map(value: LevelData, selected_mode := 0) -> void:
 	data = value
@@ -58,8 +59,35 @@ func _draw() -> void:
 	draw_circle(spawn, 5, Color("#ffffff"))
 	draw_arc(spawn, float(data.generation.recipe.spawn_radius) * scale_value,
 		0, TAU, 60, Color("#ffffff88"), 1.5)
+	for point in data.monster_spawn_points:
+		var color := Color("#ffc44a") if point_editor != null and str(point.id) == point_editor.selected_id \
+			else Color("#bd80ff")
+		for cell: Vector3i in point.cells:
+			var area := Rect2(rect.position + Vector2(cell.x, cell.z) * scale_value,
+				Vector2.ONE * scale_value)
+			draw_rect(area, color)
+			draw_rect(area, color.lightened(0.4), false, 1)
+		if point_editor != null and str(point.id) == point_editor.selected_id:
+			var center := MonsterSpawnPoints.center(data, point)
+			var cell_position := Vector2(center.x - data.grid_world_origin.x,
+				center.z - data.grid_world_origin.y) / LevelData.CELL_SIZE
+			var radius := MonsterSpawnPoints.radius(data, point,
+				data.world_center(data.spawn_cell, data.spawn_layer))
+			draw_arc(rect.position + cell_position * scale_value,
+				radius / LevelData.CELL_SIZE * scale_value, 0, TAU, 96, color, 1.5)
 
 func _gui_input(event: InputEvent) -> void:
+	if point_editor != null and data != null and point_editor.data == data:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				point_editor.begin_stroke()
+				_paint_point(event.position)
+			else:
+				point_editor.finish_stroke()
+			accept_event()
+		elif event is InputEventMouseMotion and point_editor.drawing:
+			_paint_point(event.position)
+			accept_event()
 	if event is InputEventMouseMotion and data != null:
 		var rect := _map_rect()
 		if rect.has_point(event.position):
@@ -72,3 +100,14 @@ func _gui_input(event: InputEvent) -> void:
 					tooltip_text += "\n特殊地块：" + str(placement.name)
 		else:
 			tooltip_text = ""
+
+func _paint_point(position: Vector2) -> void:
+	var rect := _map_rect()
+	if not rect.has_point(position):
+		return
+	var cell := Vector2i((position - rect.position) / rect.size * Vector2(data.map_size))
+	cell += data.map_origin
+	var layer := data.top_layer(cell)
+	# The 2D preview picks the upper surface; 3D editing can target lower tunnels.
+	point_editor.paint(Vector3i(cell.x, layer, cell.y))
+	queue_redraw()

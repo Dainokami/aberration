@@ -13,6 +13,17 @@ func run(plugin: EditorPlugin) -> void:
 	if "--worldgen-interactive" in OS.get_cmdline_user_args():
 		await plugin._open_editor_workspace()
 		plugin._open_world_generation()
+		if "--spawn-point-showcase" in OS.get_cmdline_user_args():
+			var dialog = plugin.world_gen_dialog
+			dialog.config = load("res://data/worldgen_spawn_points_recipe.tres").duplicate(true)
+			dialog._sync()
+			dialog._tabs.current_tab = 3
+			dialog._start()
+			while dialog._thread != null:
+				await tree.process_frame
+			check(dialog.result != null and dialog.result.monster_spawn_points.size() == 2,
+				"Metal world preview includes two authored prefab points")
+			return
 		if "--worldgen-terrain-showcase" in OS.get_cmdline_user_args():
 			var dialog = plugin.world_gen_dialog
 			dialog.config = load("/tmp/worldgen-terrain-showcase-recipe.tres").duplicate(true)
@@ -97,11 +108,45 @@ func run(plugin: EditorPlugin) -> void:
 	while dialog._thread != null:
 		await tree.process_frame
 	generated = dialog.result
+	var points = dialog.point_editor
+	points.new_point()
+	var rect: Rect2 = dialog._preview._map_rect()
+	var scale_value := rect.size.x / generated.map_size.x
+	var cell := generated.spawn_cell + Vector2i(1, 0)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = rect.position + (Vector2(cell) + Vector2.ONE * 0.5) * scale_value
+	dialog._preview._gui_input(press)
+	var motion := InputEventMouseMotion.new()
+	motion.position = press.position + Vector2(scale_value, 0)
+	dialog._preview._gui_input(motion)
+	press.pressed = false
+	dialog._preview._gui_input(press)
+	check(generated.monster_spawn_points.size() == 1 and generated.monster_spawn_points[0].cells.size() == 2,
+		"world preview click drag authors same adjacent-cell group")
+	check(not dialog._apply.disabled and dialog.config.spawn_point_edits.size() == 1,
+		"point edits persist in recipe without invalidating applicable result")
+	points.radius_control.value = 24
+	check(generated.monster_spawn_points[0].activation_radius == 24 \
+		and dialog.config.spawn_point_edits[0].activation_radius == 24,
+		"world preview radius updates same map and recipe")
+	dialog.point_undo.undo()
+	check(generated.monster_spawn_points[0].activation_radius == 0,
+		"world radius undo restores automatic camera range")
+	dialog.point_undo.undo()
+	check(generated.monster_spawn_points.is_empty(), "preview point undo")
+	dialog.point_undo.redo()
+	check(generated.monster_spawn_points.size() == 1, "preview point redo")
+	var toggle: CheckButton = dialog._tabs.find_child("WorldEncounterEnabled", true, false)
+	toggle.button_pressed = true
 	plugin.world_gen_target = host
 	dialog._apply_result()
 	check(plugin.data == generated and host.level_data == generated
 		and plugin.current_path == "" and plugin.dirty, "apply creates new unsaved map")
 	check(host._chunk_nodes.size() > 0, "apply renders actual 3D terrain")
+	check(plugin.data.monster_spawn_points.size() == 1 and plugin.data.encounter.enabled,
+		"apply preserves generated point and encounter configuration")
 	var placement: Dictionary = generated.generation.placements[0]
 	check(placement.layer == 1 and generated.top_layer(placement.entry) == 1,
 		"applied special-map entrance is level with the generated world")

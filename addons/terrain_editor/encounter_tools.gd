@@ -2,6 +2,8 @@
 extends RefCounted
 
 const Picker := preload("res://addons/terrain_editor/surface_picker.gd")
+const Blocks := preload("res://addons/terrain_editor/block_picker.gd")
+const Points := preload("res://addons/terrain_editor/spawn_point_editor.gd")
 var host: EditorPlugin
 var page: VBoxContainer
 var config: EncounterConfig
@@ -21,6 +23,7 @@ var touched := {}
 var syncing := false
 var observed_data: LevelData
 var observed_config: EncounterConfig
+var point_editor
 
 func setup(plugin: EditorPlugin, tabs: TabContainer) -> void:
 	host = plugin
@@ -37,13 +40,31 @@ func setup(plugin: EditorPlugin, tabs: TabContainer) -> void:
 	enabled.toggled.connect(func(value: bool): _change("enabled", value))
 	page.add_child(enabled)
 	controls.enabled = enabled
-	_label("有效探索时间驱动刷新；静止区只暂停刷新计时，已生成怪物仍行动。")
+	point_editor = Points.new()
+	page.add_child(point_editor)
+	point_editor.edited.connect(_commit_points)
+	point_editor.message.connect(func(text: String): host._set_status(text))
+	point_editor.overlay_changed.connect(refresh_overlay)
+	var more := CheckButton.new()
+	more.name = "AdvancedEncounterSettings"
+	more.text = "更多设置 · 怪池 / 区域 / 精英与Boss"
+	page.add_child(more)
+	var advanced := VBoxContainer.new()
+	advanced.name = "EncounterAdvanced"
+	advanced.visible = false
+	page.add_child(advanced)
+	more.toggled.connect(func(value: bool):
+		finish_stroke()
+		advanced.visible = value
+		if not value:
+			paint_toggle.set_pressed_no_signal(false))
+	page = advanced
+	_label("普通怪仅在刷新点每30秒补充。以下参数用于数量、怪池及精英/Boss。\n精英/Boss累计探索时间；静止区暂停阶段计时。")
 	_number("seed_value", "刷新种子", 0, 2147483647, 1)
-	_number("interval", "普通怪间隔 / 秒", 0.1, 600, 0.1)
 	_number("count_min", "每次最少", 1, 20, 1)
 	_number("count_max", "每次最多", 1, 20, 1)
-	_number("radius_min", "圆环内半径 / 米", 0.5, 100, 0.5)
-	_number("radius_max", "圆环外半径 / 米", 0.5, 100, 0.5)
+	_number("radius_min", "精英圆环内半径 / 米", 0.5, 100, 0.5)
+	_number("radius_max", "精英圆环外半径 / 米", 0.5, 100, 0.5)
 	var personality := CheckButton.new()
 	personality.name = "UseSourcePersonality"
 	personality.text = "按设计表性格（否则全部主动追踪）"
@@ -54,6 +75,13 @@ func setup(plugin: EditorPlugin, tabs: TabContainer) -> void:
 	paint_toggle = CheckButton.new()
 	paint_toggle.name = "PaintEncounterRegions"
 	paint_toggle.text = "绘制区域 · 左键拖动"
+	paint_toggle.toggled.connect(func(value: bool):
+		point_editor.finish_stroke()
+		if value:
+			point_editor.mode.select(0))
+	point_editor.mode.item_selected.connect(func(_index: int): paint_toggle.set_pressed_no_signal(false))
+	point_editor.find_child("NewSpawnPoint", true, false).pressed.connect(func():
+		paint_toggle.set_pressed_no_signal(false))
 	page.add_child(paint_toggle)
 	region_mode = OptionButton.new()
 	region_mode.name = "EncounterRegionMode"
@@ -87,7 +115,7 @@ func setup(plugin: EditorPlugin, tabs: TabContainer) -> void:
 	description = _label("")
 	var preview := Button.new()
 	preview.name = "PreviewEncounterRing"
-	preview.text = "检查出生点 9～12m 候选圆环"
+	preview.text = "检查精英候选圆环"
 	preview.pressed.connect(_preview_ring)
 	page.add_child(preview)
 	pool_rows = VBoxContainer.new()
@@ -133,6 +161,7 @@ func sync() -> void:
 	observed_data = host.data
 	observed_config = host.data.encounter if host.data != null else null
 	config = observed_config if observed_config != null else EncounterConfig.default_config()
+	point_editor.bind(host.data)
 	syncing = true
 	for field in controls:
 		var control: Control = controls[field]
@@ -152,7 +181,7 @@ func sync() -> void:
 		child.queue_free()
 	for i in config.monster_pool.size():
 		var rule := config.monster_pool[i]
-		var monster := config.definition_for(str(rule.path), rule)
+		var monster := config.ordinary_definition(rule)
 		var row := VBoxContainer.new()
 		var enabled := CheckBox.new()
 		enabled.name = monster.monster_id + "_enabled"
@@ -168,13 +197,12 @@ func sync() -> void:
 		weight.prefix = "权重 "
 		weight.value_changed.connect(func(value: float): _pool_change(i, "weight", value))
 		row.add_child(weight)
-		var ecology := LineEdit.new()
+		var ecology := Label.new()
 		ecology.name = monster.monster_id + "_ecosystems"
-		ecology.text = ",".join(monster.ecosystems)
-		ecology.placeholder_text = "grass,rock,desert,ocean"
-		ecology.tooltip_text = "本地图允许生成生态；逗号分隔"
-		ecology.text_submitted.connect(func(value: String):
-			_pool_change(i, "ecosystems", _parse_ecosystems(value)))
+		var names := PackedStringArray()
+		for item in monster.ecosystems:
+			names.append(MonsterSpawnPoints.ECOLOGY_NAMES.get(item, item))
+		ecology.text = "设计表地形：" + " / ".join(names)
 		row.add_child(ecology)
 		for field in ["max_health", "damage", "speed", "attack_interval"]:
 			var spin := SpinBox.new()
@@ -218,12 +246,18 @@ func _choice(field: String, title: String) -> void:
 	controls[field] = choice
 
 func _ecosystem_choice(field: String) -> void:
-	_label("允许生态（空白沿用物种；grass,rock,desert,ocean）")
-	var edit := LineEdit.new()
-	edit.name = field
-	edit.text_submitted.connect(func(value: String): _change(field, _parse_ecosystems(value)))
-	page.add_child(edit)
-	controls[field] = edit
+	_label("精英允许地形")
+	var choice := OptionButton.new()
+	choice.name = field
+	var options := [[], ["grass"], ["rock"], ["desert"], ["ocean"],
+		["grass", "rock"], ["grass", "rock", "desert", "ocean"]]
+	var labels := ["沿用物种设计", "草原", "岩石", "沙漠", "海洋", "草原与岩石", "所有地形"]
+	for i in options.size():
+		choice.add_item(labels[i])
+		choice.set_item_metadata(i, PackedStringArray(options[i]))
+	choice.item_selected.connect(func(index: int): _change(field, choice.get_item_metadata(index)))
+	page.add_child(choice)
+	controls[field] = choice
 
 func _parse_ecosystems(value: String) -> PackedStringArray:
 	var result := PackedStringArray()
@@ -267,17 +301,49 @@ func _apply_config(target: LevelData, value: EncounterConfig) -> void:
 		host._set_dirty(true)
 		sync.call_deferred()
 
+func _commit_points(before: Array[Dictionary], after: Array[Dictionary]) -> void:
+	var target: LevelData = host.data
+	var undo := host.get_undo_redo()
+	undo.create_action("编辑小怪刷新点", UndoRedo.MERGE_DISABLE, target)
+	undo.add_do_method(self, "_apply_points", target, after.duplicate(true))
+	undo.add_undo_method(self, "_apply_points", target, before.duplicate(true))
+	undo.commit_action(false)
+	target.emit_changed()
+	host._set_dirty(true)
+
+func _apply_points(target: LevelData, points: Array[Dictionary]) -> void:
+	target.monster_spawn_points = points.duplicate(true)
+	target.emit_changed()
+	if target == host.data:
+		point_editor.bind(target)
+		host._set_dirty(true)
+
 func _preview_monster() -> void:
 	if selected_monster.item_count == 0:
 		return
 	var monster := load(str(selected_monster.get_selected_metadata())) as MonsterDefinition
 	artwork.texture = load(monster.image_path) if monster.available() else null
+	var ecologies := PackedStringArray()
+	for ecology in monster.ecosystems:
+		ecologies.append(MonsterSpawnPoints.ECOLOGY_NAMES.get(ecology, ecology))
 	description.text = "%s · %s\nHP %.0f · 伤害 %.0f · 移速 %.1fm/s\n%s" % [
-		monster.display_name, " / ".join(monster.ecosystems), monster.max_health,
+		monster.display_name, " / ".join(ecologies), monster.max_health,
 		monster.damage, monster.speed, "缺少对应美术" if not monster.available() else monster.attack]
 
 func handle(camera: Camera3D, event: InputEvent) -> int:
-	if not active() or not paint_toggle.button_pressed or host.data == null:
+	if not active() or host.data == null:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if not paint_toggle.button_pressed:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				point_editor.begin_stroke()
+				_point_at(camera, event.position)
+			else:
+				point_editor.finish_stroke()
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		if event is InputEventMouseMotion and point_editor.drawing:
+			_point_at(camera, event.position)
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -292,6 +358,16 @@ func handle(camera: Camera3D, event: InputEvent) -> int:
 		_paint_at(camera, event.position)
 		return EditorPlugin.AFTER_GUI_INPUT_STOP
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func _point_at(camera: Camera3D, position: Vector2) -> void:
+	var inverse: Transform3D = host.builder.global_transform.affine_inverse()
+	var hit := Blocks.raycast(host.data, inverse * camera.project_ray_origin(position),
+		inverse.basis * camera.project_ray_normal(position), host.builder.slice_layer_limit)
+	if hit.is_empty() or Vector3(hit.normal).y < 0.7 \
+			or not host.data.is_surface_exposed(hit.cell, hit.layer):
+		host._set_status("请选择真实外露的地面或水面")
+		return
+	point_editor.paint(Vector3i(hit.cell.x, hit.layer, hit.cell.y))
 
 func _paint_at(camera: Camera3D, position: Vector2) -> void:
 	var surface := Picker.pick(host.builder, camera, position)
@@ -313,6 +389,8 @@ func _paint_at(camera: Camera3D, position: Vector2) -> void:
 	refresh_overlay()
 
 func finish_stroke() -> void:
+	if point_editor != null:
+		point_editor.finish_stroke()
 	if not drawing:
 		return
 	drawing = false
@@ -335,12 +413,41 @@ func _apply_regions(target: LevelData, values: Dictionary) -> void:
 
 func refresh_overlay() -> void:
 	reset_overlay()
-	if host.data == null or not is_instance_valid(host.builder) or not active() \
-			or not overlay_toggle.button_pressed:
+	if host.data == null or not is_instance_valid(host.builder) or not active():
 		return
 	overlay = Node3D.new()
 	overlay.name = "EncounterRegionOverlay"
 	host.builder.add_child(overlay)
+	for point in host.data.monster_spawn_points:
+		var positions: Array = []
+		for cell: Vector3i in point.cells:
+			var flat := Vector2i(cell.x, cell.z)
+			if host.data.is_surface_exposed(flat, cell.y) \
+					and (host.builder.slice_layer_limit < 0 or cell.y <= host.builder.slice_layer_limit):
+				positions.append(host.data.world_center(flat, cell.y) + Vector3.UP * 0.14)
+		var selected: bool = str(point.id) == point_editor.selected_id
+		_batch(positions, Color(1, 0.75, 0.12, 0.8) if selected else Color(0.65, 0.35, 1, 0.65))
+		if selected and not positions.is_empty():
+			var center := MonsterSpawnPoints.center(host.data, point) + Vector3.UP * 0.18
+			var focus: Vector3 = host.data.world_center(host.data.spawn_cell, host.data.spawn_layer) \
+				if host.data.in_bounds(host.data.spawn_cell) else center
+			var radius := MonsterSpawnPoints.radius(host.data, point, focus)
+			var mesh := ImmediateMesh.new()
+			mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+			for step in 97:
+				var angle := TAU * step / 96
+				mesh.surface_add_vertex(center + Vector3(cos(angle), 0, sin(angle)) * radius)
+			mesh.surface_end()
+			var ring := MeshInstance3D.new()
+			ring.name = "SpawnPointActivationRing"
+			ring.mesh = mesh
+			var material := StandardMaterial3D.new()
+			material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			material.albedo_color = Color("#ffd45b")
+			ring.material_override = material
+			overlay.add_child(ring)
+	if not overlay_toggle.button_pressed:
+		return
 	var batches := [[], [], []]
 	var level: LevelData = host.data
 	for y in level.map_size.y:

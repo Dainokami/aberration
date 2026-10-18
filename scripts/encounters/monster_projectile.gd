@@ -5,6 +5,8 @@ var target: Node3D
 var direction := Vector3.FORWARD
 var damage := 14.0
 var life := 3.0
+var spawn_center := Vector3.ZERO
+var spawn_radius := -1.0
 
 func _ready() -> void:
 	var mesh := MeshInstance3D.new()
@@ -18,6 +20,10 @@ func _ready() -> void:
 	add_child(mesh)
 
 func _physics_process(delta: float) -> void:
+	if spawn_radius >= 0 and is_instance_valid(target) \
+			and not MonsterSpawnPoints.contains(spawn_center, spawn_radius, target.global_position):
+		queue_free()
+		return
 	life -= delta
 	var next := global_position + direction * 10 * delta
 	var query := PhysicsRayQueryParameters3D.create(global_position, next, 1)

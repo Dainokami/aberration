@@ -18,6 +18,10 @@ var hurt_left := 0.0
 var attack_damage := 14.0
 var hp_label: Label3D
 var adapter: EnemyAffordance
+var spawn_center := Vector3.ZERO
+var spawn_radius := -1.0
+var home_position := Vector3.ZERO
+var returning_home := false
 
 func setup(monster: MonsterDefinition, player: Node3D, nav: EncounterNavigation,
 		elite: int, config: EncounterConfig) -> void:
@@ -25,6 +29,7 @@ func setup(monster: MonsterDefinition, player: Node3D, nav: EncounterNavigation,
 	target = player
 	navigation = nav
 	elite_index = elite
+	home_position = global_position
 	passive = config.use_source_personality and not monster.source_aggressive
 	attack_damage = monster.damage * (config.elite_damage_multiplier if elite >= 0 else 1.0)
 	collision_layer = 2
@@ -70,8 +75,16 @@ func _update_label() -> void:
 func repath() -> void:
 	if health.dead or not is_instance_valid(target):
 		return
-	path = navigation.path(global_position, target.global_position)
+	returning_home = not player_in_spawn_range()
+	path = navigation.path(global_position, home_position if returning_home else target.global_position)
 	path_index = 1 if path.size() > 1 else 0
+
+func set_spawn_range(center: Vector3, radius: float) -> void:
+	spawn_center = center
+	spawn_radius = radius
+
+func player_in_spawn_range() -> bool:
+	return spawn_radius < 0 or MonsterSpawnPoints.contains(spawn_center, spawn_radius, target.global_position)
 
 func take_damage(amount: float, cause := "environment") -> void:
 	provoked = provoked or cause == "player"
@@ -89,10 +102,15 @@ func _physics_process(delta: float) -> void:
 		return
 	hurt_left = maxf(0, hurt_left - delta)
 	cooldown = maxf(0, cooldown - delta)
+	var in_spawn_range := player_in_spawn_range()
+	if returning_home == in_spawn_range:
+		repath()
+	if not in_spawn_range:
+		windup_left = -1
 	var difference := target.global_position - global_position
-	var in_reach := Vector2(difference.x, difference.z).length() <= definition.attack_reach \
+	var in_reach := in_spawn_range and Vector2(difference.x, difference.z).length() <= definition.attack_reach \
 		and absf(difference.y) < definition.body_height + 1
-	var chase := not passive or provoked
+	var chase := in_spawn_range and (not passive or provoked)
 	if windup_left >= 0:
 		windup_left -= delta
 		velocity.x = 0
@@ -109,7 +127,7 @@ func _physics_process(delta: float) -> void:
 		windup_left = definition.windup
 		velocity.x = 0
 		velocity.z = 0
-	elif chase and path_index < path.size():
+	elif (chase or returning_home) and path_index < path.size():
 		var point := path[path_index]
 		var offset := point - global_position
 		if Vector2(offset.x, offset.z).length() < 0.16:
@@ -147,4 +165,6 @@ func _throw_stone() -> void:
 	projectile.target = target
 	projectile.damage = attack_damage
 	projectile.direction = (target.global_position - projectile.position).normalized()
+	projectile.spawn_center = spawn_center
+	projectile.spawn_radius = spawn_radius
 	get_parent().add_child(projectile)

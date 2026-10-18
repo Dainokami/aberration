@@ -179,12 +179,21 @@ func candidates(center: Vector3, inner: float, outer: float,
 					result.append(id)
 	return result
 
-func spawn_error(id: int, monster: MonsterDefinition, occupied: Array[Vector3] = []) -> String:
+func point_candidates(point: Dictionary, monster: MonsterDefinition,
+		occupied: Array[Vector3] = []) -> Array[int]:
+	var result: Array[int] = []
+	for index: Vector3i in point.get("cells", []):
+		if ids.has(index) and spawn_error(ids[index], monster, occupied, true).is_empty():
+			result.append(ids[index])
+	return result
+
+func spawn_error(id: int, monster: MonsterDefinition, occupied: Array[Vector3] = [],
+		fixed_point := false) -> String:
 	if not surfaces.has(id):
 		return "无可行走表面"
 	var index: Vector3i = surfaces[id]
 	var cell := Vector2i(index.x, index.z)
-	if EncounterRegions.zone(data, cell, index.y) != 0:
+	if not fixed_point and EncounterRegions.zone(data, cell, index.y) != 0:
 		return "时间静止区"
 	if EncounterRegions.forbidden(data, cell, index.y):
 		return "禁止生成区域"

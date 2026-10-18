@@ -134,7 +134,8 @@ func run() -> void:
 	var reference := load("res://data/levels/final_generated_special_world_64.tres") as LevelData
 	var config := WorldGenConfig.new()
 	for field in WorldGenConfig.FIELDS:
-		config.set(field, reference.generation.recipe[field])
+		if reference.generation.recipe.has(field):
+			config.set(field, reference.generation.recipe[field])
 	var error := generator.prepare(config)
 	check(error.is_empty(), "three saved special terrains prepare")
 	if error.is_empty():

@@ -29,7 +29,7 @@ func run() -> void:
 	var data: LevelData = first.data
 	check(data.validate().is_empty(), "real LevelData and object validation")
 	check(data.map_size == Vector2i(64, 64) and data.spawn_layer == 1, "finite bounds and spawn")
-	check(int(data.generation.algorithm_version) == 6, "complete prefab candidate search records new algorithm version")
+	check(int(data.generation.algorithm_version) == 7, "spawn-point generation records new algorithm version")
 	var second := generate(config)
 	check(second.get("data") != null and data.clone_data() == second.data.clone_data(),
 		"same seed reproduces all terrain, objects, IDs and metadata")
