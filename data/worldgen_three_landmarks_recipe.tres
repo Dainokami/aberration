@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="WorldGenConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/worldgen/world_gen_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+seed_value = 1692031905
+width = 64
+height = 64
+region_count = 12
+boundary_noise = 0.22
+grass_weight = 4.0
+rock_weight = 3.0
+sand_weight = 2.0
+water_weight = 1.0
+spawn_radius = 6.0
+static_count = 3
+static_radius = 9.0
+falloff = 8.0
+prefab_budget = 6
+prefab_gap = 3
+resource_density = 6.0
+environment_density = 3.0
+cluster_gap = 9.0
+item_gap = 2.0
+prefabs = Array[Dictionary]([{
+"path": "res://data/levels/special_grass_plateau.tres",
+"minimum": 1,
+"maximum": 1,
+"weight": 1,
+"zone": "any",
+"rotate": true,
+"blend_edges": true,
+"align_height": true
+}, {
+"path": "res://data/levels/special_stone_ruins.tres",
+"minimum": 1,
+"maximum": 1,
+"weight": 1,
+"zone": "any",
+"rotate": true,
+"blend_edges": true,
+"align_height": true
+}, {
+"path": "res://data/levels/special_desert_oasis.tres",
+"minimum": 1,
+"maximum": 1,
+"weight": 1,
+"zone": "any",
+"rotate": true,
+"blend_edges": true,
+"align_height": true
+}])

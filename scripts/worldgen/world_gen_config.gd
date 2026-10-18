@@ -2,7 +2,7 @@
 class_name WorldGenConfig
 extends Resource
 
-const ALGORITHM_VERSION := 1
+const ALGORITHM_VERSION := 3
 const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_noise",
 	"grass_weight", "rock_weight", "sand_weight", "water_weight",
 	"spawn_radius", "static_count", "static_radius", "falloff",
@@ -30,7 +30,9 @@ const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_nois
 @export var environment_density := 3.0
 @export var cluster_gap := 9.0
 @export var item_gap := 2.0
-## path, minimum, maximum, weight, zone (any/explore/static), rotate.
+## path, minimum, maximum, weight, zone (any/explore/static), rotate, blend_edges, align_height.
+## Missing blend_edges defaults to true; disable for intentional exterior voids.
+## Missing align_height defaults to true; translates the fragment ground to layer 1.
 @export var prefabs: Array[Dictionary] = []
 
 func snapshot() -> Dictionary:

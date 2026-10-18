@@ -66,7 +66,8 @@ func run() -> void:
 	var source := load("res://data/prefabs/demo_camp.tres") as LevelPrefab
 	var source_before := source.fragment.clone_data()
 	config.prefabs = [{"path": "res://data/prefabs/demo_camp.tres",
-		"minimum": 2, "maximum": 3, "weight": 1, "rotate": true, "zone": "any"}]
+		"minimum": 2, "maximum": 3, "weight": 1, "rotate": true, "zone": "any",
+		"align_height": false}]
 	var with_prefabs := generate(config)
 	check(str(with_prefabs.error).is_empty(), "existing saved prefab generates")
 	if not str(with_prefabs.error).is_empty():
@@ -87,7 +88,7 @@ func run() -> void:
 						if world.get_layer(actual, layer).get("tile_id", "") != source.fragment.get_layer(
 								source_cell, layer).get("tile_id", ""):
 							complete = false
-		check(complete, "prefab columns preserve all layers and air under rotation")
+		check(complete, "with height alignment disabled prefab columns preserve original layers and air")
 		var repeat := generate(config)
 		check(repeat.get("data") != null and world.clone_data() == repeat.data.clone_data(),
 			"prefab random IDs remapped deterministically")

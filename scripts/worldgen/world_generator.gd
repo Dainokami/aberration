@@ -83,24 +83,30 @@ func prepare(config: WorldGenConfig) -> String:
 				blocked[cell - prefab.fragment.map_origin] = true
 				if definition.mechanism in COLLECTIBLES:
 					resource_cells.append(cell - prefab.fragment.map_origin)
-		var entries: Array[Dictionary] = []
-		for y in prefab.fragment.map_size.y:
-			for x in prefab.fragment.map_size.x:
-				var local := Vector2i(x, y)
-				var cell := local + prefab.fragment.map_origin
-				var layer := prefab.fragment.top_layer(cell)
-				if layer < 0 or layer > 2 or blocked.has(local) \
-						or not prefab.fragment.is_solid_layer(cell, layer) \
-						or prefab.fragment.stair_at(cell) >= 0:
-					continue
-				for direction in 4:
-					var outside: Vector2i = local + LevelData.DIRS[direction]
-					if Rect2i(Vector2i.ZERO, prefab.fragment.map_size).has_point(outside):
-						continue
-					entries.append({"cell": local, "direction": direction, "layer": layer})
+		var padding := _exterior_padding(prefab.fragment) if bool(rule.get("blend_edges", true)) else {}
+		var entries := _source_entries(prefab.fragment, padding, blocked)
+		var height_offset := 0
+		if bool(rule.get("align_height", true)) and not entries.is_empty():
+			# Use the prevalent perimeter ground, not a randomly chosen hilltop.
+			var counts := {}
+			for entry in entries:
+				var layer := int(entry.layer)
+				counts[layer] = int(counts.get(layer, 0)) + 1
+			var baseline := -1
+			var count := 0
+			for layer: int in counts:
+				if int(counts[layer]) > count or (int(counts[layer]) == count and layer < baseline):
+					baseline = layer
+					count = int(counts[layer])
+			height_offset = 1 - baseline
+			entries = entries.filter(func(entry: Dictionary): return int(entry.layer) == baseline)
+			var shifted := _shift_prefab(prefab, height_offset)
+			if not str(shifted.error).is_empty():
+				return title + " 无法对齐世界地面：\n" + str(shifted.error)
 		if entries.is_empty():
 			return title + " 没有可接入边缘：需要无物件/阶梯阻挡的 0～2 层实体顶面"
 		_sources.append({"prefab": prefab, "rule": rule, "entries": entries,
+			"padding": padding, "height_offset": height_offset,
 			"collectibles": resource_cells, "name": title,
 			"digest": var_to_str(prefab.fragment.clone_data()).sha256_text()})
 	for folder in DirAccess.get_directories_at("res://assets/generated"):
@@ -116,6 +122,119 @@ func prepare(config: WorldGenConfig) -> String:
 	_definitions.sort_custom(func(a: PlaceableDefinition, b: PlaceableDefinition):
 		return a.resource_path < b.resource_path)
 	return ""
+
+## Only wholly empty columns connected to the map boundary are unpainted margins.
+## Enclosed holes, water and air slots within an authored column remain authored.
+func _exterior_padding(fragment: LevelData) -> Dictionary:
+	var empty := {}
+	var padding := {}
+	var queue: Array[Vector2i] = []
+	for y in fragment.map_size.y:
+		for x in fragment.map_size.x:
+			var local := Vector2i(x, y)
+			if fragment.top_layer(fragment.map_origin + local) >= 0:
+				continue
+			empty[local] = true
+			if x == 0 or y == 0 or x == fragment.map_size.x - 1 or y == fragment.map_size.y - 1:
+				padding[local] = true
+				queue.append(local)
+	var cursor := 0
+	while cursor < queue.size():
+		var cell := queue[cursor]
+		cursor += 1
+		for offset: Vector2i in LevelData.DIRS:
+			var next := cell + offset
+			if empty.has(next) and not padding.has(next):
+				padding[next] = true
+				queue.append(next)
+	return padding
+
+func _source_entries(fragment: LevelData, padding: Dictionary, blocked: Dictionary) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var bounds := Rect2i(Vector2i.ZERO, fragment.map_size)
+	for y in fragment.map_size.y:
+		for x in fragment.map_size.x:
+			var local := Vector2i(x, y)
+			var cell := local + fragment.map_origin
+			var layer := fragment.top_layer(cell)
+			if layer < 0 or layer > 2 or blocked.has(local) \
+					or not fragment.is_solid_layer(cell, layer) or fragment.stair_at(cell) >= 0:
+				continue
+			for direction in 4:
+				var outside: Vector2i = local + LevelData.DIRS[direction]
+				if (bounds.has_point(outside) and not padding.has(outside)) or blocked.has(outside):
+					continue
+				entries.append({"cell": local, "direction": direction, "layer": layer})
+	return entries
+
+## Translate the whole private fragment, including stable air slots and content.
+## A downward translation may remove only empty slots; never clip authored blocks.
+func _shift_prefab(prefab: LevelPrefab, height_offset: int) -> Dictionary:
+	if height_offset == 0:
+		return {"error": "", "prefab": prefab}
+	var snapshot := prefab.fragment.clone_data()
+	for column: Dictionary in snapshot.columns:
+		var layers: Array = column.layers
+		if layers.is_empty():
+			continue
+		if height_offset > 0:
+			if layers.size() + height_offset > LevelData.MAX_LAYERS:
+				return {"error": "整体抬升后超过最大层级"}
+			for i in height_offset:
+				layers.push_front({})
+		else:
+			for i in -height_offset:
+				if not layers.is_empty() and not layers[0].is_empty():
+					return {"error": "整体下降会裁掉原有地形，请关闭「地面齐平」或调整源地图"}
+				if not layers.is_empty():
+					layers.pop_front()
+	for stair: Dictionary in snapshot.stairs:
+		stair.layer = int(stair.layer) + height_offset
+	for record: Dictionary in snapshot.objects + snapshot.details:
+		record.anchor_layer = int(record.anchor_layer) + height_offset
+		record.position += Vector3.UP * height_offset * LevelData.ELEVATION_STEP
+	# Prefabs never transfer a player spawn.
+	snapshot.spawn_cell = Vector2i(-1, -1)
+	snapshot.spawn_layer = -1
+	var shifted := LevelPrefab.new()
+	shifted.display_name = prefab.display_name
+	shifted.fragment = LevelData.new()
+	shifted.fragment.restore_data(snapshot)
+	var errors := shifted.fragment.validate()
+	errors.erase("缺少有效的玩家出生点")
+	return {"error": "\n".join(errors), "prefab": shifted}
+
+## Keep the normal prefab tool's exact-copy semantics; blending belongs to worldgen.
+func _stamp_prefab(prefab: LevelPrefab, anchor: Vector2i, turns: int, padding: Dictionary,
+		height_offset := 0) -> Dictionary:
+	var shifted := _shift_prefab(prefab, height_offset)
+	if not str(shifted.error).is_empty():
+		return {"error": shifted.error}
+	var result := (shifted.prefab as LevelPrefab).stamp(_data, anchor, turns)
+	if not str(result.get("error", "")).is_empty():
+		return result
+	# For an uplift, retain world substrate below the translated authored layers.
+	# Air within the source column and enclosed empty columns remain untouched.
+	if height_offset > 0:
+		for y in prefab.fragment.map_size.y:
+			for x in prefab.fragment.map_size.x:
+				var local := Vector2i(x, y)
+				if prefab.fragment.layer_count(prefab.fragment.map_origin + local) == 0:
+					continue
+				var cell := anchor + prefab.rotate_cell(local, turns)
+				var layers: Array = result.snapshot.columns[_data.index(cell)].layers
+				for layer in height_offset:
+					layers[layer] = _data.get_layer(cell, layer).duplicate(true)
+	for local: Vector2i in padding:
+		var cell := anchor + prefab.rotate_cell(local, turns)
+		result.snapshot.columns[_data.index(cell)] = _data.column_snapshot(cell)
+	var candidate := LevelData.new()
+	candidate.restore_data(result.snapshot)
+	var errors := candidate.validate()
+	errors.erase("缺少有效的玩家出生点")
+	if not errors.is_empty():
+		return {"error": "\n".join(errors)}
+	return result
 
 ## No scene tree or editor access in the worker.
 func generate() -> Dictionary:
@@ -332,16 +451,22 @@ func _try_place(source_index: int) -> bool:
 		var inside := anchor + prefab.rotate_cell(entry.cell, turns)
 		var direction := posmod(int(entry.direction) + turns, 4)
 		var outside: Vector2i = inside + LevelData.DIRS[direction]
-		var result := prefab.stamp(_data, anchor, turns)
+		var padding: Dictionary = source.padding
+		var height_offset := int(source.height_offset)
+		var result := _stamp_prefab(prefab, anchor, turns, padding, height_offset)
 		if not str(result.get("error", "")).is_empty():
 			continue
 		_data.restore_data(result.snapshot)
-		for y in range(rect.position.y, rect.end.y):
-			for x in range(rect.position.x, rect.end.x):
-				_reserved[Vector2i(x, y)] = true
+		for y in prefab.fragment.map_size.y:
+			for x in prefab.fragment.map_size.x:
+				var local := Vector2i(x, y)
+				if not padding.has(local):
+					_reserved[anchor + prefab.rotate_cell(local, turns)] = true
 		_placements.append({"name": source.name, "source": rule.path,
 			"rect": rect, "turns": turns, "entry": inside,
-			"outside": outside, "layer": entry.layer})
+			"outside": outside, "layer": int(entry.layer) + height_offset,
+			"source_layer": entry.layer, "height_offset": height_offset,
+			"blended_cells": padding.size()})
 		return true
 	return false
 
