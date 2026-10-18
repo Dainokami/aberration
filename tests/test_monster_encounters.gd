@@ -170,6 +170,9 @@ func runtime_checks() -> void:
 	data.encounter = EncounterConfig.default_config()
 	data.encounter.enabled = true
 	data.encounter.monster_pool = [{"path":"res://data/monsters/demon_dog.tres","weight":1.0,"enabled":true}]
+	var point := MonsterSpawnPoints.create("运行测试")
+	point.cells = [Vector3i(21, 0, 16), Vector3i(22, 0, 16)]
+	data.monster_spawn_points.append(point)
 	var world := Node3D.new()
 	root.add_child(world)
 	var builder := TerrainBuilder.new()
@@ -192,7 +195,9 @@ func runtime_checks() -> void:
 	director.control_ready = true
 	director.set_physics_process(false)
 	await physics_frame
-	director._physics_process(10)
+	director._physics_process(29)
+	check(director.actors.is_empty(), "fixed ordinary points do not spawn before 30 seconds")
+	director._physics_process(1)
 	check(director.actors.size() in [1,2], "production director creates 1–2 actual actors")
 	if not director.actors.is_empty():
 		var actor := director.actors[0]

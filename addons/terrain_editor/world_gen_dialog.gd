@@ -3,6 +3,7 @@ extends Window
 
 signal map_ready(data: LevelData)
 const Preview := preload("res://addons/terrain_editor/world_gen_preview.gd")
+const Points := preload("res://addons/terrain_editor/spawn_point_editor.gd")
 var config := WorldGenConfig.new()
 var result: LevelData
 var _thread: Thread
@@ -22,6 +23,8 @@ var _file: EditorFileDialog
 var _file_action := ""
 var _mode: OptionButton
 var _started := 0
+var point_editor
+var point_undo := UndoRedo.new()
 
 func _ready() -> void:
 	name = "WorldGeneration"
@@ -82,7 +85,7 @@ func _ready() -> void:
 	_number(zones, "environment_density", "环境物件 / 千格", 0, 50, 0.5)
 	_number(zones, "cluster_gap", "资源簇间距 / 格", 1, 100, 1)
 	_number(zones, "item_gap", "簇内物件间距 / 格", 1, 30, 1)
-	_label(zones, "采集物仅在静止区散布；出生核心保持净空。\n密度是目标值，实际数量受生态与占地限制。\n功能区标签尚未接入正式战斗计时。")
+	_label(zones, "采集物仅在静止区散布；出生核心保持净空。\n密度是目标值，实际数量受生态与占地限制。\n静止区暂停精英/Boss计时，固定刷新点继续刷新。")
 	var special := _page("特殊地块")
 	_number(special, "prefab_budget", "总预算 / 件", 0, 32, 1)
 	_number(special, "prefab_gap", "最小间距 / 格", 1, 30, 1)
@@ -92,6 +95,34 @@ func _ready() -> void:
 	_source_rows = VBoxContainer.new()
 	_source_rows.add_theme_constant_override("separation", 12)
 	special.add_child(_source_rows)
+	var points_page := _page("小怪刷新点")
+	var encounter_enabled := CheckButton.new()
+	encounter_enabled.name = "WorldEncounterEnabled"
+	encounter_enabled.text = "启用本世界怪物刷新"
+	encounter_enabled.toggled.connect(func(value: bool):
+		var encounter := result.encounter if result != null else EncounterConfig.default_config()
+		encounter.enabled = value
+		config.encounter_settings = encounter.snapshot()
+		if result != null:
+			result.encounter = encounter
+			result.generation.recipe = config.snapshot())
+	points_page.add_child(encounter_enabled)
+	point_editor = Points.new()
+	points_page.add_child(point_editor)
+	point_editor.edited.connect(_points_edited)
+	point_editor.message.connect(func(text: String): _status.text = text)
+	point_editor.overlay_changed.connect(func():
+		if _preview != null:
+			_preview.queue_redraw())
+	_label(points_page, "先生成预览，再在右侧地图绘制。特殊地图已有点会自动带入。\n新增/修改/删除随配方保存；更换种子或尺寸后请检查其位置。")
+	var point_actions := HBoxContainer.new()
+	points_page.add_child(point_actions)
+	_button(point_actions, "撤销点修改", func(): point_editor.finish_stroke(); point_undo.undo())
+	_button(point_actions, "重做点修改", func(): point_editor.finish_stroke(); point_undo.redo())
+	_button(points_page, "清除配方中的点修改", func():
+		point_editor.finish_stroke()
+		config.spawn_point_edits.clear()
+		_changed())
 	var right := VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	split.add_child(right)
@@ -101,7 +132,10 @@ func _ready() -> void:
 	_mode.item_selected.connect(func(index: int): _preview.show_map(result, index))
 	right.add_child(_mode)
 	_preview = Preview.new()
+	_preview.point_editor = point_editor
+	_preview.mouse_exited.connect(func(): point_editor.finish_stroke())
 	_preview.name = "WorldPreview"
+	_preview.clip_contents = true
 	_preview.custom_minimum_size = Vector2(360, 280)
 	_preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -195,6 +229,8 @@ func _changed() -> void:
 	if _apply == null:
 		return
 	_apply.disabled = true
+	if point_editor != null:
+		point_editor.bind(null)
 	_size_label.text = "%d × %d 米　·　%d 格" % [
 		config.width * 2, config.height * 2, config.width * config.height]
 	_status.text = "参数已改变，请重新生成；旧预览不可应用" if result != null else "设置参数，添加特殊地块后生成；也可先预览纯地形"
@@ -324,6 +360,7 @@ func _style_source_frame(frame: PanelContainer, terrain: String) -> void:
 func _choose(action: String) -> void:
 	if _thread != null:
 		return
+	point_editor.finish_stroke()
 	_file_action = action
 	_file.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE if action == "save" else EditorFileDialog.FILE_MODE_OPEN_FILE
 	_file.title = {"source": "选择已保存地图或预制", "load": "加载世界生成配方",
@@ -358,6 +395,8 @@ func _file_selected(path: String) -> void:
 func _start() -> void:
 	if _thread != null:
 		return
+	point_editor.finish_stroke()
+	point_editor.bind(null)
 	_generator = WorldGenerator.new()
 	var error := _generator.prepare(config)
 	_apply.disabled = true
@@ -386,6 +425,10 @@ func _process(_delta: float) -> void:
 		_status.text = str(output.error)
 		return
 	result = output.data
+	point_undo.clear_history()
+	point_editor.bind(result)
+	var encounter_enabled := _tabs.find_child("WorldEncounterEnabled", true, false) as CheckButton
+	encounter_enabled.set_pressed_no_signal(result.encounter.enabled)
 	_preview.show_map(result, _mode.selected)
 	_apply.disabled = false
 	var static_cells := (result.generation.zones as PackedByteArray).count(1)
@@ -416,7 +459,37 @@ func _cancel_generation() -> void:
 func _apply_result() -> void:
 	if result == null or _apply.disabled:
 		return
+	point_editor.finish_stroke()
 	map_ready.emit(result)
+
+func _points_edited(before: Array[Dictionary], after: Array[Dictionary]) -> void:
+	point_undo.create_action("编辑世界小怪刷新点")
+	point_undo.add_do_method(_apply_points.bind(after.duplicate(true)))
+	point_undo.add_undo_method(_apply_points.bind(before.duplicate(true)))
+	point_undo.commit_action(false)
+	_record_point_edits()
+
+func _apply_points(values: Array[Dictionary]) -> void:
+	result.monster_spawn_points = values.duplicate(true)
+	point_editor.bind(result)
+	_record_point_edits()
+
+func _record_point_edits() -> void:
+	config.spawn_point_edits.clear()
+	var base: Array = result.generation.get("spawn_point_base", [])
+	for point: Dictionary in base:
+		var now := MonsterSpawnPoints.find(result, str(point.id))
+		if now.is_empty():
+			config.spawn_point_edits.append({"id": point.id, "deleted": true})
+		elif now != point:
+			config.spawn_point_edits.append(now.duplicate(true))
+	for point in result.monster_spawn_points:
+		if not base.any(func(old: Dictionary): return str(old.id) == str(point.id)):
+			config.spawn_point_edits.append(point.duplicate(true))
+	config.encounter_settings = result.encounter.snapshot()
+	result.generation.recipe = config.snapshot()
+	_preview.queue_redraw()
+	_status.text = "刷新点已更新 · 可应用或保存配方"
 
 func confirm_applied() -> void:
 	hide()
@@ -424,6 +497,7 @@ func confirm_applied() -> void:
 	_status.text = "已应用为新地图；再次应用前请重新生成"
 
 func _close() -> void:
+	point_editor.finish_stroke()
 	if _thread != null:
 		_cancel_generation()
 	hide()

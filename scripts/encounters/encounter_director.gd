@@ -20,13 +20,19 @@ var skipped := 0
 var spawn_count := 0
 var diagnostics := ""
 var last_regular_positions: Array[Vector3] = []
+var point_clocks := {}
+var automatic_point_radius := 32.0
+var radius_clock := 0.0
 
 func setup(level: LevelData, actor: Node3D) -> void:
 	data = level
 	player = actor
-	config = data.encounter.duplicate(true) as EncounterConfig
+	config = data.encounter.duplicate(true) as EncounterConfig \
+		if data.encounter != null else EncounterConfig.default_config()
+	point_clocks.clear()
 	random.seed = config.seed_value
 	timeline.setup(config)
+	_update_point_ranges()
 	var errors := config.errors()
 	if not errors.is_empty():
 		timeline.running = false
@@ -68,6 +74,10 @@ func _physics_process(delta: float) -> void:
 	if config == null or not timeline.running or not control_ready:
 		return
 	actors = actors.filter(func(actor: MonsterActor): return is_instance_valid(actor))
+	radius_clock -= delta
+	if radius_clock <= 0:
+		_update_point_ranges()
+		radius_clock = 0.5
 	path_clock += delta
 	if path_clock >= 0.1 and not actors.is_empty():
 		path_clock = 0
@@ -76,13 +86,12 @@ func _physics_process(delta: float) -> void:
 			actors[path_cursor].repath()
 			path_cursor += 1
 	retry_left -= delta
+	advance_spawn_points(delta * time_scale)
 	var events := timeline.advance(delta * time_scale, is_exploring(), control_ready)
 	for event in events:
 		if timeline.boss_spawned:
 			break
-		if event == "regular":
-			_spawn_regular()
-		elif event.begins_with("elite_") and retry_left <= 0:
+		if event.begins_with("elite_") and retry_left <= 0:
 			_spawn_elite(event.to_int() if event.is_valid_int() else int(event.trim_prefix("elite_")))
 		elif event == "boss" and retry_left <= 0:
 			_spawn_gate()
@@ -99,25 +108,74 @@ func _occupied() -> Array[Vector3]:
 	return result
 
 func _spawn_regular() -> void:
-	var amount := random.randi_range(config.count_min, config.count_max)
 	last_regular_positions.clear()
-	var choices: Array[Dictionary] = []
-	var total := 0.0
-	for rule in config.monster_pool:
-		if not bool(rule.get("enabled", true)) or float(rule.get("weight", 1)) <= 0:
+	for point in data.monster_spawn_points:
+		if bool(point.get("enabled", true)):
+			_spawn_point(point)
+
+func advance_spawn_points(delta: float) -> void:
+	if not config.enabled or not control_ready or not timeline.running or timeline.boss_spawned:
+		return
+	for point in data.monster_spawn_points:
+		var id := str(point.id)
+		if not bool(point.get("enabled", true)):
+			point_clocks.erase(id)
 			continue
-		var monster := config.definition_for(str(rule.path), rule)
-		var nav := nav_for(monster)
-		var candidates := nav.candidates(player.global_position, config.radius_min,
-			config.radius_max, monster, _occupied())
-		if not candidates.is_empty():
-			total += float(rule.get("weight", 1))
-			choices.append({"monster": monster, "nav": nav, "weight": float(rule.get("weight", 1))})
+		if not point_active(point):
+			continue
+		var clock := float(point_clocks.get(id, 0.0)) + delta
+		if clock >= MonsterSpawnPoints.INTERVAL:
+			clock = fmod(clock, MonsterSpawnPoints.INTERVAL)
+			_spawn_point(point)
+		point_clocks[id] = clock
+
+func _update_point_ranges() -> void:
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	var focus := player.global_position - Vector3.UP * 0.8
+	automatic_point_radius = MonsterSpawnPoints.automatic_radius(data, focus, camera)
+	for actor in actors:
+		if actor.elite_index < 0 and actor.get_meta("spawn_point_id", "") != "":
+			var point := MonsterSpawnPoints.find(data, str(actor.get_meta("spawn_point_id")))
+			if not point.is_empty():
+				actor.set_spawn_range(MonsterSpawnPoints.center(data, point), point_radius(point))
+
+func point_radius(point: Dictionary) -> float:
+	var custom := float(point.get("activation_radius", 0.0))
+	return custom if custom > 0 else automatic_point_radius
+
+func point_active(point: Dictionary) -> bool:
+	return bool(point.get("enabled", true)) and MonsterSpawnPoints.contains(
+		MonsterSpawnPoints.center(data, point), point_radius(point), player.global_position)
+
+func point_alive(id: String) -> int:
+	var amount := 0
+	for actor in actors:
+		if is_instance_valid(actor) and str(actor.get_meta("spawn_point_id", "")) == id:
+			amount += 1
+	return amount
+
+func _spawn_point(point: Dictionary) -> void:
+	if not point_active(point):
+		return
+	var vacancy := int(point.get("max_alive", 2)) - point_alive(str(point.id))
+	var amount := mini(vacancy, random.randi_range(config.count_min, config.count_max))
 	for i in amount:
+		var choices: Array[Dictionary] = []
+		var total := 0.0
+		for rule in config.monster_pool:
+			if not bool(rule.get("enabled", true)) or float(rule.get("weight", 1)) <= 0:
+				continue
+			var monster := config.ordinary_definition(rule)
+			if monster == null or not monster.available():
+				continue
+			var nav := nav_for(monster)
+			if not nav.point_candidates(point, monster, _occupied()).is_empty():
+				total += float(rule.get("weight", 1))
+				choices.append({"monster": monster, "nav": nav, "weight": float(rule.get("weight", 1))})
 		if choices.is_empty():
 			skipped += 1
-			diagnostics = "圆环内无适配生态、探索区域且可达的合法点"
-			continue
+			diagnostics = "%s：无适配生态或空闲落脚格，请检查怪池、禁刷与障碍" % point.get("name", "刷新点")
+			break
 		var roll := random.randf() * total
 		var choice: Dictionary = choices.back()
 		for option in choices:
@@ -125,15 +183,16 @@ func _spawn_regular() -> void:
 			if roll <= 0:
 				choice = option
 				break
-		var actor := _spawn(choice.monster, choice.nav, -1)
+		var actor := _spawn(choice.monster, choice.nav, -1, point)
 		if actor != null:
 			last_regular_positions.append(actor.global_position)
 		else:
 			skipped += 1
 
-func _spawn(monster: MonsterDefinition, nav: EncounterNavigation, elite: int) -> MonsterActor:
-	var candidates := nav.candidates(player.global_position, config.radius_min,
-		config.radius_max, monster, _occupied())
+func _spawn(monster: MonsterDefinition, nav: EncounterNavigation, elite: int,
+		point: Dictionary = {}) -> MonsterActor:
+	var candidates := nav.point_candidates(point, monster, _occupied()) if not point.is_empty() \
+		else nav.candidates(player.global_position, config.radius_min, config.radius_max, monster, _occupied())
 	while not candidates.is_empty():
 		var pick := random.randi_range(0, candidates.size() - 1)
 		var id := candidates[pick]
@@ -144,8 +203,12 @@ func _spawn(monster: MonsterDefinition, nav: EncounterNavigation, elite: int) ->
 		var actor := MonsterActor.new()
 		actor.position = position
 		actor.name = "Monster_%d" % spawn_count
+		if not point.is_empty():
+			actor.set_meta("spawn_point_id", str(point.id))
 		add_child(actor)
 		actor.setup(monster, player, nav, elite, config)
+		if not point.is_empty():
+			actor.set_spawn_range(MonsterSpawnPoints.center(data, point), point_radius(point))
 		actor.defeated.connect(_defeated)
 		actors.append(actor)
 		spawn_count += 1
@@ -256,9 +319,10 @@ func stop() -> void:
 			actor.set_physics_process(false)
 
 func summary() -> String:
-	return "探索计时 %02d:%02d · %s · 敌人 %d · 跳过 %d\n精英1 %s / 精英2 %s%s" % [
+	return "探索计时 %02d:%02d · %s · 敌人 %d · 跳过 %d\n普通怪：%d个刷新点 · 范围内每30秒补充\n精英1 %s / 精英2 %s%s" % [
 		int(timeline.elapsed) / 60, int(timeline.elapsed) % 60,
 		"累计中" if is_exploring() else "静止区暂停", actors.size(), skipped,
+		data.monster_spawn_points.size(),
 		_elite_label(timeline.elites[0]), _elite_label(timeline.elites[1]),
 		"\n浓雾安全半径 %.1fm" % fog.radius if is_instance_valid(fog) else ""]
 

@@ -50,6 +50,7 @@ func run(plugin: EditorPlugin) -> void:
 	plugin.tabs.current_tab = plugin.tabs.get_tab_count() - 1
 	var tools = plugin.encounter_tools
 	check(tools.active() and not map.encounter, "new final tab and old map default off")
+	check(not tools.page.visible and tools.point_editor.visible, "planner main page focuses on points with advanced settings collapsed")
 	tools.controls.enabled.button_pressed = true
 	await tree.process_frame
 	await tree.process_frame
@@ -73,6 +74,73 @@ func run(plugin: EditorPlugin) -> void:
 	camera.look_at(Vector3(0, 2, 0))
 	await tree.physics_frame
 	await tree.physics_frame
+	var points = tools.point_editor
+	points.find_child("NewSpawnPoint", true, false).pressed.emit()
+	check(map.monster_spawn_points.is_empty() and not points.draft.is_empty(), "new point remains draft until painted")
+	var first := Vector2i(2, 2)
+	var adjacent := Vector2i(3, 2)
+	var press_point := InputEventMouseButton.new()
+	press_point.button_index = MOUSE_BUTTON_LEFT
+	press_point.pressed = true
+	press_point.position = camera.unproject_position(map.world_center(first, 0))
+	plugin._forward_3d_gui_input(camera, press_point)
+	var motion := InputEventMouseMotion.new()
+	motion.position = camera.unproject_position(map.world_center(adjacent, 0))
+	plugin._forward_3d_gui_input(camera, motion)
+	press_point.pressed = false
+	plugin._input(press_point)
+	check(map.monster_spawn_points.size() == 1 and map.monster_spawn_points[0].cells.size() == 2,
+		"real projected press drag outside release paints adjacent group")
+	check(not points.drawing and tools.overlay.get_child_count() > 0, "stroke commits and points visibly rendered")
+	var point_id := str(map.monster_spawn_points[0].id)
+	history.undo()
+	check(map.monster_spawn_points.is_empty(), "point native undo")
+	history.redo()
+	check(map.monster_spawn_points.size() == 1 and str(map.monster_spawn_points[0].id) == point_id, "point native redo keeps stable ID")
+	points.mode.select(1)
+	click(plugin, camera, camera.unproject_position(map.world_center(Vector2i(8, 2), 0)))
+	check(map.monster_spawn_points[0].cells.size() == 2, "detached mouse click rejected")
+	points.mode.select(2)
+	click(plugin, camera, camera.unproject_position(map.world_center(adjacent, 0)))
+	check(map.monster_spawn_points[0].cells.size() == 1, "point erase mode uses actual mouse input")
+	history.undo()
+	points.mode.select(0)
+	click(plugin, camera, camera.unproject_position(map.world_center(first, 0)))
+	check(points.selected_id == point_id, "click existing range selects point")
+	points.limit.value = 3
+	check(map.monster_spawn_points[0].max_alive == 3, "alive control persists")
+	history.undo()
+	points.radius_control.value = 24
+	check(map.monster_spawn_points[0].activation_radius == 24, "shared radius control persists in map")
+	history.undo()
+	check(map.monster_spawn_points[0].get("activation_radius", 0) == 0, "radius undo restores automatic mode")
+	check(tools.overlay.find_child("SpawnPointActivationRing", true, false) != null,
+		"selected point displays actual activation and chase circle")
+	points.delete_point()
+	check(map.monster_spawn_points.is_empty(), "delete point control")
+	history.undo()
+	check(map.monster_spawn_points.size() == 1, "delete undo")
+	plugin._begin_stroke()
+	plugin.touched.clear()
+	plugin.erase_select.select(0)
+	var erase_targets: Array[Vector3i] = [Vector3i(first.x, 0, first.y)]
+	var changes: Array[Dictionary] = plugin._erase_blocks(erase_targets)
+	plugin._record_stroke_changes(changes)
+	plugin._commit_stroke("test point terrain erase")
+	check(map.monster_spawn_points[0].cells == [Vector3i(adjacent.x, 0, adjacent.y)], "terrain erasure prunes exact point host")
+	history.undo()
+	check(map.monster_spawn_points[0].cells.size() == 2 and map.layer_exists(first, 0), "terrain undo restores point and support")
+	map.set_layer(Vector2i(9, 9), 1, {"tile_id": "water"})
+	points.new_point()
+	click(plugin, camera, camera.unproject_position(map.world_center(Vector2i(9, 9), 1)))
+	check(map.monster_spawn_points.size() == 2 and map.monster_spawn_points[1].cells == [Vector3i(9, 1, 9)],
+		"logical mouse picking targets water surface without physical water collider")
+	history.undo()
+	points.new_point()
+	click(plugin, camera, camera.unproject_position(map.world_center(Vector2i(6, 6), 2)))
+	check(map.monster_spawn_points.size() == 2 and map.monster_spawn_points[1].cells == [Vector3i(6, 2, 6)],
+		"point mouse picking retains upper support layer")
+	history.undo()
 	tools.paint_toggle.button_pressed = true
 	tools.region_mode.selected = 1
 	var cell := Vector2i(5, 5)
@@ -117,7 +185,8 @@ func run(plugin: EditorPlugin) -> void:
 	var path := "/tmp/aberration-encounter-editor-roundtrip.tres"
 	check(ResourceSaver.save(map, path) == OK, "actual editor map saves")
 	var loaded := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
-	check(loaded.encounter.enabled and loaded.encounter_regions == map.encounter_regions,
+	check(loaded.encounter.enabled and loaded.encounter_regions == map.encounter_regions \
+		and loaded.monster_spawn_points == map.monster_spawn_points,
 		"reopen preserves settings and layered paint")
 	var other := LevelData.new()
 	other.setup_blank()

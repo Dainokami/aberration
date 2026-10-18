@@ -26,6 +26,18 @@ static func capture(source: LevelData, region: Rect2i) -> Dictionary:
 	prefab.fragment.setup_blank(region.size)
 	var target := prefab.fragment
 	target.terrain_tints = source.terrain_tints.duplicate(true)
+	for point in source.monster_spawn_points:
+		var cells: Array = point.cells
+		var inside: Array = cells.filter(func(cell: Vector3i):
+			return region.has_point(Vector2i(cell.x, cell.z)))
+		if inside.is_empty():
+			continue
+		if inside.size() != cells.size():
+			return {"error": "选区切断小怪刷新点，请完整包含或避开"}
+		var copy := point.duplicate(true)
+		copy.cells = cells.map(func(cell: Vector3i):
+			return Vector3i(cell.x - region.position.x, cell.y, cell.z - region.position.y))
+		target.monster_spawn_points.append(copy)
 	for index: Vector3i in source.encounter_regions:
 		if region.has_point(Vector2i(index.x, index.z)):
 			target.encounter_regions[Vector3i(index.x - region.position.x, index.y,
@@ -103,6 +115,11 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 		return {"error": "预制超出地图"}
 	var candidate := LevelData.new()
 	candidate.restore_data(destination.clone_data())
+	if not objects_only:
+		for point in candidate.monster_spawn_points:
+			for cell: Vector3i in point.cells:
+				if area.has_point(Vector2i(cell.x, cell.z)):
+					return {"error": "预制覆盖已有小怪刷新点，请先移动或删除"}
 	for index: Vector3i in fragment.encounter_regions:
 		var local := Vector2i(index.x, index.z) - fragment.map_origin
 		var target := anchor + rotate_cell(local, turns)
@@ -183,6 +200,18 @@ func stamp(destination: LevelData, anchor: Vector2i, turns: int, objects_only :=
 			record["position"] - fragment.world_center(old_cell))
 		copy["yaw"] = float(record.get("yaw", 0.0)) - posmod(turns, 4) * PI * 0.5
 		candidate.details.append(copy)
+	for point in fragment.monster_spawn_points:
+		var copy := point.duplicate(true)
+		copy.id = ObjectRules.new_id()
+		copy.cells = []
+		for index: Vector3i in point.cells:
+			var old_cell := Vector2i(index.x, index.z)
+			var new_cell := anchor + rotate_cell(old_cell - fragment.map_origin, turns)
+			var layer := index.y
+			if objects_only:
+				layer += candidate.top_layer(new_cell) - fragment.top_layer(old_cell)
+			copy.cells.append(Vector3i(new_cell.x, layer, new_cell.y))
+		candidate.monster_spawn_points.append(copy)
 	# Validate stairs without requiring a spawn point on a work-in-progress map.
 	var errors := candidate.validate()
 	if not errors.is_empty() and errors[0] == "缺少有效的玩家出生点":

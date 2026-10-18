@@ -21,6 +21,7 @@ var _sources: Array[Dictionary] = []
 var _definitions: Array[PlaceableDefinition] = []
 var _placement_prefixes := {}
 var _last_placement_report := {}
+var _point_base: Array[Dictionary] = []
 
 func cancel() -> void:
 	_mutex.lock()
@@ -202,6 +203,9 @@ func _shift_prefab(prefab: LevelPrefab, height_offset: int) -> Dictionary:
 		if layer >= 0 and layer < LevelData.MAX_LAYERS:
 			shifted_regions[Vector3i(index.x, layer, index.z)] = snapshot.encounter_regions[index]
 	snapshot.encounter_regions = shifted_regions
+	for point: Dictionary in snapshot.monster_spawn_points:
+		point.cells = point.cells.map(func(cell: Vector3i):
+			return Vector3i(cell.x, cell.y + height_offset, cell.z))
 	for record: Dictionary in snapshot.objects + snapshot.details:
 		record.anchor_layer = int(record.anchor_layer) + height_offset
 		record.position += Vector3.UP * height_offset * LevelData.ELEVATION_STEP
@@ -265,6 +269,8 @@ func generate() -> Dictionary:
 				source.name, source.rotation_blocker])
 	_data = LevelData.new()
 	_data.setup_blank(Vector2i(_config.width, _config.height))
+	_data.encounter = EncounterConfig.from_snapshot(_config.encounter_settings) \
+		if not _config.encounter_settings.is_empty() else EncounterConfig.default_config()
 	_data.spawn_cell = _data.map_size / 2
 	_data.spawn_layer = 1
 	_set_stage("生成生态与功能区")
@@ -282,6 +288,23 @@ func generate() -> Dictionary:
 	if not error.is_empty():
 		return {"error": error}
 	_set_stage("散布资源与环境物件")
+	for i in _data.monster_spawn_points.size():
+		_data.monster_spawn_points[i].id = "wg_%d_p_%d" % [_config.seed_value, i]
+	_point_base = _data.monster_spawn_points.duplicate(true)
+	for edit in _config.spawn_point_edits:
+		for i in range(_data.monster_spawn_points.size() - 1, -1, -1):
+			if str(_data.monster_spawn_points[i].id) == str(edit.id):
+				_data.monster_spawn_points.remove_at(i)
+		if not bool(edit.get("deleted", false)):
+			_data.monster_spawn_points.append(edit.duplicate(true))
+	if not _data.monster_spawn_points.is_empty() and _config.encounter_settings.is_empty():
+		_data.encounter.enabled = true
+	var point_errors := MonsterSpawnPoints.errors(_data)
+	if not point_errors.is_empty():
+		return {"error": "配方中的刷新点与当前地形不符，请恢复原参数或清除刷新点修改：\n" + "\n".join(point_errors)}
+	for point in _data.monster_spawn_points:
+		for cell: Vector3i in point.cells:
+			_reserved[Vector2i(cell.x, cell.z)] = true
 	_scatter(true, _config.resource_density)
 	_scatter(false, _config.environment_density)
 	if _stopped():
@@ -304,6 +327,10 @@ func generate() -> Dictionary:
 	var provenance: Array[Dictionary] = []
 	for source in _sources:
 		provenance.append({"path": source.rule.path, "sha256": source.digest})
+	for point in _data.monster_spawn_points:
+		var names := MonsterSpawnPoints.species(_data, point, _data.encounter)
+		if names.is_empty():
+			_warnings.append("刷新点「%s」当前无可用物种，请检查设计表地形、怪池或禁刷。" % point.get("name", "刷新点"))
 	var road_cells: Array[Vector2i] = []
 	road_cells.assign(_roads.keys())
 	_data.generation = {"algorithm_version": WorldGenConfig.ALGORITHM_VERSION,
@@ -311,6 +338,7 @@ func generate() -> Dictionary:
 		"zone_size": _data.map_size, "zones": _zones,
 		"placements": _placements.duplicate(true), "roads": road_cells,
 		"sources": provenance, "warnings": _warnings, "biome_counts": counts}
+	_data.generation.spawn_point_base = _point_base.duplicate(true)
 	_set_stage("完成")
 	return {"error": "", "data": _data, "warnings": _warnings}
 

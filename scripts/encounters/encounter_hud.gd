@@ -39,10 +39,13 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	if director == null or not is_instance_valid(director.gate):
+	if director == null:
 		return
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:
+		return
+	if not is_instance_valid(director.gate):
+		_draw_spawn_cues(camera)
 		return
 	var from := camera.unproject_position(director.player.global_position)
 	var difference := director.gate.global_position - director.player.global_position
@@ -55,3 +58,31 @@ func _draw() -> void:
 	var tangent := Vector2(-direction.y, direction.x)
 	draw_colored_polygon(PackedVector2Array([tip, center - direction * 8 + tangent * 9,
 		center - direction * 8 - tangent * 9]), Color("#e8c878"))
+
+func _draw_spawn_cues(camera: Camera3D) -> void:
+	var screen := Rect2(Vector2.ZERO, size).grow(-55)
+	var shown := 0
+	for point in director.data.monster_spawn_points:
+		if not director.point_active(point) or director.point_alive(str(point.id)) == 0:
+			continue
+		var target := MonsterSpawnPoints.center(director.data, point)
+		if not camera.is_position_behind(target) and screen.has_point(camera.unproject_position(target)):
+			continue
+		var difference := target - director.player.global_position
+		var direction := Vector2(camera.global_basis.x.dot(difference), -camera.global_basis.y.dot(difference)).normalized()
+		if direction.length_squared() < 0.01:
+			continue
+		var half := screen.size * 0.5
+		var reach := minf(half.x / maxf(absf(direction.x), 0.001),
+			half.y / maxf(absf(direction.y), 0.001))
+		var center := size * 0.5 + direction * (reach - 15)
+		var tangent := Vector2(-direction.y, direction.x)
+		draw_colored_polygon(PackedVector2Array([center + direction * 14,
+			center - direction * 6 + tangent * 6, center - direction * 6 - tangent * 6]),
+			Color("#c795f5"))
+		var label_at := center - direction * 32 - Vector2(28, 0)
+		draw_string(text_label.get_theme_font("font"), label_at, "怪物动静",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#d9bbf7"))
+		shown += 1
+		if shown >= 3:
+			break

@@ -2,14 +2,14 @@
 class_name WorldGenConfig
 extends Resource
 
-const ALGORITHM_VERSION := 6
+const ALGORITHM_VERSION := 7
 const TERRAIN_IDS := ["unset", "grass", "rock", "sand", "water", "any"]
 const TERRAIN_LABELS := ["请选择地形", "草原", "岩石", "沙漠", "海洋", "不限制地形"]
 const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_noise",
 	"grass_weight", "rock_weight", "sand_weight", "water_weight",
 	"spawn_radius", "static_count", "static_radius", "falloff",
 	"prefab_budget", "prefab_gap", "resource_density", "environment_density",
-	"cluster_gap", "item_gap", "prefabs"]
+	"cluster_gap", "item_gap", "prefabs", "spawn_point_edits", "encounter_settings"]
 
 @export var seed_value := 20261018
 @export var width := 64
@@ -39,12 +39,15 @@ const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_nois
 ## Missing blend_edges defaults to true; disable for intentional exterior voids.
 ## Missing align_height defaults to true; translates the fragment ground to layer 1.
 @export var prefabs: Array[Dictionary] = []
+## Stable generated ID -> edited point; deleted entries contain only id/deleted.
+@export var spawn_point_edits: Array[Dictionary] = []
+@export var encounter_settings: Dictionary = {}
 
 func snapshot() -> Dictionary:
 	var result := {"algorithm_version": ALGORITHM_VERSION}
 	for field in FIELDS:
 		var value: Variant = get(field)
-		result[field] = value.duplicate(true) if value is Array else value
+		result[field] = value.duplicate(true) if value is Array or value is Dictionary else value
 	return result
 
 func errors() -> PackedStringArray:

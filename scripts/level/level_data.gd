@@ -38,6 +38,8 @@ const DEFAULT_SOLID_TILE := "grass"
 @export var encounter: EncounterConfig
 ## Sparse authored region overrides keyed by Vector3i(x, support_layer, z).
 @export var encounter_regions: Dictionary = {}
+## Fixed ordinary-monster spawn groups anchored to adjacent cells at one height.
+@export var monster_spawn_points: Array[Dictionary] = []
 
 var _ensuring_layout := false
 ## Read-only surface views share the source columns for terrain art generation.
@@ -60,6 +62,7 @@ func setup_blank(size := Vector2i(16, 16)) -> void:
 	generation.clear()
 	encounter = null
 	encounter_regions.clear()
+	monster_spawn_points.clear()
 	spawn_cell = Vector2i(-1, -1)
 	spawn_layer = -1
 	format_version = FORMAT_VERSION
@@ -577,6 +580,7 @@ func validate_content(check_assets := true) -> PackedStringArray:
 	errors.append_array(ObjectRules.validate_all(self, check_assets))
 	errors.append_array(DetailRules.validate_all(self, check_assets))
 	errors.append_array(EncounterRegions.errors(self))
+	errors.append_array(MonsterSpawnPoints.errors(self))
 	if encounter != null and encounter.enabled:
 		errors.append_array(encounter.errors())
 	return errors
@@ -601,6 +605,7 @@ func fork_for_edit() -> LevelData:
 	copy.generation = generation.duplicate(true)
 	copy.encounter = encounter.duplicate(true) as EncounterConfig if encounter != null else null
 	copy.encounter_regions = encounter_regions.duplicate(true)
+	copy.monster_spawn_points = monster_spawn_points.duplicate(true)
 	return copy
 
 ## Read-only bounded view for chunk texture generation; world coordinates stay fixed.
@@ -656,6 +661,7 @@ func clone_data() -> Dictionary:
 		"generation": generation.duplicate(true),
 		"encounter": encounter.snapshot() if encounter != null else null,
 		"encounter_regions": encounter_regions.duplicate(true),
+		"monster_spawn_points": monster_spawn_points.duplicate(true),
 		"format_version": FORMAT_VERSION,
 	}
 
@@ -677,6 +683,7 @@ func restore_data(snapshot: Dictionary) -> void:
 	encounter = EncounterConfig.from_snapshot(encounter_values.duplicate(true)) \
 		if encounter_values is Dictionary else null
 	encounter_regions = snapshot.get("encounter_regions", {}).duplicate(true)
+	monster_spawn_points.assign(snapshot.get("monster_spawn_points", []).duplicate(true))
 	format_version = int(snapshot.get("format_version", 2))
 	ensure_layout()
 	_normalize_anchors()
