@@ -38,8 +38,13 @@ enum AirAction {
 @onready var assembly: CharacterAssemblyController = $Assembly
 @onready var collision: CollisionShape3D = $Collision
 
+var health := 100
+var max_health := 100
 var _coyote_remaining := 0.0
 var _jump_buffer_remaining := 0.0
+var _invert_until_msec := 0
+var _slow_until_msec := 0
+var _slow_scale := 1.0
 var _was_grounded := false
 var _is_flying := false
 var parts: PartLoadout
@@ -142,8 +147,39 @@ func _update_ground_memory(delta: float) -> void:
 		_jump_buffer_remaining = maxf(_jump_buffer_remaining - delta, 0.0)
 
 
-func _update_horizontal_velocity(delta: float) -> void:
+func read_move_input() -> Vector2:
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if Time.get_ticks_msec() < _invert_until_msec:
+		input_vector.x = -input_vector.x
+	return input_vector
+
+
+func hazard_speed_scale() -> float:
+	if Time.get_ticks_msec() >= _slow_until_msec:
+		return 1.0
+	return _slow_scale
+
+
+func take_hit(amount: int) -> void:
+	if amount <= 0:
+		return
+	health = maxi(health - amount, 0)
+	if health == 0:
+		health = max_health
+		respawn()
+
+
+func invert_move(seconds: float) -> void:
+	_invert_until_msec = Time.get_ticks_msec() + int(seconds * 1000.0)
+
+
+func apply_slow(seconds: float, scale: float) -> void:
+	_slow_until_msec = Time.get_ticks_msec() + int(seconds * 1000.0)
+	_slow_scale = scale
+
+
+func _update_horizontal_velocity(delta: float) -> void:
+	var input_vector := read_move_input()
 	if assembly.is_movement_locked():
 		input_vector = Vector2.ZERO
 	var move_axes := _camera_planar_axes()

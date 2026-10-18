@@ -1,6 +1,8 @@
 extends Node3D
 
 const MovementConfig := preload("res://scripts/movement_table.gd")
+const MonsterTable := preload("res://scripts/monsters/monster_table.gd")
+const FieldMonster := preload("res://scripts/monsters/field_monster.gd")
 
 # 正常启动进入包含宝箱、可推岩石、可破坏岩石与攀爬面的完整交互样例。
 # acceptance_map.tres 保留为阶梯和悬崖的纯地形自动化夹具。
@@ -70,6 +72,7 @@ func _ready() -> void:
 	_setup_camera()
 	_setup_ui(requested)
 	_setup_bag()
+	_spawn_field_monsters()
 	if testing:
 		run_physics_checks.call_deferred()
 
@@ -207,6 +210,31 @@ func _setup_bag() -> void:
 	var menu := (load("res://scenes/stitch_menu.tscn") as PackedScene).instantiate()
 	menu.name = "StitchMenu"
 	add_child(menu)
+
+
+func _spawn_field_monsters() -> void:
+	# 自动化把关卡当成子场景实例化，不能在出生点旁边刷出会追人的怪。
+	if get_tree() == null or get_tree().current_scene != self:
+		return
+	var spots: Array[Vector3] = []
+	for x in data.map_size.x:
+		for z in data.map_size.y:
+			var cell := Vector2i(x, z)
+			if not data.cell_exists(cell) or cell.distance_to(data.spawn_cell) < 4:
+				continue
+			spots.append(data.world_center(cell))
+	spots.sort_custom(func(a: Vector3, b: Vector3) -> bool: return spawn_position.distance_squared_to(a) > spawn_position.distance_squared_to(b))
+	var cursor := 0
+	for monster_id in MonsterTable.ids():
+		var entry := MonsterTable.monster(monster_id)
+		var pack := maxi(int(entry.get("pack", 1)), 1)
+		for _member in pack:
+			if cursor >= spots.size():
+				return
+			var monster := FieldMonster.new() as CharacterBody3D
+			monster.call("setup", monster_id, spots[cursor] + Vector3(0.0, 0.15, 0.0))
+			add_child(monster)
+			cursor += 1
 
 
 func _connect_props() -> void:

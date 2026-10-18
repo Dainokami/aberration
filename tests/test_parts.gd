@@ -50,8 +50,8 @@ func _initialize() -> void:
 	if loadout.current_upper().has_ability("dive", false):
 		_fail("dive is breakthrough only")
 		return
-	if loadout.speed_on(PackedStringArray(["hard"])) != PartLoadout.UNSPECIFIED_SPEED:
-		_fail("demon dog has no written move speed")
+	if not is_equal_approx(loadout.speed_on(PackedStringArray(["hard"])), PartDefinition.speed_value(PartDefinition.Band.HIGH)):
+		_fail("demon dog should sprint on grass")
 		return
 	if loadout.current_upper().has_ability("dive", true) == false:
 		_fail("dive should exist once breakthrough is on")

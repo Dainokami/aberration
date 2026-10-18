@@ -876,7 +876,7 @@ func _expect_lower(part_id: String) -> bool:
 	if part_id == "ostrich_leg" and speed < 8.0:
 		_fail("ostrich should move fast, speed %s" % speed)
 		return false
-	if part_id == "demon_dog_leg" and not is_equal_approx(speed, 2.4):
+	if part_id == "demon_dog_leg" and not is_equal_approx(speed, PartDefinition.speed_value(PartDefinition.Band.HIGH)):
 		_fail("demon dog speed %s" % speed)
 		return false
 	if part_id == "fish_tail" and speed != 0.0:

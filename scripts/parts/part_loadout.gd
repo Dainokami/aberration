@@ -205,7 +205,7 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 	if _hold_mode == "throw":
 		return current.move_toward(Vector3.ZERO, 48.0 * delta)
 	if _climbing:
-		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		var input := player.read_move_input()
 		return _climb_tangent(player) * input.x * MovementConfig.number("part", "climb_strafe_speed", 3.2)
 	if _diving:
 		var flat := _dive_point - player.global_position
@@ -221,7 +221,7 @@ func horizontal_velocity(wish: Vector3, delta: float) -> Vector3:
 		drive = assembly.get_drive_multiplier()
 	elif mode == CharacterAssemblyController.LocomotionMode.BIPED_WALK:
 		drive = _biped_drive(assembly)
-	var target := wish * speed_on(_tags()) * drive
+	var target := wish * speed_on(_tags()) * drive * player.hazard_speed_scale()
 	var moving := wish.length_squared() > 0.01
 	var accel := MovementConfig.number("part", "acceleration", 34.0) if moving else MovementConfig.number("part", "deceleration", 40.0)
 	if tentacle_crawl:
