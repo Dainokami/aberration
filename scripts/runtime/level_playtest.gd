@@ -1,6 +1,7 @@
 extends Node3D
 
 const DEFAULT_LEVEL := "res://data/levels/acceptance_map.tres"
+const PLAYER_AVATAR_SCENE := preload("res://scenes/player_avatar_visual.tscn")
 var data: LevelData
 var builder: TerrainBuilder
 var player: CharacterBody3D
@@ -115,14 +116,9 @@ func _setup_player() -> void:
 	shape.radius = 0.32
 	collision.shape = shape
 	player.add_child(collision)
-	var visual := MeshInstance3D.new()
-	var mesh := CapsuleMesh.new()
-	mesh.height = 1.6
-	mesh.radius = 0.32
-	visual.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("#ffc875")
-	visual.material_override = material
+	var visual := PLAYER_AVATAR_SCENE.instantiate() as Node3D
+	visual.name = "CharacterVisual"
+	visual.position = Vector3.DOWN * PLAYER_HALF_HEIGHT
 	player.add_child(visual)
 	spawn_position = data.world_center(data.spawn_cell, data.spawn_layer) + Vector3(0, 0.82, 0)
 	player.position = spawn_position

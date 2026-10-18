@@ -4,6 +4,7 @@ extends Node3D
 
 const DEFAULT_STYLE := "res://data/terrain_style_profile.tres"
 const TerrainBlendMapClass := preload("res://scripts/level/terrain_blend_map.gd")
+const PLAYER_AVATAR_SCENE := preload("res://scenes/player_avatar_visual.tscn")
 const CHUNK_SIZE := 8
 
 @export var level_data: LevelData
@@ -964,22 +965,12 @@ func _build_grid() -> void:
 		line.set_meta("terrain_grid", true)
 
 func _build_spawn_marker() -> void:
-	if not level_data.is_surface_exposed(level_data.spawn_cell, level_data.spawn_layer):
+	if not Engine.is_editor_hint() \
+			or not level_data.is_surface_exposed(level_data.spawn_cell, level_data.spawn_layer):
 		return
-	var marker := MeshInstance3D.new()
+	var marker := PLAYER_AVATAR_SCENE.instantiate() as Node3D
 	marker.name = "SpawnMarker"
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.28
-	mesh.bottom_radius = 0.55
-	mesh.height = 0.18
-	marker.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("#ffb347")
-	material.emission_enabled = true
-	material.emission = Color("#ff772f")
-	marker.material_override = material
-	marker.position = level_data.world_center(level_data.spawn_cell, level_data.spawn_layer) \
-		+ Vector3(0, 0.12, 0)
+	marker.position = level_data.world_center(level_data.spawn_cell, level_data.spawn_layer)
 	marker.set_meta("terrain_layer", level_data.spawn_layer)
 	generated.add_child(marker)
 
