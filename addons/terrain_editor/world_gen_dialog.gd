@@ -88,6 +88,7 @@ func _ready() -> void:
 	_number(special, "prefab_gap", "最小间距 / 格", 1, 30, 1)
 	_button(special, "添加已保存地图 / 预制…", func(): _choose("source"))
 	_label(special, "保留手工地形、内部孔洞、物件与阶梯。\n默认融合外缘并对齐地面，内部高差保留。\n最少为必选，最多与权重控制额外投放。\n含食物/材料的格子必须落在静止区。")
+	_label(special, "每张地图单独选择放置地形。\n整张占地及外侧一圈须匹配，避免跨生态。")
 	_source_rows = VBoxContainer.new()
 	_source_rows.add_theme_constant_override("separation", 12)
 	special.add_child(_source_rows)
@@ -204,8 +205,13 @@ func _rebuild_sources() -> void:
 		_source_rows.remove_child(child)
 	for i in config.prefabs.size():
 		var rule := config.prefabs[i]
+		var frame := PanelContainer.new()
+		frame.name = "SpecialMap%d" % i
+		_source_rows.add_child(frame)
+		_style_source_frame(frame, str(rule.get("terrain", "any")))
 		var panel := VBoxContainer.new()
-		_source_rows.add_child(panel)
+		panel.add_theme_constant_override("separation", 10)
+		frame.add_child(panel)
 		var description := str(rule.path).get_file()
 		var rotation_blocker := ""
 		if ResourceLoader.exists(str(rule.path)):
@@ -218,35 +224,64 @@ func _rebuild_sources() -> void:
 			if fragment != null:
 				description += " · %d×%d 格" % [fragment.map_size.x, fragment.map_size.y]
 				rotation_blocker = LevelPrefab.fixed_view_rotation_blocker(fragment)
-		_label(panel, description).tooltip_text = str(rule.path)
+		var heading := HBoxContainer.new()
+		panel.add_child(heading)
+		var title_label := _label(heading, "%d. %s" % [i + 1, description])
+		title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		title_label.tooltip_text = str(rule.path)
+		_button(heading, "移除", func():
+			config.prefabs.remove_at(i)
+			_rebuild_sources()
+			_changed())
+		var terrain_row := HBoxContainer.new()
+		panel.add_child(terrain_row)
+		_label(terrain_row, "放置地形").size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var terrain := OptionButton.new()
+		terrain.name = "PlacementTerrain"
+		terrain.custom_minimum_size.x = 170
+		for label in WorldGenConfig.TERRAIN_LABELS:
+			terrain.add_item(label)
+		terrain.select(maxi(0, WorldGenConfig.TERRAIN_IDS.find(str(rule.get("terrain", "any")))))
+		terrain.tooltip_text = "按你选择的地形寻找位置；检查整张地图占地和外侧一格。\n保留特殊地图内部原有地形，不根据源地图推测生态。"
+		terrain.item_selected.connect(func(index: int):
+			rule.terrain = WorldGenConfig.TERRAIN_IDS[index]
+			_style_source_frame(frame, rule.terrain)
+			_changed())
+		terrain_row.add_child(terrain)
 		var row := HBoxContainer.new()
 		panel.add_child(row)
 		for field in ["minimum", "maximum", "weight"]:
 			var spin := SpinBox.new()
 			spin.min_value = 0
 			spin.max_value = 32
-			spin.custom_minimum_size.x = 106
+			spin.custom_minimum_size.x = 98
+			spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			spin.prefix = {"minimum": "至少 ", "maximum": "至多 ", "weight": "权重 "}[field]
 			spin.value = rule.get(field, 1)
 			row.add_child(spin)
 			spin.value_changed.connect(func(value: float):
 				rule[field] = int(value)
 				_changed())
-		var options := HBoxContainer.new()
-		panel.add_child(options)
+		var zone_row := HBoxContainer.new()
+		panel.add_child(zone_row)
+		_label(zone_row, "功能区域").size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var zone := OptionButton.new()
+		zone.custom_minimum_size.x = 170
 		for label in ["任意区域", "探索战斗区", "时间静止区"]:
 			zone.add_item(label)
 		zone.select(["any", "explore", "static"].find(rule.get("zone", "any")))
 		zone.item_selected.connect(func(index: int):
 			rule.zone = ["any", "explore", "static"][index]
 			_changed())
-		options.add_child(zone)
+		zone_row.add_child(zone)
+		var options := HBoxContainer.new()
+		panel.add_child(options)
 		var rotate := CheckBox.new()
 		rotate.name = "RotatePrefab"
 		rotate.text = "旋转" if rotation_blocker.is_empty() else "固定朝向"
 		rotate.button_pressed = rule.get("rotate", true) and rotation_blocker.is_empty()
 		rotate.disabled = not rotation_blocker.is_empty()
+		rotate.set_meta("locked", not rotation_blocker.is_empty())
 		rotate.tooltip_text = "允许特殊地块随机四向旋转" if rotation_blocker.is_empty() \
 			else "包含固定视角物件「%s」，只能按原方向生成" % rotation_blocker
 		rotate.toggled.connect(func(value: bool):
@@ -270,14 +305,21 @@ func _rebuild_sources() -> void:
 		alignment.toggled.connect(func(value: bool):
 			rule.align_height = value
 			_changed())
-		# Keep rule controls readable in the existing narrow source list.
-		var alignment_row := HBoxContainer.new()
-		panel.add_child(alignment_row)
-		alignment_row.add_child(alignment)
-		_button(options, "移除", func():
-			config.prefabs.remove_at(i)
-			_rebuild_sources()
-			_changed())
+		options.add_child(alignment)
+
+func _style_source_frame(frame: PanelContainer, terrain: String) -> void:
+	var index := WorldGenerator.TILES.find(terrain)
+	var color: Color = Preview.COLORS[index] if index >= 0 else Color("#a59cce")
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#252831").lerp(color, 0.12)
+	style.border_color = color
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 12
+	style.content_margin_bottom = 12
+	frame.add_theme_stylebox_override("panel", style)
 
 func _choose(action: String) -> void:
 	if _thread != null:
@@ -308,7 +350,8 @@ func _file_selected(path: String) -> void:
 		_status.text = "请选择 LevelData 地图或 LevelPrefab 预制"
 		return
 	config.prefabs.append({"path": path, "minimum": 1, "maximum": 1,
-		"weight": 1, "zone": "any", "rotate": true, "blend_edges": true, "align_height": true})
+		"weight": 1, "terrain": "unset", "zone": "any", "rotate": true,
+		"blend_edges": true, "align_height": true})
 	_rebuild_sources()
 	_changed()
 
@@ -361,7 +404,7 @@ func _busy(value: bool) -> void:
 		input.editable = not value
 	# Stop all parameter controls, including source-rule controls, while running.
 	for control in _tabs.find_children("*", "BaseButton", true, false):
-		control.disabled = value
+		control.disabled = value or bool(control.get_meta("locked", false))
 	for control in _tabs.find_children("*", "SpinBox", true, false):
 		control.editable = not value
 

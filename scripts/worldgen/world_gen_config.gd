@@ -2,7 +2,9 @@
 class_name WorldGenConfig
 extends Resource
 
-const ALGORITHM_VERSION := 4
+const ALGORITHM_VERSION := 5
+const TERRAIN_IDS := ["unset", "grass", "rock", "sand", "water", "any"]
+const TERRAIN_LABELS := ["请选择地形", "草原", "岩石", "沙漠", "海洋", "不限制地形"]
 const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_noise",
 	"grass_weight", "rock_weight", "sand_weight", "water_weight",
 	"spawn_radius", "static_count", "static_radius", "falloff",
@@ -30,7 +32,9 @@ const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_nois
 @export var environment_density := 3.0
 @export var cluster_gap := 9.0
 @export var item_gap := 2.0
-## path, minimum, maximum, weight, zone (any/explore/static), rotate, blend_edges, align_height.
+## path, minimum, maximum, weight, terrain, zone (any/explore/static), rotate, blend_edges, align_height.
+## terrain: grass/rock/sand/water; unset requires selection, missing means legacy any.
+## The original world must match across the full rectangle and a one-cell border.
 ## Fixed-camera objects automatically lock a prefab to its authored orientation.
 ## Missing blend_edges defaults to true; disable for intentional exterior voids.
 ## Missing align_height defaults to true; translates the fragment ground to layer 1.
@@ -79,6 +83,12 @@ func errors() -> PackedStringArray:
 			result.append("特殊地块权重无效")
 		if str(rule.get("zone", "any")) not in ["any", "explore", "static"]:
 			result.append("特殊地块区域约束无效")
+		var terrain := str(rule.get("terrain", "any"))
+		var title := str(rule.get("path", "")).get_file()
+		if terrain == "unset":
+			result.append("请为「%s」选择放置地形（草原 / 岩石 / 沙漠 / 海洋）" % title)
+		elif terrain not in TERRAIN_IDS:
+			result.append("特殊地块放置地形无效：" + title)
 	if required > prefab_budget:
 		result.append("必选特殊地块共 %d 件，超过预算 %d" % [required, prefab_budget])
 	return result

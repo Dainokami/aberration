@@ -13,6 +13,19 @@ func run(plugin: EditorPlugin) -> void:
 	if "--worldgen-interactive" in OS.get_cmdline_user_args():
 		await plugin._open_editor_workspace()
 		plugin._open_world_generation()
+		if "--worldgen-terrain-showcase" in OS.get_cmdline_user_args():
+			var dialog = plugin.world_gen_dialog
+			dialog.config = load("/tmp/worldgen-terrain-showcase-recipe.tres").duplicate(true)
+			dialog._sync()
+			dialog._tabs.current_tab = 2
+			dialog._start()
+			while dialog._thread != null:
+				await tree.process_frame
+			check(dialog.result != null and not dialog._apply.disabled,
+				"Metal preview generates three independently constrained special maps")
+			if "--worldgen-show-sources" in OS.get_cmdline_user_args():
+				dialog._tabs.get_child(2).scroll_vertical = 10000
+			return
 		if "--worldgen-showcase" in OS.get_cmdline_user_args():
 			var dialog = plugin.world_gen_dialog
 			dialog.config = load("res://data/worldgen_three_landmarks_recipe.tres").duplicate(true)
@@ -44,10 +57,17 @@ func run(plugin: EditorPlugin) -> void:
 	check(rotation != null and rotation.disabled and not rotation.button_pressed \
 		and rotation.text == "固定朝向",
 		"fixed-camera prefab disables unsafe worldgen rotation")
+	var card := dialog._source_rows.get_child(0) as PanelContainer
+	var terrain: OptionButton = card.find_child("PlacementTerrain", true, false)
+	check(card != null and card.get_theme_stylebox("panel") is StyleBoxFlat,
+		"each imported map is enclosed by its own colored frame")
+	check(terrain != null and terrain.get_item_text(terrain.selected) == "不限制地形",
+		"legacy recipes explicitly display unrestricted terrain")
 	dialog._start()
 	while dialog._thread != null:
 		await tree.process_frame
 	check(dialog.result != null and not dialog._apply.disabled, "dialog worker finishes with applicable preview")
+	check(rotation.disabled, "fixed-camera rotation stays locked after generation")
 	if dialog.result == null:
 		print(dialog._status.text)
 		tree.quit(1)
@@ -107,6 +127,29 @@ func run(plugin: EditorPlugin) -> void:
 	check(host.level_data == unrelated, "stale undo cannot replace an unrelated opened map")
 	dialog._inputs.width.value = 48
 	check(dialog._apply.disabled, "parameter edits invalidate previous result")
+	dialog._file_action = "source"
+	dialog._file_selected("res://data/levels/special_stone_ruins.tres")
+	var second_card := dialog._source_rows.get_child(1) as PanelContainer
+	var second_terrain: OptionButton = second_card.find_child("PlacementTerrain", true, false)
+	check(second_terrain.get_item_text(second_terrain.selected) == "请选择地形",
+		"new imported map asks for manual terrain without guessing")
+	dialog._start()
+	check(dialog._thread == null and dialog._apply.disabled
+		and dialog._status.text.contains("选择放置地形"),
+		"generation explains which imported map needs a terrain selection")
+	card = dialog._source_rows.get_child(0) as PanelContainer
+	terrain = card.find_child("PlacementTerrain", true, false)
+	terrain.select(1)
+	terrain.item_selected.emit(1)
+	second_terrain.select(3)
+	second_terrain.item_selected.emit(3)
+	check(dialog.config.prefabs[0].terrain == "grass" and dialog.config.prefabs[1].terrain == "sand",
+		"each map dropdown changes only its own terrain rule")
+	check(card.get_theme_stylebox("panel").border_color != second_card.get_theme_stylebox("panel").border_color,
+		"frame colors reflect the independently selected terrains")
+	check(dialog._apply.disabled, "terrain changes invalidate the previous preview")
+	blend = card.find_child("BlendEdges", true, false)
+	alignment = card.find_child("AlignHeight", true, false)
 	blend.button_pressed = false
 	alignment.button_pressed = false
 	dialog._file_action = "save"
@@ -122,6 +165,18 @@ func run(plugin: EditorPlugin) -> void:
 	check(not dialog.config.prefabs[0].align_height
 		and not dialog._source_rows.find_child("AlignHeight", true, false).button_pressed,
 		"recipe roundtrip preserves height-alignment opt-out and checkbox")
+	check(dialog.config.prefabs[0].terrain == "grass" and dialog.config.prefabs[1].terrain == "sand"
+		and dialog._source_rows.get_child(0).find_child("PlacementTerrain", true, false).selected == 1
+		and dialog._source_rows.get_child(1).find_child("PlacementTerrain", true, false).selected == 3,
+		"recipe save reload retains both manual choices and dropdown states")
+	var remove: Button
+	for button: Button in dialog._source_rows.get_child(0).find_children("*", "Button", true, false):
+		if button.text == "移除":
+			remove = button
+	remove.pressed.emit()
+	check(dialog.config.prefabs.size() == 1 and dialog.config.prefabs[0].terrain == "sand"
+		and dialog._source_rows.get_child(0).find_child("PlacementTerrain", true, false).selected == 3,
+		"removing one source retains the other source and its chosen terrain")
 	dialog._inputs.width.value = 600
 	dialog._inputs.height.value = 600
 	dialog._start()

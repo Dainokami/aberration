@@ -11,6 +11,7 @@ var _rng := RandomNumberGenerator.new()
 var _config: WorldGenConfig
 var _data: LevelData
 var _zones := PackedByteArray()
+var _biomes := PackedByteArray()
 var _reserved := {}
 var _roads := {}
 var _placements: Array[Dictionary] = []
@@ -361,6 +362,7 @@ func _build_terrain() -> void:
 	noise.frequency = 2.5 / minf(_config.width, _config.height)
 	var amplitude := minf(_config.width, _config.height) * _config.boundary_noise * 0.35
 	_zones.resize(_config.width * _config.height)
+	_biomes.resize(_config.width * _config.height)
 	for y in _config.height:
 		if _stopped():
 			return
@@ -379,6 +381,7 @@ func _build_terrain() -> void:
 			if from_spawn <= _config.spawn_radius:
 				selected = 0
 			_data.columns[_data.index(cell)] = _column(TILES[selected])
+			_biomes[_data.index(cell)] = selected
 			var static_influence := 0.0
 			for center in static_centers:
 				var d := Vector2(cell).distance_to(center)
@@ -401,8 +404,8 @@ func _place_prefabs() -> String:
 	for i in _sources.size():
 		for repeat in int(_sources[i].rule.get("minimum", 1)):
 			if not _try_place(i):
-				return "必选地块「%s」第 %d 件无法投放。\n请增大地图/静止区，减小间距或调整区域约束。" % [
-					_sources[i].name, repeat + 1]
+				return "必选地块「%s」第 %d 件无法投放（放置地形：%s）。\n未找到同时满足地形、区域、间距和入口的位置。\n请增大对应生态区域/地图，减小间距，或调整放置地形与功能区域。" % [
+					_sources[i].name, repeat + 1, _terrain_label(_sources[i].rule)]
 			counts[i] += 1
 			total += 1
 	var exhausted := {}
@@ -420,9 +423,27 @@ func _place_prefabs() -> String:
 			total += 1
 		else:
 			exhausted[index] = true
-			_warnings.append("可选地块「%s」无更多合法位置，已放置 %d 件" % [
-				_sources[index].name, counts[index]])
+			_warnings.append("可选地块「%s」未找到更多合法位置（放置地形：%s），已放置 %d 件" % [
+				_sources[index].name, _terrain_label(_sources[index].rule), counts[index]])
 	return ""
+
+func _terrain_label(rule: Dictionary) -> String:
+	return WorldGenConfig.TERRAIN_LABELS[WorldGenConfig.TERRAIN_IDS.find(str(rule.get("terrain", "any")))]
+
+## Match the generated world before stamping, never infer from the source map.
+## Include padding and a one-cell border, so the footprint cannot straddle biomes.
+func _terrain_matches(rect: Rect2i, terrain: String) -> bool:
+	if terrain == "any":
+		return true
+	var selected := TILES.find(terrain)
+	var area := rect.grow(1)
+	if selected < 0 or not _data.map_bounds().encloses(area):
+		return false
+	for y in range(area.position.y, area.end.y):
+		for x in range(area.position.x, area.end.x):
+			if _biomes[_data.index(Vector2i(x, y))] != selected:
+				return false
+	return true
 
 func _try_place(source_index: int) -> bool:
 	var source: Dictionary = _sources[source_index]
@@ -440,6 +461,8 @@ func _try_place(source_index: int) -> bool:
 		var anchor := Vector2i(_rng.randi_range(2, _config.width - size.x - 2),
 			_rng.randi_range(2, _config.height - size.y - 2))
 		var rect := Rect2i(anchor, size)
+		if not _terrain_matches(rect, str(rule.get("terrain", "any"))):
+			continue
 		if Rect2(rect).grow(_config.spawn_radius + 1).has_point(_data.spawn_cell):
 			continue
 		var valid := true
@@ -477,6 +500,7 @@ func _try_place(source_index: int) -> bool:
 				if not padding.has(local):
 					_reserved[anchor + prefab.rotate_cell(local, turns)] = true
 		_placements.append({"name": source.name, "source": rule.path,
+			"terrain": rule.get("terrain", "any"),
 			"rect": rect, "turns": turns, "entry": inside,
 			"outside": outside, "layer": int(entry.layer) + height_offset,
 			"source_layer": entry.layer, "height_offset": height_offset,
@@ -524,7 +548,8 @@ func _connect() -> String:
 		# Keep both sides clear, including the approach to a one-layer stair.
 		_roads[inside] = true
 		_roads[outside] = true
-		_data.columns[_data.index(outside)] = _column("rock")
+		var tile := _data.tile_id(outside)
+		_data.columns[_data.index(outside)] = _column("rock" if tile == "water" else tile)
 		var layer := int(placement.layer)
 		if layer != 1:
 			var low := inside if layer == 0 else outside
