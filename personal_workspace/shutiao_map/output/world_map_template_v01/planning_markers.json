@@ -1,0 +1,468 @@
+{
+  "status": "candidates_only",
+  "spawn": {
+    "id": "S1",
+    "center_normalized": [
+      0.197,
+      0.667
+    ],
+    "reservation_size_m": [
+      20,
+      20
+    ],
+    "cell_xz": [
+      59,
+      200
+    ],
+    "world_xyz_m": [
+      -181.0,
+      4,
+      101.0
+    ],
+    "reservation": {
+      "cell_rect_x_z_width_depth": [
+        54,
+        195,
+        10,
+        10
+      ],
+      "world_min_xz_m": [
+        -192.0,
+        90.0
+      ],
+      "size_m": [
+        20,
+        20
+      ]
+    },
+    "status": "planning_candidate"
+  },
+  "growth_spaces": [
+    {
+      "id": "G1",
+      "name": "草原基础成长空间",
+      "center_normalized": [
+        0.25,
+        0.57
+      ],
+      "reservation_size_m": [
+        16,
+        16
+      ],
+      "biome_id": 0,
+      "cell_xz": [
+        75,
+        170
+      ],
+      "world_xyz_m": [
+        -149.0,
+        4,
+        41.0
+      ],
+      "reservation": {
+        "cell_rect_x_z_width_depth": [
+          71,
+          166,
+          8,
+          8
+        ],
+        "world_min_xz_m": [
+          -158.0,
+          32.0
+        ],
+        "size_m": [
+          16,
+          16
+        ]
+      },
+      "status": "planning_candidate"
+    },
+    {
+      "id": "G2",
+      "name": "岩地基础成长空间",
+      "center_normalized": [
+        0.3367,
+        0.4033
+      ],
+      "reservation_size_m": [
+        16,
+        16
+      ],
+      "biome_id": 2,
+      "cell_xz": [
+        101,
+        120
+      ],
+      "world_xyz_m": [
+        -97.0,
+        4,
+        -59.0
+      ],
+      "reservation": {
+        "cell_rect_x_z_width_depth": [
+          97,
+          116,
+          8,
+          8
+        ],
+        "world_min_xz_m": [
+          -106.0,
+          -68.0
+        ],
+        "size_m": [
+          16,
+          16
+        ]
+      },
+      "status": "planning_candidate"
+    },
+    {
+      "id": "G3",
+      "name": "沙漠基础成长空间",
+      "center_normalized": [
+        0.7667,
+        0.55
+      ],
+      "reservation_size_m": [
+        16,
+        16
+      ],
+      "biome_id": 1,
+      "cell_xz": [
+        230,
+        165
+      ],
+      "world_xyz_m": [
+        161.0,
+        4,
+        31.0
+      ],
+      "reservation": {
+        "cell_rect_x_z_width_depth": [
+          226,
+          161,
+          8,
+          8
+        ],
+        "world_min_xz_m": [
+          152.0,
+          22.0
+        ],
+        "size_m": [
+          16,
+          16
+        ]
+      },
+      "status": "planning_candidate"
+    }
+  ],
+  "challenges": [
+    {
+      "id": "C1",
+      "name": "西部岩地挑战候选",
+      "center_normalized": [
+        0.1333,
+        0.4
+      ],
+      "size_m": [
+        100,
+        100
+      ],
+      "margin_m": 12,
+      "biome_id": 2,
+      "entrance_side": "east",
+      "footprint": {
+        "cell_rect_x_z_width_depth": [
+          14,
+          95,
+          50,
+          50
+        ],
+        "world_min_xz_m": [
+          -272.0,
+          -110.0
+        ],
+        "size_m": [
+          100,
+          100
+        ]
+      },
+      "reservation_with_margin": {
+        "cell_rect_x_z_width_depth": [
+          8,
+          89,
+          62,
+          62
+        ],
+        "world_min_xz_m": [
+          -284.0,
+          -122.0
+        ],
+        "size_m": [
+          124,
+          124
+        ]
+      },
+      "center_cell_xz": [
+        39,
+        120
+      ],
+      "center_world_xyz_m": [
+        -222.0,
+        4,
+        -60.0
+      ],
+      "center_cell_meaning": "representative_cell_index; world_center_is_exact_geometric_center_of_rectangle",
+      "entrance_cell_xz": [
+        66,
+        120
+      ],
+      "entrance_world_xyz_m": [
+        -167.0,
+        4,
+        -59.0
+      ],
+      "entrance_coordinate_meaning": "clear_staging_pad_outside_candidate_footprint_not_internal_prefab_door",
+      "approach_cell_xz": [
+        72,
+        120
+      ],
+      "approach_world_xyz_m": [
+        -155.0,
+        4,
+        -59.0
+      ],
+      "status": "planning_candidate_not_real_prefab_footprint"
+    },
+    {
+      "id": "C2",
+      "name": "南部草原挑战候选",
+      "center_normalized": [
+        0.4333,
+        0.6733
+      ],
+      "size_m": [
+        100,
+        100
+      ],
+      "margin_m": 12,
+      "biome_id": 0,
+      "entrance_side": "north",
+      "footprint": {
+        "cell_rect_x_z_width_depth": [
+          104,
+          176,
+          50,
+          50
+        ],
+        "world_min_xz_m": [
+          -92.0,
+          52.0
+        ],
+        "size_m": [
+          100,
+          100
+        ]
+      },
+      "reservation_with_margin": {
+        "cell_rect_x_z_width_depth": [
+          98,
+          170,
+          62,
+          62
+        ],
+        "world_min_xz_m": [
+          -104.0,
+          40.0
+        ],
+        "size_m": [
+          124,
+          124
+        ]
+      },
+      "center_cell_xz": [
+        129,
+        201
+      ],
+      "center_world_xyz_m": [
+        -42.0,
+        4,
+        102.0
+      ],
+      "center_cell_meaning": "representative_cell_index; world_center_is_exact_geometric_center_of_rectangle",
+      "entrance_cell_xz": [
+        129,
+        173
+      ],
+      "entrance_world_xyz_m": [
+        -41.0,
+        4,
+        47.0
+      ],
+      "entrance_coordinate_meaning": "clear_staging_pad_outside_candidate_footprint_not_internal_prefab_door",
+      "approach_cell_xz": [
+        129,
+        167
+      ],
+      "approach_world_xyz_m": [
+        -41.0,
+        4,
+        35.0
+      ],
+      "status": "planning_candidate_not_real_prefab_footprint"
+    },
+    {
+      "id": "C3",
+      "name": "东部沙漠挑战候选",
+      "center_normalized": [
+        0.8233,
+        0.38
+      ],
+      "size_m": [
+        100,
+        100
+      ],
+      "margin_m": 12,
+      "biome_id": 1,
+      "entrance_side": "south",
+      "footprint": {
+        "cell_rect_x_z_width_depth": [
+          221,
+          89,
+          50,
+          50
+        ],
+        "world_min_xz_m": [
+          142.0,
+          -122.0
+        ],
+        "size_m": [
+          100,
+          100
+        ]
+      },
+      "reservation_with_margin": {
+        "cell_rect_x_z_width_depth": [
+          215,
+          83,
+          62,
+          62
+        ],
+        "world_min_xz_m": [
+          130.0,
+          -134.0
+        ],
+        "size_m": [
+          124,
+          124
+        ]
+      },
+      "center_cell_xz": [
+        246,
+        114
+      ],
+      "center_world_xyz_m": [
+        192.0,
+        4,
+        -72.0
+      ],
+      "center_cell_meaning": "representative_cell_index; world_center_is_exact_geometric_center_of_rectangle",
+      "entrance_cell_xz": [
+        246,
+        141
+      ],
+      "entrance_world_xyz_m": [
+        193.0,
+        4,
+        -17.0
+      ],
+      "entrance_coordinate_meaning": "clear_staging_pad_outside_candidate_footprint_not_internal_prefab_door",
+      "approach_cell_xz": [
+        246,
+        147
+      ],
+      "approach_world_xyz_m": [
+        193.0,
+        4,
+        -5.0
+      ],
+      "status": "planning_candidate_not_real_prefab_footprint"
+    }
+  ],
+  "portal": {
+    "id": "P1",
+    "center_normalized": [
+      0.6017,
+      0.5983
+    ],
+    "size_m": [
+      30,
+      30
+    ],
+    "margin_m": 12,
+    "biome_id": 0,
+    "entrance_side": "west",
+    "footprint": {
+      "cell_rect_x_z_width_depth": [
+        173,
+        172,
+        15,
+        15
+      ],
+      "world_min_xz_m": [
+        46.0,
+        44.0
+      ],
+      "size_m": [
+        30,
+        30
+      ]
+    },
+    "reservation_with_margin": {
+      "cell_rect_x_z_width_depth": [
+        167,
+        166,
+        27,
+        27
+      ],
+      "world_min_xz_m": [
+        34.0,
+        32.0
+      ],
+      "size_m": [
+        54,
+        54
+      ]
+    },
+    "center_cell_xz": [
+      180,
+      179
+    ],
+    "center_world_xyz_m": [
+      61.0,
+      4,
+      59.0
+    ],
+    "center_cell_meaning": "representative_cell_index; world_center_is_exact_geometric_center_of_rectangle",
+    "entrance_cell_xz": [
+      170,
+      179
+    ],
+    "entrance_world_xyz_m": [
+      41.0,
+      4,
+      59.0
+    ],
+    "entrance_coordinate_meaning": "clear_staging_pad_outside_candidate_footprint_not_internal_prefab_door",
+    "approach_cell_xz": [
+      164,
+      179
+    ],
+    "approach_world_xyz_m": [
+      29.0,
+      4,
+      59.0
+    ],
+    "status": "planning_candidate_not_real_prefab_footprint"
+  }
+}

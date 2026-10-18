@@ -1,0 +1,48 @@
+{
+  "template_id": "broadlands_v01",
+  "world_size_m": [600, 600],
+  "cell_size_m": 2,
+  "baseline_world_y_m": 4,
+  "water_surface_world_y_m": 3,
+  "polygon_smoothing_passes": 2,
+  "biomes": [
+    {"id": 0, "key": "grass", "name": "草地", "rgb": [110, 166, 87]},
+    {"id": 1, "key": "desert", "name": "沙漠", "rgb": [224, 184, 105]},
+    {"id": 2, "key": "rock", "name": "岩石", "rgb": [138, 145, 156]},
+    {"id": 3, "key": "water", "name": "水面", "rgb": [59, 143, 184]}
+  ],
+  "biome_polygons_normalized": [
+    {"biome_id": 2, "points": [[-0.1,-0.1],[0.55,-0.1],[0.55,0.08],[0.50,0.19],[0.48,0.33],[0.41,0.44],[0.36,0.52],[0.18,0.55],[-0.1,0.52]]},
+    {"biome_id": 1, "points": [[0.66,-0.1],[1.1,-0.1],[1.1,0.73],[0.90,0.72],[0.82,0.65],[0.71,0.62],[0.65,0.51],[0.56,0.47],[0.58,0.34],[0.64,0.24],[0.61,0.15]]},
+    {"biome_id": 3, "points": [[1.1,0.67],[1.1,1.1],[0.56,1.1],[0.58,0.96],[0.62,0.89],[0.64,0.81],[0.72,0.78],[0.78,0.72],[0.87,0.70]]}
+  ],
+  "height_bands": [
+    {"gray": 0, "relative_m": -2, "meaning": "水底实体顶面"},
+    {"gray": 85, "relative_m": 0, "meaning": "陆地基准平地"},
+    {"gray": 170, "relative_m": 2, "meaning": "成片台地"},
+    {"gray": 255, "relative_m": 4, "meaning": "西北高台"}
+  ],
+  "plateaus": [
+    {"id": "northwest_terrace", "biome_id": 2, "relative_m": 2, "points": [[-0.1,-0.1],[0.46,-0.1],[0.44,0.11],[0.38,0.18],[0.34,0.26],[0.23,0.28],[0.13,0.26],[-0.1,0.28]]},
+    {"id": "northwest_cap", "biome_id": 2, "relative_m": 4, "points": [[-0.1,-0.1],[0.22,-0.1],[0.23,0.08],[0.18,0.13],[0.08,0.15],[-0.1,0.13]]},
+    {"id": "northeast_mesa", "biome_id": 1, "relative_m": 2, "points": [[0.84,-0.1],[1.1,-0.1],[1.1,0.21],[0.90,0.20],[0.84,0.16],[0.81,0.10]]}
+  ],
+  "spawn": {"id": "S1", "center_normalized": [0.197,0.667], "reservation_size_m": [20,20]},
+  "challenges": [
+    {"id": "C1", "name": "西部岩地挑战候选", "center_normalized": [0.1333,0.4000], "size_m": [100,100], "margin_m": 12, "biome_id": 2, "entrance_side": "east"},
+    {"id": "C2", "name": "南部草原挑战候选", "center_normalized": [0.4333,0.6733], "size_m": [100,100], "margin_m": 12, "biome_id": 0, "entrance_side": "north"},
+    {"id": "C3", "name": "东部沙漠挑战候选", "center_normalized": [0.8233,0.3800], "size_m": [100,100], "margin_m": 12, "biome_id": 1, "entrance_side": "south"}
+  ],
+  "portal": {"id": "P1", "center_normalized": [0.6017,0.5983], "size_m": [30,30], "margin_m": 12, "biome_id": 0, "entrance_side": "west"},
+  "growth_points": [
+    {"id": "G1", "name": "草原基础成长空间", "center_normalized": [0.2500,0.5700], "reservation_size_m": [16,16], "biome_id": 0},
+    {"id": "G2", "name": "岩地基础成长空间", "center_normalized": [0.3367,0.4033], "reservation_size_m": [16,16], "biome_id": 2},
+    {"id": "G3", "name": "沙漠基础成长空间", "center_normalized": [0.7667,0.5500], "reservation_size_m": [16,16], "biome_id": 1}
+  ],
+  "route_width_m": 8,
+  "planned_connections": [
+    {"id": "T1", "biome_id": 2, "low_relative_m": 0, "high_relative_m": 2, "near_normalized": [0.29,0.28], "width_m": 12},
+    {"id": "T2", "biome_id": 2, "low_relative_m": 2, "high_relative_m": 4, "near_normalized": [0.15,0.14], "width_m": 12},
+    {"id": "T3", "biome_id": 1, "low_relative_m": 0, "high_relative_m": 2, "near_normalized": [0.89,0.20], "width_m": 12}
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "png_dimensions_and_modes": "pass",
+  "png_roundtrip_exact": true,
+  "undefined_biome_pixels": 0,
+  "undefined_height_pixels": 0,
+  "biome_components": {
+    "grass": 1,
+    "desert": 1,
+    "rock": 1,
+    "water": 1
+  },
+  "baseline_land_components_4way": 1,
+  "baseline_land_area_percent_of_dry_land": 84.148,
+  "land_height_components": {
+    "0": [
+      90549
+    ],
+    "2": [
+      9456,
+      4021
+    ],
+    "4": [
+      3581
+    ]
+  },
+  "max_unconnected_adjacent_dry_height_difference_m": 2,
+  "all_site_footprints_and_full_margins_flat_and_allowed_biome": true,
+  "all_planning_reservations_nonoverlapping": true,
+  "route_count": 10,
+  "route_clear_width_m": 8,
+  "water_and_all_cross_layer_edges_excluded_from_routes": true,
+  "other_site_full_margin_reservations_excluded_from_routes": true,
+  "checked_spawn_portal_combinations": [
+    [
+      "S1",
+      "P1"
+    ]
+  ],
+  "planned_connections_not_used_in_reachability": true,
+  "real_prefab_footprint_rotation_tags_collision_and_3d_seams": "not_tested_no_real_prefabs",
+  "physics_or_navigation_or_gui_acceptance": "not_tested_no_3d_map_generated"
+}
