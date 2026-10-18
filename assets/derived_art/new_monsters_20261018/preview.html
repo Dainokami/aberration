@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新小怪动画预览</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #272329; color: #f1e9df; font: 16px/1.6 system-ui, sans-serif; }
+    main { width: min(960px, calc(100vw - 32px)); padding: 24px 0; }
+    h1 { font-size: 24px; margin: 0 0 12px; }
+    img { display: block; width: 100%; height: auto; border-radius: 8px; background: #d8d3c5; }
+    p { margin: 12px 0 0; }
+    a { color: #f7c798; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>新小怪动画预览</h1>
+    <img src="preview.gif" alt="沙鼠、狼、猩猩正面和侧面、长臂猿、鸵鸟的行走、攻击和烟雾死亡动画循环预览">
+    <p>顺序：行走 → 攻击 → 烟雾死亡。猩猩正面和侧面使用同一套怪物的两种朝向。</p>
+    <p>在 Godot 中打开 <code>res://scenes/new_monsters_preview.tscn</code> 并按 F6，可手动触发动画：W 切换行走，空格攻击，D 死亡，R 重置。</p>
+  </main>
+</body>
+</html>

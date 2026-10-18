@@ -1,0 +1,47 @@
+{
+  "gerbil": [
+    "036be1e1881a1bc079fd156becb3dcdf.jpg",
+    "511ec7b08742fea58e342464fe065bb0.jpg",
+    "8c03448fa084bb5b6e3c418e18a60afe.jpg",
+    "8e2637d6cd5fdd4bbe275a68fb818d19.png",
+    "c3e10404635450ad7bb76c6d78cd3ac2.jpg",
+    "d0f911006257bd9a959dd319ffc449c0.jpg"
+  ],
+  "wolf": [
+    "42e726c39693536bf877a47c308d06ac.jpg",
+    "c76abfb77c849d90b8e2afbfebd21f1a.jpg",
+    "e43b66567ac9a048ae83aa0c59a0bf34.jpg",
+    "后前肢.jpg",
+    "躯干.jpg"
+  ],
+  "gorilla_side": [
+    "0627eea721a81218768b01507188cc58.jpg",
+    "1e34198eeff691a43d660be069ccb0dc.png",
+    "7349235d8e11f0ad0fe4408e55606868.jpg",
+    "a15d87529ac7cdcfc553b57d7d1c1358.png",
+    "d1f66be7f69771f2eba175cf4365f2ad.jpg",
+    "fb587ed0168cee51df0cc2007345c7d9.jpg"
+  ],
+  "gorilla_front": [
+    "16b8d76bc056d777d4b4ec8565fd4004.jpg",
+    "430a2a64e2962fa98d709b3c8e37e79b.jpg",
+    "4f68313b10c3bd8824b3a8a4453bc7d4.jpg",
+    "7349235d8e11f0ad0fe4408e55606868.jpg",
+    "ac4dcb40c885acfb5abc895b7d73f574.jpg",
+    "af206cd00a7d9ad85018b59865bda150.jpg"
+  ],
+  "gibbon": [
+    "26c2944ff580e42163cce6b23301c923.jpg",
+    "34e7eab1487586ca8666036e7de4ea14.jpg",
+    "6252dc2066336a2da16a0503aea82c22.jpg",
+    "90d5218a4c0e18474f740dc3710cf313.jpg",
+    "b010e99c5501550588824fac1a5958a7.jpg",
+    "fc9ab77c3960b968e2c9e96c6713951d.png"
+  ],
+  "ostrich": [
+    "0db68535840db0da9c626f8d0e5db26a.jpg",
+    "198dc734924bd283051ff91fc9677299.jpg",
+    "1cfa74ddeedf505f10e316e65a8df9a6.jpg",
+    "845a3a7e2d4644996da7b18ba6c721db.jpg"
+  ]
+}
