@@ -1,0 +1,184 @@
+{
+  "files": [
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "大鹅翅膀/181ca38d8d523fa2a724e2e8dc73b255.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/goose_wing/primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/goose_wing/primary.png",
+      "sha256": "10a9264674aeac621b404b6bfb87a2607fa838930c11175a5fd9b84625520c15",
+      "bytes": 39529,
+      "cutout_size": [
+        447,
+        406
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "大鹅翅膀/b87682345ab721640c88689df61fbc35.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/goose_wing/feather.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/goose_wing/feather.png",
+      "sha256": "47647e567c61b689da22d4ae29c418e4c3c3282c2d4f51b5f4f7f6be411213f3",
+      "bytes": 30487,
+      "cutout_size": [
+        223,
+        328
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "大鹅脚蹼/2ee5c96ad39509fce563db58c69ddf7c.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/goose_foot/primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/goose_foot/primary.png",
+      "sha256": "317d079b33b99529943ab55172bae088c20a994ba411f5983149475df8ffabc2",
+      "bytes": 31992,
+      "cutout_size": [
+        344,
+        221
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "大鹅脚蹼/40ffa74896a1bc3450bc03894094739a.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/goose_foot/other_foot.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/goose_foot/other_foot.png",
+      "sha256": "b8d71dd57bdfe153c241597bc0127a30edafc31f8563528f48d7fb581af0e861",
+      "bytes": 30450,
+      "cutout_size": [
+        231,
+        198
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "大鹅脚蹼/f9d57feb86a8046f9287aba4f1f540a0.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/goose_foot/body_layer.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/goose_foot/body_layer.png",
+      "sha256": "24c043701de740ffa1f7a00b34d50a86f9dd342befa419d5f5779aebf1b4f6ec",
+      "bytes": 29015,
+      "cutout_size": [
+        503,
+        255
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "犬/051f0a2e613b51ff95acc6f87dd7152a.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/demon_dog_leg/full_body_primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/demon_dog_leg/full_body_primary.png",
+      "sha256": "97b0a90f5cfed548b465cba7230b0476c119af3acc100a86198f7a1c317a4185",
+      "bytes": 44398,
+      "cutout_size": [
+        642,
+        462
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "犬/5b203fe34ec86f87304e2ba03f21cd95.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/demon_dog_leg/full_body_alternate.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/demon_dog_leg/full_body_alternate.png",
+      "sha256": "705e2d963d1e256d1520e7ac3065692ea4fc9b9ff15819f85ad8cc1ca8f6a818",
+      "bytes": 44955,
+      "cutout_size": [
+        591,
+        480
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "猩猩/88c22bbfeea87533e1e6b41b9bf7217a.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/gorilla_arm/hand.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/gorilla_arm/hand.png",
+      "sha256": "fe17bf284990471ab60e11a453ae8a0ceabd092515948b1d724e9e3f26c2e938",
+      "bytes": 32287,
+      "cutout_size": [
+        356,
+        268
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "猩猩/d29b6591e686d9f7f525458b9ba2a354.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/gorilla_arm/primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/gorilla_arm/primary.png",
+      "sha256": "78efa2f4fe632f1baf3d708cd267df2a65ab2c0caa2c735d9cef33fd00249ccc",
+      "bytes": 33398,
+      "cutout_size": [
+        248,
+        398
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "猩猩白化/1822eab4bd8d1f505f71827b42c44361.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/gorilla_arm/white_hand.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/gorilla_arm/white_hand.png",
+      "sha256": "8afbeb784983cf708cd685ae37d05dc799ac406538d2696342624d15855adcac",
+      "bytes": 33531,
+      "cutout_size": [
+        353,
+        271
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "猩猩白化/f896b92ec07fbbee006c2e164ee4e2df.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/gorilla_arm/white_primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/gorilla_arm/white_primary.png",
+      "sha256": "aa12d67e57c4eb226dc4b37570ce92b190ce69f371a4b9fdf877c8597b2a110a",
+      "bytes": 34885,
+      "cutout_size": [
+        247,
+        397
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "章鱼/ac7872874951355cfa8728b164b41b0a.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/octopus_tentacle/primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/octopus_tentacle/primary.png",
+      "sha256": "baa83cbe3d1d36dc0ec98433fb0c23633647af02198981f84330eb77752ccc30",
+      "bytes": 61029,
+      "cutout_size": [
+        870,
+        472
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "章鱼/f6257436057765ff8966edfab8d94be9.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/octopus_tentacle/alternate.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/octopus_tentacle/alternate.png",
+      "sha256": "1b36d00095801c8cb04843a4c8f1a8412f69279e4d25bbe205b0cbcb30ce6a86",
+      "bytes": 59575,
+      "cutout_size": [
+        865,
+        454
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "章鱼白化/0cb2ca28b1d31dcb11763bb1dcf8e000.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/octopus_tentacle/white_alternate.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/octopus_tentacle/white_alternate.png",
+      "sha256": "3236e2d39ca8ee3fdf7a79e35717177b9183d7c12dfedf4168648ee706fd2ef7",
+      "bytes": 68350,
+      "cutout_size": [
+        865,
+        455
+      ]
+    },
+    {
+      "archive": "肢体-呸呸.zip",
+      "original_entry": "章鱼白化/81db7d39d6d78d7063b2a4361b5fe1f7.jpg",
+      "source": "res://assets/source_art/limbs_peipei_20261018/octopus_tentacle/white_primary.jpg",
+      "cutout": "res://assets/derived_art/limbs_peipei_20261018/octopus_tentacle/white_primary.png",
+      "sha256": "b0c145cb595a7bb5b1357ba930d6fe1c4f87927b53cf9e0ad7d0d0f75e03258f",
+      "bytes": 69619,
+      "cutout_size": [
+        870,
+        472
+      ]
+    }
+  ]
+}
