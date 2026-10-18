@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-18",
+  "scope": "relocation_and_private_output_boundary_only",
+  "all_authorized_sources_relocated": true,
+  "five_preview_and_data_pngs_byte_identical_to_before": true,
+  "generation_from_project_root_writes_only_inside_private_workspace": true,
+  "shared_output_and_workspace_root_output_rejected": true,
+  "metadata_sha256_and_zip_byte_equality": "pass",
+  "preexisting_modified_tracked_files_and_project_godot_unchanged": true,
+  "new_godot_execution": "not_run_no_gdscript_or_scene_changes",
+  "prior_godot_logs": "previous_checks/headless.log",
+  "runtime_import_or_playtest": "not_implemented"
+}

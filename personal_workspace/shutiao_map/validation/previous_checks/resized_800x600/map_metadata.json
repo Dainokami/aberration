@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "generator": "generate_world_map_template.py/v1",
+  "template_id": "broadlands_resize_check",
+  "design_date": "2026-10-18",
+  "world_size_m": [
+    800,
+    600
+  ],
+  "pixel_size": [
+    400,
+    300
+  ],
+  "meters_per_pixel": 2,
+  "world_boundary_min_xz_m": [
+    -400.0,
+    -300.0
+  ],
+  "world_boundary_max_xz_m": [
+    400.0,
+    300.0
+  ],
+  "axis_convention": {
+    "right": "+X",
+    "down": "+Z",
+    "row_major": true,
+    "pixel_zero_is": "minimum_xz_cell_not_world_origin",
+    "pixel_center_formula": "X=minX+(u+0.5)*2; Z=minZ+(v+0.5)*2",
+    "rectangles": "min-inclusive, max-exclusive; cell_xz=(column,row)"
+  },
+  "biome_encoding": {
+    "file": "biome_mask.png",
+    "mode": "RGB",
+    "palette": [
+      {
+        "id": 0,
+        "key": "grass",
+        "name": "草地",
+        "rgb": [
+          110,
+          166,
+          87
+        ],
+        "hex": "#6EA657",
+        "cells": 47153,
+        "area_m2": 188612,
+        "area_percent": 39.294,
+        "connected_components_4way": 1
+      },
+      {
+        "id": 1,
+        "key": "desert",
+        "name": "沙漠",
+        "rgb": [
+          224,
+          184,
+          105
+        ],
+        "hex": "#E0B869",
+        "cells": 29851,
+        "area_m2": 119404,
+        "area_percent": 24.876,
+        "connected_components_4way": 1
+      },
+      {
+        "id": 2,
+        "key": "rock",
+        "name": "岩石",
+        "rgb": [
+          138,
+          145,
+          156
+        ],
+        "hex": "#8A919C",
+        "cells": 30603,
+        "area_m2": 122412,
+        "area_percent": 25.503,
+        "connected_components_4way": 1
+      },
+      {
+        "id": 3,
+        "key": "water",
+        "name": "水面",
+        "rgb": [
+          59,
+          143,
+          184
+        ],
+        "hex": "#3B8FB8",
+        "cells": 12393,
+        "area_m2": 49572,
+        "area_percent": 10.328,
+        "connected_components_4way": 1
+      }
+    ]
+  },
+  "height_encoding": {
+    "file": "height_map.png",
+    "mode": "L",
+    "baseline_world_y_m": 4,
+    "meaning": "solid_surface_top_including_submerged_bed_not_water_surface",
+    "mapping": [
+      {
+        "gray": 0,
+        "relative_m": -2,
+        "meaning": "水底实体顶面",
+        "world_y_m": 2,
+        "top_solid_layer_index": 0
+      },
+      {
+        "gray": 85,
+        "relative_m": 0,
+        "meaning": "陆地基准平地",
+        "world_y_m": 4,
+        "top_solid_layer_index": 1
+      },
+      {
+        "gray": 170,
+        "relative_m": 2,
+        "meaning": "成片台地",
+        "world_y_m": 6,
+        "top_solid_layer_index": 2
+      },
+      {
+        "gray": 255,
+        "relative_m": 4,
+        "meaning": "西北高台",
+        "world_y_m": 8,
+        "top_solid_layer_index": 3
+      }
+    ],
+    "godot_v8": "surface_y(L)=(L+1)*2; L=(baseline_Y+relative_height)/2-1",
+    "proposal_for_solid_columns": "explicitly fill layers 0..L using layered APIs; no caves in this template"
+  },
+  "water": {
+    "identification": "biome_id=3_only",
+    "bed_relative_height_m": -2,
+    "bed_world_y_m": 2,
+    "surface_world_y_m": 3,
+    "depth_m": 1,
+    "shore_world_y_m": 4,
+    "surface_is": "proposed_separate_plane_not_encoded_in_height_png",
+    "requires_future_import_adapter": true,
+    "initially_walkable": false
+  },
+  "candidate_policy": {
+    "challenge_count": "3_proposed_not_confirmed",
+    "challenge_margin_m": 12,
+    "spawn_count": 1,
+    "portal_count": 1,
+    "actual_prefab_masks_and_rotations": "not_available_revalidate_at_embedding"
+  },
+  "reproduction": {
+    "configuration": "generation_config.json",
+    "randomness": "none",
+    "algorithm": "Chaikin_smoothed_normalized_polygons_cell_center_even_odd_sampling",
+    "dependencies": {
+      "numpy": "2.3.5",
+      "Pillow": "12.3.0"
+    },
+    "command": "python tools/generate_world_map_template.py --config <generation_config.json> --output <new_directory>"
+  },
+  "files_sha256": {
+    ".gdignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "biome_mask.png": "65e1e032393669aaee9790868285c4cadc80ca6f940d6af2f9474d02ff0cefae",
+    "height_map.png": "46d7d608597f13ec4f7b2109fe69684a40614da68d0651650176e92928a30a1e",
+    "map_preview.png": "daf42d0e2b88c59514c6fb53dc4e470905fe8646dea97feb2b4c080ca19f6115",
+    "biome_preview.png": "8709e6191601398ad6daa96e25020b9a5ec17672b8f6035ef4c4ef6a269d4f9e",
+    "height_preview.png": "682cf3c3336673c1d90f0904866f61d4c1c7af07e77d381ddaa51678545c8c02",
+    "generation_config.json": "5dc54ec7ebb6932af9a6650850570372648dd91650e0b526be76003e3731001d",
+    "planning_markers.json": "fc4432117f80cb7443ffddca9ed0dc3bce900d49c8c1b11d10f37a906e0ccc60",
+    "planning_markers.csv": "0f0aa9fe3faad163460811a92faece45169b129c158a9b5351a7f00f1f5b5777",
+    "connections.json": "2d49543d0f5bbdf931a932959e257b275f24d1fc2f17a58a520e45b104e5b924",
+    "routes.json": "abba3a11fff850946d3112b10fd0d56b519f175e8e995f4925789a96764097cc",
+    "validation_report.json": "9741d9fa6bf0039435b3c292f06604e4f158e15080872bd0e5b09dfc6188a978",
+    "map_notes.md": "ec24ad9c0b5fbbf943c7bf28c43c83e20f3b60cb0a9abc6687392c0671f67d35"
+  },
+  "import_status": "data_delivery_only_no_png_to_LevelData_importer_added",
+  "validation": {
+    "png_dimensions_and_modes": "pass",
+    "png_roundtrip_exact": true,
+    "undefined_biome_pixels": 0,
+    "undefined_height_pixels": 0,
+    "biome_components": {
+      "grass": 1,
+      "desert": 1,
+      "rock": 1,
+      "water": 1
+    },
+    "baseline_land_components_4way": 1,
+    "baseline_land_area_percent_of_dry_land": 84.148,
+    "land_height_components": {
+      "0": [
+        90549
+      ],
+      "2": [
+        9456,
+        4021
+      ],
+      "4": [
+        3581
+      ]
+    },
+    "max_unconnected_adjacent_dry_height_difference_m": 2,
+    "all_site_footprints_and_full_margins_flat_and_allowed_biome": true,
+    "all_planning_reservations_nonoverlapping": true,
+    "route_count": 10,
+    "route_clear_width_m": 8,
+    "water_and_all_cross_layer_edges_excluded_from_routes": true,
+    "other_site_full_margin_reservations_excluded_from_routes": true,
+    "checked_spawn_portal_combinations": [
+      [
+        "S1",
+        "P1"
+      ]
+    ],
+    "planned_connections_not_used_in_reachability": true,
+    "real_prefab_footprint_rotation_tags_collision_and_3d_seams": "not_tested_no_real_prefabs",
+    "physics_or_navigation_or_gui_acceptance": "not_tested_no_3d_map_generated"
+  }
+}
