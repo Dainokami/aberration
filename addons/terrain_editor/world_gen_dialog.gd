@@ -87,7 +87,7 @@ func _ready() -> void:
 	_number(special, "prefab_budget", "总预算 / 件", 0, 32, 1)
 	_number(special, "prefab_gap", "最小间距 / 格", 1, 30, 1)
 	_button(special, "添加已保存地图 / 预制…", func(): _choose("source"))
-	_label(special, "完整复制地形、物件、空气层和阶梯。\n最少为必选，最多与权重控制额外投放。\n含食物/材料的格子必须落在静止区。")
+	_label(special, "保留手工地形、内部孔洞、物件与阶梯。\n默认融合外缘并对齐地面，内部高差保留。\n最少为必选，最多与权重控制额外投放。\n含食物/材料的格子必须落在静止区。")
 	_source_rows = VBoxContainer.new()
 	_source_rows.add_theme_constant_override("separation", 12)
 	special.add_child(_source_rows)
@@ -247,6 +247,27 @@ func _rebuild_sources() -> void:
 			rule.rotate = value
 			_changed())
 		options.add_child(rotate)
+		var blend := CheckBox.new()
+		blend.name = "BlendEdges"
+		blend.text = "融合外缘"
+		blend.tooltip_text = "边界连通的全空格沿用世界地面，内部孔洞和分层空气保留。\n如果外缘空白是刻意设计的深坑或隔离带，请取消勾选。"
+		blend.button_pressed = rule.get("blend_edges", true)
+		blend.toggled.connect(func(value: bool):
+			rule.blend_edges = value
+			_changed())
+		options.add_child(blend)
+		var alignment := CheckBox.new()
+		alignment.name = "AlignHeight"
+		alignment.text = "地面齐平"
+		alignment.tooltip_text = "把特殊地图最常见的接入地面整体对齐到世界地面。\n物件、阶梯、细节一起平移，内部高差和孔洞保留。"
+		alignment.button_pressed = rule.get("align_height", true)
+		alignment.toggled.connect(func(value: bool):
+			rule.align_height = value
+			_changed())
+		# Keep rule controls readable in the existing narrow source list.
+		var alignment_row := HBoxContainer.new()
+		panel.add_child(alignment_row)
+		alignment_row.add_child(alignment)
 		_button(options, "移除", func():
 			config.prefabs.remove_at(i)
 			_rebuild_sources()
@@ -281,7 +302,7 @@ func _file_selected(path: String) -> void:
 		_status.text = "请选择 LevelData 地图或 LevelPrefab 预制"
 		return
 	config.prefabs.append({"path": path, "minimum": 1, "maximum": 1,
-		"weight": 1, "zone": "any", "rotate": true})
+		"weight": 1, "zone": "any", "rotate": true, "blend_edges": true, "align_height": true})
 	_rebuild_sources()
 	_changed()
 
