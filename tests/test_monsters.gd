@@ -23,6 +23,10 @@ func _initialize() -> void:
 	if not boss.boss or int(boss.damage) != 16:
 		_fail("bird demon")
 		return
+	var field := MonsterTable.field_ids()
+	if field.has("kangaroo") or field.has("bird_demon") or field.has("bat") or not field.has("prairie_wolf") or not field.has("ibex"):
+		_fail("field roster %s" % field)
+		return
 	var floor_body := StaticBody3D.new()
 	var floor_shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()

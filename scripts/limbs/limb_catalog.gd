@@ -47,14 +47,16 @@ static func _ensure() -> void:
 
 static func _add_matrix_results() -> void:
 	# 尚未收到独立美术的结果统一使用现有代理图或最接近的基础部件作占位。
-	_add_placeholder("pangolin_dig_claw", "类穿山甲掘爪", "upper", "res://art/characters/proxy/arm.svg", "hop", Color(0.58, 0.48, 0.34), "original")
+	_add_placeholder("pangolin_dig_claw", "类穿山甲掘爪", "upper", "res://art/limbs/pangolin_claw.png", "hop", Color.WHITE, "original")
 	_add_placeholder("kangaroo_hind_limb", "袋鼠后肢", "lower", "res://art/characters/proxy/leg.svg", "leg", Color(0.64, 0.46, 0.3), "original")
 	_add_placeholder("antelope_hind_limb", "类羚羊后肢", "lower", "res://art/characters/proxy/leg.svg", "leg", Color(0.76, 0.62, 0.4), "original")
 	_add_placeholder("flying_squirrel_membrane", "类飞鼠翼膜", "upper", "res://art/characters/proxy/wing.svg", "wing", Color(0.55, 0.42, 0.34), "original")
 	_add_placeholder("jellyfish_tentacle_wing", "类水母触翼", "upper", "res://art/characters/proxy/wing.svg", "crawl", Color(0.72, 0.62, 0.92), "original")
 	_add_placeholder("albino_gorilla_arm", "白化的类猩猩胳膊", "upper", "res://art/characters/anim/arm_upper.png", "arm", Color(1.0, 0.94, 0.91), "albino")
-	_add_placeholder("albino_albatross_wing", "白化的类信天翁翅膀", "upper", "res://art/characters/psd/wing_left.png", "wing", Color(1.0, 0.96, 0.92), "albino")
-	_add_placeholder("albino_eagle_wing", "白化的类鹰翅膀", "upper", "res://art/characters/psd/wing_left.png", "wing", Color(1.0, 0.9, 0.82), "albino")
+	_add_placeholder("albino_albatross_wing", "白化的类信天翁翅膀", "upper", "res://art/limbs/albino_albatross_wing.png", "wing", Color.WHITE, "albino")
+	_add_placeholder("albino_eagle_wing", "白化的类鹰翅膀", "upper", "res://art/limbs/albino_eagle_wing.png", "wing", Color.WHITE, "albino")
+	for real_id in ["pangolin_dig_claw", "albino_albatross_wing", "albino_eagle_wing"]:
+		(_defs[real_id] as LimbDef).placeholder_art = false
 	_add_placeholder("albino_gerbil_paw", "白化的类沙鼠前肢", "upper", "res://art/characters/psd/arm_hop.png", "hop", Color(1.0, 0.94, 0.88), "albino")
 	_add_placeholder("albino_kangaroo_leg", "白化的类袋鼠腿", "lower", "res://art/characters/psd/leg_left.png", "leg", Color(1.0, 0.93, 0.86), "albino")
 	_add_placeholder("albino_octopus_lower", "白化的类章鱼触手（下肢）", "lower", "res://art/characters/psd/leg_left.png", "leg", Color(0.92, 0.9, 1.0), "albino")
@@ -91,22 +93,20 @@ static func _add_playable(part: PartDefinition, slot_name: String) -> void:
 
 
 static func _pickup_style(limb_id: String, slot_name: String) -> Dictionary:
-	if limb_id in ["goose_wing", "bat_wing", "albatross_wing", "eagle_wing"]:
-		var wing_tints := {
-			"goose_wing": Color(0.92, 0.92, 0.9),
-			"bat_wing": Color(0.35, 0.32, 0.4),
-			"albatross_wing": Color(0.75, 0.86, 0.95),
-			"eagle_wing": Color(0.62, 0.42, 0.22),
-		}
-		return {"texture": "res://art/characters/psd/wing_left.png", "visual": "wing", "scale": 0.78, "tint": wing_tints[limb_id]}
+	if limb_id == "goose_wing":
+		return {"texture": "res://art/characters/psd/wing_left.png", "visual": "wing", "scale": 0.78, "tint": Color(0.92, 0.92, 0.9)}
+	if limb_id in ["bat_wing", "albatross_wing", "eagle_wing"]:
+		return {"texture": "res://art/limbs/%s.png" % limb_id, "visual": "wing", "scale": 0.78, "tint": Color.WHITE}
 	if limb_id == "octopus_arm":
 		return {"texture": "res://art/characters/psd/arm_crawl_gorilla.png", "visual": "crawl", "scale": 0.8, "tint": Color(0.45, 0.55, 0.85)}
 	if limb_id in ["gibbon_arm", "gerbil_paw"]:
 		return {"texture": "res://art/characters/psd/arm_hop.png", "visual": "hop", "scale": 0.75, "tint": Color(0.72, 0.55, 0.36) if limb_id == "gerbil_paw" else Color.WHITE}
 	if slot_name == "upper":
 		return {"texture": "res://art/characters/anim/arm_upper.png", "visual": "arm", "scale": 0.75, "tint": Color.WHITE}
-	if limb_id in ["water_snake", "fish_tail"]:
-		return {"texture": "res://art/characters/anim/tail.png", "visual": "tail", "scale": 0.68, "tint": Color(0.35, 0.75, 0.95) if limb_id == "fish_tail" else Color.WHITE}
+	if limb_id == "fish_tail":
+		return {"texture": "res://art/limbs/fish_tail.png", "visual": "tail", "scale": 0.68, "tint": Color.WHITE}
+	if limb_id == "water_snake":
+		return {"texture": "res://art/characters/anim/tail.png", "visual": "tail", "scale": 0.68, "tint": Color.WHITE}
 	var leg_tints := {
 		"wolf_leg": Color(0.55, 0.55, 0.58),
 		"ostrich_leg": Color(0.86, 0.72, 0.48),

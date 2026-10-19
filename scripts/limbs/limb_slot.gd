@@ -26,19 +26,27 @@ func _ready() -> void:
 func _get_drag_data(at: Vector2) -> Variant:
 	if str(drag_data.get("id", "")).is_empty():
 		return null
+	# 预览挂到未缩放的根控件上，尺寸用图标的屏幕大小，避免按 3840 舞台放大。
+	var preview_size := icon.get_global_rect().size
+	if preview_size.x < 8.0 or preview_size.y < 8.0:
+		var view := get_viewport().get_visible_rect().size
+		var fitted := minf(view.x / 3840.0, view.y / 2160.0)
+		preview_size = icon.size * fitted
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var preview := TextureRect.new()
-	preview.texture = icon.texture
-	var preview_size := Vector2(120, 120)
-	preview.custom_minimum_size = preview_size
-	preview.size = preview_size
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.custom_minimum_size = preview_size
+	preview.size = preview_size
+	preview.texture = icon.texture
+	preview.size = preview_size
 	preview.modulate = icon.modulate
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# 拖拽预览属于 Viewport，不继承 3840×2160 舞台的缩放。按抓取点比例
-	# 把预览移到鼠标下，否则在不同分辨率下图标会固定偏到鼠标右下方。
+	# Viewport 每帧把预览根节点放到鼠标位置，抓取点偏移必须留在子节点上。
 	preview.position = drag_preview_offset(at, size, preview_size)
-	set_drag_preview(preview)
+	holder.add_child(preview)
+	set_drag_preview(holder)
 	return drag_data
 
 

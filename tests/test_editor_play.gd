@@ -285,9 +285,9 @@ func _tick() -> void:
 		if _player.parts.current_lower().id != "fish_tail" or not _on("AnimTail"):
 			_fail("X did not show the fish tail")
 			return
-		var tint: Color = _rig._sprites["AnimTail"].modulate
-		if not tint.is_equal_approx(Color(0.35, 0.75, 0.95)):
-			_fail("fish tail tint %s" % tint)
+		var tail_art: Texture2D = _rig._sprites["AnimTail"].texture
+		if tail_art == null or not tail_art.resource_path.ends_with("fish_tail.png"):
+			_fail("fish tail is not using the new art")
 			return
 		_player.velocity = Vector3.ZERO
 		var start := _player.global_position
@@ -796,6 +796,11 @@ func _tint(socket_name: String) -> Color:
 	return _rig._sprites[socket_name].modulate
 
 
+func _uses_art(socket_name: String, file_name: String) -> bool:
+	var drawn := _rig._sprites[socket_name].texture as Texture2D
+	return drawn != null and drawn.resource_path.ends_with(file_name) and _tint(socket_name).is_equal_approx(Color.WHITE)
+
+
 func _expect_upper(part_id: String) -> bool:
 	if _player.parts.current_upper().id != part_id:
 		_fail("upper id %s, expected %s" % [_player.parts.current_upper().id, part_id])
@@ -814,11 +819,11 @@ func _expect_upper(part_id: String) -> bool:
 			ok = _on("LeftWingSocket") and _on("RightWingSocket") and not _on("AnimArmUpper") and not _on("HopArmSocket")
 	if part_id == "goose_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.92, 0.92, 0.9)):
 		ok = false
-	if part_id == "bat_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.35, 0.32, 0.4)):
+	if part_id == "bat_wing" and not _uses_art("LeftWingSocket", "bat_wing_left.png"):
 		ok = false
-	if part_id == "albatross_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.75, 0.86, 0.95)):
+	if part_id == "albatross_wing" and not _uses_art("LeftWingSocket", "albatross_wing_left.png"):
 		ok = false
-	if part_id == "eagle_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.62, 0.42, 0.22)):
+	if part_id == "eagle_wing" and not _uses_art("LeftWingSocket", "eagle_wing_left.png"):
 		ok = false
 	if not ok:
 		_fail("upper %s drew the wrong sockets" % part_id)
@@ -859,7 +864,7 @@ func _expect_lower(part_id: String) -> bool:
 		"water_snake":
 			ok = _on("AnimTail") and not _on("LeftLegSocket") and _tint("AnimTail").is_equal_approx(Color.WHITE)
 		"fish_tail":
-			ok = _on("AnimTail") and not _on("LeftLegSocket") and _tint("AnimTail").is_equal_approx(Color(0.35, 0.75, 0.95))
+			ok = _on("AnimTail") and not _on("LeftLegSocket") and _uses_art("AnimTail", "fish_tail.png")
 	if not ok:
 		_fail("lower %s drew the wrong sockets" % part_id)
 		return false

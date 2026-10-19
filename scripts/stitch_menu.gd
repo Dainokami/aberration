@@ -512,6 +512,7 @@ func _set_open(should_open: bool) -> void:
 	visible = should_open
 	get_tree().paused = should_open
 	if should_open:
+		GameAudio.play("bag")
 		_fit()
 		_refresh_items()
 

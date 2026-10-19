@@ -148,9 +148,9 @@ func _expect_upper(part_id: String) -> void:
 			ok = _on("LeftWingSocket") and _on("RightWingSocket") and not _on("AnimArmUpper") and not _on("HopArmSocket")
 	if part_id == "goose_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.92, 0.92, 0.9)):
 		ok = false
-	if part_id == "bat_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.35, 0.32, 0.4)):
+	if part_id == "bat_wing" and not _uses_art("LeftWingSocket", "bat_wing_left.png"):
 		ok = false
-	if part_id == "eagle_wing" and not _tint("LeftWingSocket").is_equal_approx(Color(0.62, 0.42, 0.22)):
+	if part_id == "eagle_wing" and not _uses_art("LeftWingSocket", "eagle_wing_left.png"):
 		ok = false
 	if not ok:
 		_fail("upper %s drew the wrong sockets" % part_id)
@@ -179,7 +179,7 @@ func _expect_lower(part_id: String) -> void:
 		"water_snake":
 			ok = _on("AnimTail") and not _on("LeftLegSocket") and _tint("AnimTail").is_equal_approx(Color.WHITE)
 		"fish_tail":
-			ok = _on("AnimTail") and not _on("LeftLegSocket") and _tint("AnimTail").is_equal_approx(Color(0.35, 0.75, 0.95))
+			ok = _on("AnimTail") and not _on("LeftLegSocket") and _uses_art("AnimTail", "fish_tail.png")
 	if not ok:
 		_fail("lower %s drew the wrong sockets" % part_id)
 
@@ -194,6 +194,11 @@ func _scale(socket_name: String) -> float:
 
 func _tint(socket_name: String) -> Color:
 	return _rig._sprites[socket_name].modulate
+
+
+func _uses_art(socket_name: String, file_name: String) -> bool:
+	var drawn := _rig._sprites[socket_name].texture as Texture2D
+	return drawn != null and drawn.resource_path.ends_with(file_name) and _tint(socket_name).is_equal_approx(Color.WHITE)
 
 
 func _fail(message: String) -> void:

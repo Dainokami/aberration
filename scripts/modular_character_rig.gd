@@ -38,6 +38,26 @@ const ANIM_ARM_FORE := preload("res://art/characters/anim/arm_fore.png")
 const ANIM_SCYTHE_GRIP := preload("res://art/characters/anim/scythe_grip.png")
 const ANIM_SCYTHE_SHAFT := preload("res://art/characters/anim/scythe_shaft.png")
 const ANIM_SCYTHE_BLADE := preload("res://art/characters/anim/scythe_blade.png")
+const BAT_WING_LEFT := preload("res://art/limbs/bat_wing_left.png")
+const BAT_WING_RIGHT := preload("res://art/limbs/bat_wing_right.png")
+const EAGLE_WING_LEFT := preload("res://art/limbs/eagle_wing_left.png")
+const EAGLE_WING_RIGHT := preload("res://art/limbs/eagle_wing_right.png")
+const ALBATROSS_WING_LEFT := preload("res://art/limbs/albatross_wing_left.png")
+const ALBATROSS_WING_RIGHT := preload("res://art/limbs/albatross_wing_right.png")
+const ALBINO_EAGLE_LEFT := preload("res://art/limbs/albino_eagle_wing_left.png")
+const ALBINO_EAGLE_RIGHT := preload("res://art/limbs/albino_eagle_wing_right.png")
+const ALBINO_ALBATROSS_LEFT := preload("res://art/limbs/albino_albatross_wing_left.png")
+const ALBINO_ALBATROSS_RIGHT := preload("res://art/limbs/albino_albatross_wing_right.png")
+const PANGOLIN_LEFT := preload("res://art/limbs/pangolin_claw_left.png")
+const PANGOLIN_RIGHT := preload("res://art/limbs/pangolin_claw_right.png")
+const FISH_TAIL := preload("res://art/limbs/fish_tail.png")
+const _WING_ART := {
+	"bat_wing": [BAT_WING_LEFT, BAT_WING_RIGHT],
+	"eagle_wing": [EAGLE_WING_LEFT, EAGLE_WING_RIGHT],
+	"albatross_wing": [ALBATROSS_WING_LEFT, ALBATROSS_WING_RIGHT],
+	"albino_eagle_wing": [ALBINO_EAGLE_LEFT, ALBINO_EAGLE_RIGHT],
+	"albino_albatross_wing": [ALBINO_ALBATROSS_LEFT, ALBINO_ALBATROSS_RIGHT],
+}
 
 # PSD 画布上的紧裁切框。拆分形态按这些框放回同一身体锚点，静止时和源文件重合。
 const HOP_BOUNDS := Rect2(487, 516, 76, 145)
@@ -65,6 +85,7 @@ var _slide_forward := 0.0
 var _head_roll_angle := 0.0
 var _roll_sign := 0.0
 var _sprite_rest_position: Dictionary = {}
+var _builtin_rest: Dictionary = {}
 var _grounded := true
 var _vertical_speed := 0.0
 var _screen_direction := 1.0
@@ -240,6 +261,7 @@ func _build_anim_skeleton() -> void:
 	_bind_anim_sprite("anim_scythe_blade", "AnimScytheBlade", ANIM_SCYTHE_BLADE, blade_joint, Vector2(203.0, 453.5), 0.05, 10)
 	_separate_head_from_torso()
 	_clear_arm_from_head()
+	_builtin_rest = _sprite_rest_position.duplicate(true)
 
 
 func _add_bone(bone_name: String, parent_name: String, rest_position: Vector3) -> void:
@@ -306,6 +328,7 @@ func _reset_limb_style() -> void:
 		sprite.modulate = Color.WHITE
 		sprite.scale = Vector3.ONE
 		_attachments[socket_name].visible = false
+	(_sprites["AnimTail"] as Sprite3D).texture = ANIM_TAIL
 
 
 func apply_part_appearance() -> void:
@@ -331,6 +354,17 @@ func apply_part_appearance() -> void:
 
 
 func _show_named_limb(limb_id: String, upper: bool) -> void:
+	if _WING_ART.has(limb_id):
+		var pair: Array = _WING_ART[limb_id]
+		_show_wings(Color.WHITE, pair[0] as Texture2D, pair[1] as Texture2D)
+		return
+	if limb_id == "pangolin_dig_claw":
+		_show_shouldered("LeftHandSocket", PANGOLIN_LEFT, -1.0)
+		_show_shouldered("RightHandSocket", PANGOLIN_RIGHT, 1.0)
+		return
+	if limb_id == "fish_tail":
+		_use_tail(FISH_TAIL, Color.WHITE, 1.0)
+		return
 	var tint := Color.WHITE
 	match limb_id:
 		"gorilla_arm":
@@ -345,12 +379,6 @@ func _show_named_limb(limb_id: String, upper: bool) -> void:
 			_show_scaled("CrawlRightSocket", 1.0, Color(0.45, 0.55, 0.85))
 		"goose_wing":
 			_show_wings(Color(0.92, 0.92, 0.9))
-		"bat_wing":
-			_show_wings(Color(0.35, 0.32, 0.4))
-		"albatross_wing":
-			_show_wings(Color(0.75, 0.86, 0.95))
-		"eagle_wing":
-			_show_wings(Color(0.62, 0.42, 0.22))
 		"mantis_arm", "mantis_blade", "mantis_king":
 			tint = LimbCatalog.find(limb_id).tint if LimbCatalog.find(limb_id) else Color.WHITE
 			var scale := LimbCatalog.find(limb_id).visual_scale if LimbCatalog.find(limb_id) else 1.0
@@ -362,8 +390,6 @@ func _show_named_limb(limb_id: String, upper: bool) -> void:
 			_style_limb("AnimTail", Color(0.78, 0.95, 0.62), 1.18)
 		"crowned_snake":
 			_style_limb("AnimTail", Color(1.0, 0.82, 0.28), 1.24)
-		"fish_tail":
-			_style_limb("AnimTail", Color(0.35, 0.75, 0.95), 1.0)
 		"goose_foot":
 			_show_legs(Color(0.95, 0.72, 0.28), 1.35)
 		"wolf_leg":
@@ -410,11 +436,37 @@ func _show_plain(socket_name: String) -> void:
 	_show_scaled(socket_name, 1.0, Color.WHITE)
 
 
-func _show_wings(tint: Color) -> void:
+func _show_wings(tint: Color, left: Texture2D = null, right: Texture2D = null) -> void:
+	var left_sprite := _sprites["LeftWingSocket"] as Sprite3D
+	var right_sprite := _sprites["RightWingSocket"] as Sprite3D
+	left_sprite.texture = left if left != null else WING_LEFT_TEXTURE
+	right_sprite.texture = right if right != null else WING_RIGHT_TEXTURE
+	if left == null and _builtin_rest.has("LeftWingSocket"):
+		_sprite_rest_position["LeftWingSocket"] = _builtin_rest["LeftWingSocket"]
+		_sprite_rest_position["RightWingSocket"] = _builtin_rest["RightWingSocket"]
 	_show_scaled("LeftWingSocket", 1.0, tint)
 	_show_scaled("RightWingSocket", 1.0, tint)
 	_tuck_against_torso("LeftWingSocket", "left_wing", -1.0)
 	_tuck_against_torso("RightWingSocket", "right_wing", 1.0)
+	if left != null:
+		_sprite_rest_position["LeftWingSocket"] = left_sprite.position
+		_sprite_rest_position["RightWingSocket"] = right_sprite.position
+
+
+func _show_shouldered(socket_name: String, texture: Texture2D, side_sign: float) -> void:
+	var sprite := _sprites[socket_name] as Sprite3D
+	sprite.texture = texture
+	sprite.modulate = Color.WHITE
+	sprite.scale = Vector3.ONE
+	var half_w := texture.get_width() * sprite.pixel_size * 0.5
+	var half_h := texture.get_height() * sprite.pixel_size * 0.5
+	sprite.position = Vector3(side_sign * half_w * 0.55, -half_h * 0.25, 0.04)
+	_attachments[socket_name].visible = true
+
+
+func _use_tail(texture: Texture2D, tint: Color, sprite_scale: float) -> void:
+	(_sprites["AnimTail"] as Sprite3D).texture = texture
+	_style_limb("AnimTail", tint, sprite_scale)
 
 
 func _show_legs(tint: Color, sprite_scale: float) -> void:

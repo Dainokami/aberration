@@ -83,6 +83,7 @@ func _physics_process(delta: float) -> void:
 	_update_horizontal_velocity(delta)
 	_update_vertical_velocity(delta)
 	move_and_slide()
+	GameAudio.tick_step(delta, self)
 	_update_landing_state()
 	_update_visuals(delta)
 
@@ -165,8 +166,11 @@ func take_hit(amount: int) -> void:
 		return
 	health = maxi(health - amount, 0)
 	if health == 0:
+		GameAudio.play("player_death")
 		health = max_health
 		respawn()
+	else:
+		GameAudio.play("player_hurt")
 
 
 func invert_move(seconds: float) -> void:

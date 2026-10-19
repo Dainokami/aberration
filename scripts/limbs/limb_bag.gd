@@ -198,7 +198,7 @@ func move_bag_to_dish(index: int, dish_index: int) -> void:
 	else:
 		dish["b"] = limb_id
 	if not str(dish["a"]).is_empty() and not str(dish["b"]).is_empty():
-		dish["time"] = 0.0
+		_arm_culture(dish)
 		note.emit("两件都放进去了，开始培养")
 	else:
 		note.emit("放进培养皿")
@@ -243,7 +243,7 @@ func move_equip_to_dish(slot_name: String, dish_index: int) -> void:
 	else:
 		dish["b"] = limb_id
 	if not str(dish["a"]).is_empty() and not str(dish["b"]).is_empty():
-		dish["time"] = 0.0
+		_arm_culture(dish)
 	_sync_body()
 	changed.emit()
 
@@ -271,7 +271,7 @@ func move_dish_to_dish(from_index: int, side: String, to_index: int) -> void:
 	else:
 		dest["b"] = limb_id
 	if not str(dest["a"]).is_empty() and not str(dest["b"]).is_empty():
-		dest["time"] = 0.0
+		_arm_culture(dest)
 	changed.emit()
 
 
@@ -397,7 +397,13 @@ func _collect_nearby() -> bool:
 	return true
 
 
+func _arm_culture(dish: Dictionary) -> void:
+	dish["time"] = 0.0
+	GameAudio.play("culture")
+
+
 func _recycle(limb_id: String) -> void:
+	GameAudio.play("recycle")
 	var limb := LimbCatalog.find(limb_id)
 	var name := limb.display_name if limb else limb_id
 	var amount := RecycleTable.amount(limb_id)

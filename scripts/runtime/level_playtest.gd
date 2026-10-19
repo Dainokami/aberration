@@ -94,6 +94,12 @@ func _setup_camera() -> void:
 	camera_rig.add_child(camera)
 	add_child(camera_rig)
 	camera.current = true
+	# 正式美术相机仍以 art_profile 为准。只有真正开这张关卡时把地面拉近，地图看起来大一点。
+	if get_tree() != null and get_tree().current_scene == self:
+		GameAudio.start_explore()
+		camera_rig.offset *= 0.78
+		if player != null:
+			camera_rig.global_position = player.global_position + camera_rig.offset
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
 	environment.background_color = Color("#121722")
@@ -131,14 +137,9 @@ func _setup_player() -> void:
 
 func _setup_ui(path: String) -> void:
 	var layer := CanvasLayer.new()
+	layer.name = "PlayUI"
 	add_child(layer)
-	var label := Label.new()
-	label.position = Vector2(18, 18)
-	label.text = "地形编辑器试玩 · " + path.get_file().get_basename() \
-		+ "\n按 Q 查看按键"
-	label.add_theme_font_override("font", runtime_font())
-	label.add_theme_font_size_override("font_size", 18)
-	layer.add_child(label)
+	set_meta("level_name", path.get_file().get_basename())
 	# 自动化仍可直接设置 climb_enabled；正式试玩由当前上肢能力决定，不再占用 C。
 	if not player is PlayerController:
 		var ability := CheckButton.new()
@@ -159,6 +160,12 @@ func _setup_ui(path: String) -> void:
 	feedback_label.add_theme_font_override("font", runtime_font())
 	layer.add_child(feedback_label)
 	_build_key_help(layer)
+	var hud := (load("res://scripts/game_hud.gd") as GDScript).new() as CanvasLayer
+	hud.name = "GameHud"
+	if player is PlayerController:
+		hud.call("setup", player)
+	add_child(hud)
+	hud.call("take_prompts", interaction_label, feedback_label)
 
 
 func _build_key_help(layer: CanvasLayer) -> void:
@@ -220,21 +227,35 @@ func _spawn_field_monsters() -> void:
 	for x in data.map_size.x:
 		for z in data.map_size.y:
 			var cell := Vector2i(x, z)
-			if not data.cell_exists(cell) or cell.distance_to(data.spawn_cell) < 4:
+			if cell.distance_to(data.spawn_cell) < 3 or not _cell_has_room(cell):
 				continue
 			spots.append(data.world_center(cell))
-	spots.sort_custom(func(a: Vector3, b: Vector3) -> bool: return spawn_position.distance_squared_to(a) > spawn_position.distance_squared_to(b))
+	spots.sort_custom(func(a: Vector3, b: Vector3) -> bool: return spawn_position.distance_squared_to(a) < spawn_position.distance_squared_to(b))
 	var cursor := 0
-	for monster_id in MonsterTable.ids():
+	for monster_id in MonsterTable.field_ids():
 		var entry := MonsterTable.monster(monster_id)
-		var pack := maxi(int(entry.get("pack", 1)), 1)
+		var pack := mini(maxi(int(entry.get("pack", 1)), 1), 3)
 		for _member in pack:
 			if cursor >= spots.size():
 				return
 			var monster := FieldMonster.new() as CharacterBody3D
 			monster.call("setup", monster_id, spots[cursor] + Vector3(0.0, 0.15, 0.0))
+			monster.call("use_ground", data)
 			add_child(monster)
 			cursor += 1
+
+
+func _cell_has_room(cell: Vector2i) -> bool:
+	if not data.cell_exists(cell):
+		return false
+	var height := data.elevation(cell)
+	for offset in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]:
+		var next: Vector2i = cell + offset
+		if not data.cell_exists(next):
+			return false
+		if absi(data.elevation(next) - height) > 1:
+			return false
+	return true
 
 
 func _connect_props() -> void:
@@ -263,8 +284,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_key_help.visible = not _key_help.visible
 			get_viewport().set_input_as_handled()
 		KEY_ESCAPE:
+			var hud := get_node_or_null("GameHud")
 			if _key_help.visible:
 				_key_help.visible = false
+				get_viewport().set_input_as_handled()
+			elif hud != null and bool(hud.call("is_pause_open")):
+				hud.call("close_pause")
 				get_viewport().set_input_as_handled()
 		KEY_C:
 			if not player is PlayerController:

@@ -176,7 +176,10 @@ static func validate() -> PackedStringArray:
 			continue
 		if result.culture_ingredient:
 			errors.append("restricted result is still an ingredient: " + result_id)
-		if not result.placeholder_art:
+		var delivered: bool = result_id in PackedStringArray(["pangolin_dig_claw", "albino_albatross_wing", "albino_eagle_wing"])
+		if delivered and result.placeholder_art:
+			errors.append("delivered art is still marked as placeholder: " + result_id)
+		elif not delivered and not result.placeholder_art:
 			errors.append("missing-art result is not marked as placeholder: " + result_id)
 		if LimbCatalog.texture_for(result_id) == null:
 			errors.append("placeholder texture cannot be loaded: " + result_id)

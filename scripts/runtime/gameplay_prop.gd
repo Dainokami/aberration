@@ -34,6 +34,7 @@ func interaction_text() -> String:
 func interact(actor: Node3D) -> bool:
 	if definition.behaviour == PlaceableDefinition.Behaviour.CHEST and state == "closed":
 		set_state("open")
+		GameAudio.play("chest")
 		opened.emit(self, actor)
 		return true
 	return false

@@ -80,6 +80,8 @@ func take_hit(amount: int) -> bool:
 		_tint_host(1.0 - float(health) / float(maxi(max_health, 1)))
 		return false
 	spent = true
+	if kind == "destructible_hard" or kind == "destructible_soft":
+		GameAudio.play("rock_break")
 	if host:
 		host.visible = false
 		_set_host_collision(false)

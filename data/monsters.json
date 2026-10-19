@@ -7,20 +7,23 @@
     "attack_cooldown": { "low": 1.15, "mid": 0.62, "high": 0.34 }
   },
   "monsters": [
-    {"id": "prairie_wolf", "name": "荒原狼", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "wolf_leg", "aggressive": true, "attack": "lunge", "pack": 1, "sprite": "res://art/狼/躯干.jpg"},
-    {"id": "ostrich", "name": "鸵鸟", "health": "mid", "damage": "mid", "speed": "high", "attack_rate": "low", "drop": "ostrich_leg", "aggressive": false, "attack": "peck", "pack": 1, "sprite": "res://art/鸵鸟/0db68535840db0da9c626f8d0e5db26a.jpg"},
-    {"id": "gerbil", "name": "沙鼠", "health": "low", "damage": "low", "speed": "high", "attack_rate": "low", "drop": "gerbil_leg", "aggressive": false, "attack": "bite", "pack": 3, "sprite": "res://art/沙鼠/8e2637d6cd5fdd4bbe275a68fb818d19.png"},
-    {"id": "gibbon", "name": "长臂猿", "health": "mid", "damage": "mid", "speed": "high", "attack_rate": "high", "drop": "gibbon_arm", "aggressive": false, "attack": "swing", "pack": 1, "sprite": "res://art/长臂猿/fc9ab77c3960b968e2c9e96c6713951d.png"},
-    {"id": "gorilla", "name": "猩猩", "health": "high", "damage": "high", "speed": "mid", "attack_rate": "mid", "drop": "gorilla_arm", "aggressive": true, "attack": "swing", "pack": 1, "sprite": "res://art/猩猩-侧/1e34198eeff691a43d660be069ccb0dc.png"},
-    {"id": "kangaroo", "name": "袋鼠", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "kangaroo_leg", "aggressive": false, "attack": "kick", "pack": 1, "sprite": ""},
-    {"id": "demon_dog", "name": "恶魔犬", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "high", "drop": "demon_dog_leg", "aggressive": true, "attack": "bite", "pack": 3, "sprite": ""},
-    {"id": "goose", "name": "鹅", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "mid", "drop": "goose_wing", "aggressive": true, "attack": "neck", "pack": 1, "sprite": ""},
-    {"id": "octopus", "name": "章鱼", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "octopus_leg", "aggressive": false, "attack": "tentacle", "pack": 1, "sprite": ""},
-    {"id": "bat", "name": "蝙蝠", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "mid", "drop": "bat_wing", "aggressive": true, "attack": "bite", "pack": 3, "sprite": ""},
-    {"id": "albatross", "name": "信天翁", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "albatross_wing", "aggressive": false, "attack": "peck", "pack": 1, "sprite": ""},
-    {"id": "eagle", "name": "老鹰", "health": "mid", "damage": "high", "speed": "high", "attack_rate": "mid", "drop": "eagle_wing", "aggressive": false, "attack": "peck", "pack": 1, "sprite": ""},
-    {"id": "piranha", "name": "食人鱼", "health": "mid", "damage": "low", "speed": "mid", "attack_rate": "mid", "drop": "fish_tail", "aggressive": true, "attack": "bite", "pack": 3, "sprite": ""},
-    {"id": "water_snake", "name": "水蛇", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "water_snake", "aggressive": true, "attack": "bite", "pack": 1, "sprite": ""},
-    {"id": "bird_demon", "name": "鸟妖", "health": "high", "damage": "high", "speed": "mid", "attack_rate": "mid", "drop": "albatross_wing", "aggressive": true, "attack": "boss", "pack": 1, "sprite": "", "boss": true}
+    {"id": "prairie_wolf", "name": "荒原狼", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "wolf_leg", "aggressive": true, "attack": "lunge", "pack": 1, "field": true, "sprite": "res://art/monsters/prairie_wolf.png"},
+    {"id": "ostrich", "name": "鸵鸟", "health": "mid", "damage": "mid", "speed": "high", "attack_rate": "low", "drop": "ostrich_leg", "aggressive": false, "attack": "peck", "pack": 1, "field": true, "sprite": "res://art/monsters/ostrich.png"},
+    {"id": "gerbil", "name": "沙鼠", "health": "low", "damage": "low", "speed": "high", "attack_rate": "low", "drop": "gerbil_leg", "aggressive": false, "attack": "bite", "pack": 3, "field": true, "sprite": "res://art/monsters/gerbil.png"},
+    {"id": "gibbon", "name": "长臂猿", "health": "mid", "damage": "mid", "speed": "high", "attack_rate": "high", "drop": "gibbon_arm", "aggressive": false, "attack": "swing", "pack": 1, "field": true, "sprite": "res://art/monsters/gibbon.png"},
+    {"id": "gorilla", "name": "猩猩", "health": "high", "damage": "high", "speed": "mid", "attack_rate": "mid", "drop": "gorilla_arm", "aggressive": true, "attack": "swing", "pack": 1, "field": true, "sprite": "res://art/monsters/gorilla.png"},
+    {"id": "ibex", "name": "岩羊", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "", "aggressive": false, "attack": "kick", "pack": 1, "field": true, "sprite": "res://art/monsters/ibex.png"},
+    {"id": "scorpion", "name": "蝎子", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "high", "drop": "", "aggressive": true, "attack": "bite", "pack": 1, "field": true, "sprite": "res://art/monsters/scorpion.png"},
+    {"id": "shark", "name": "鲨鱼", "health": "mid", "damage": "high", "speed": "mid", "attack_rate": "mid", "drop": "", "aggressive": true, "attack": "bite", "pack": 1, "field": true, "sprite": "res://art/monsters/shark.png"},
+    {"id": "albatross", "name": "信天翁", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "albatross_wing", "aggressive": false, "attack": "peck", "pack": 1, "field": true, "sprite": "res://art/monsters/albatross.png"},
+    {"id": "eagle", "name": "老鹰", "health": "mid", "damage": "high", "speed": "high", "attack_rate": "mid", "drop": "eagle_wing", "aggressive": false, "attack": "peck", "pack": 1, "field": true, "sprite": "res://art/monsters/eagle.png"},
+    {"id": "piranha", "name": "食人鱼", "health": "mid", "damage": "low", "speed": "mid", "attack_rate": "mid", "drop": "fish_tail", "aggressive": true, "attack": "bite", "pack": 3, "field": true, "sprite": "res://art/monsters/piranha.png"},
+    {"id": "water_snake", "name": "水蛇", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "water_snake", "aggressive": true, "attack": "bite", "pack": 1, "field": true, "sprite": "res://art/monsters/water_snake.png"},
+    {"id": "kangaroo", "name": "袋鼠", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "kangaroo_leg", "aggressive": false, "attack": "kick", "pack": 1, "field": false, "sprite": ""},
+    {"id": "demon_dog", "name": "恶魔犬", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "high", "drop": "demon_dog_leg", "aggressive": true, "attack": "bite", "pack": 3, "field": false, "sprite": ""},
+    {"id": "goose", "name": "鹅", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "mid", "drop": "goose_wing", "aggressive": true, "attack": "neck", "pack": 1, "field": false, "sprite": ""},
+    {"id": "octopus", "name": "章鱼", "health": "mid", "damage": "mid", "speed": "mid", "attack_rate": "mid", "drop": "octopus_leg", "aggressive": false, "attack": "tentacle", "pack": 1, "field": false, "sprite": ""},
+    {"id": "bat", "name": "蝙蝠", "health": "low", "damage": "low", "speed": "mid", "attack_rate": "mid", "drop": "bat_wing", "aggressive": true, "attack": "bite", "pack": 3, "field": false, "sprite": ""},
+    {"id": "bird_demon", "name": "鸟妖", "health": "high", "damage": "high", "speed": "mid", "attack_rate": "mid", "drop": "albatross_wing", "aggressive": true, "attack": "boss", "pack": 1, "field": false, "boss": true, "sprite": ""}
   ]
 }

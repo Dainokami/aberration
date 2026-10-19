@@ -354,6 +354,7 @@ func try_attack() -> void:
 	if upper.attack_shape == PartDefinition.AttackShape.NONE:
 		note.emit("这个部件没有攻击")
 		return
+	GameAudio.play("player_attack")
 	var power := PartDefinition.power_value(upper.attack_power)
 	_attack_cooldown = PartDefinition.cooldown_for(upper.attack_rate)
 	_swing = 0.24
@@ -537,6 +538,7 @@ func _stow_bag(slot_name: String) -> void:
 func _release_all() -> void:
 	if _held != null and is_instance_valid(_held):
 		if _hold_mode == "throw":
+			GameAudio.play("throw")
 			_held.throw_along(_facing(_player()))
 		else:
 			_held.drop()
@@ -603,6 +605,7 @@ func _auto_combat() -> void:
 		return
 	_auto_arm = 0.0
 	_auto_timer = 0.45
+	GameAudio.play("player_attack")
 	if smash != null and smash_kind == "hard":
 		var destroyed := smash.take_hit(PartDefinition.power_value(upper.attack_power))
 		note.emit("砸碎了" if destroyed else "砸了一下")
