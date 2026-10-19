@@ -7,6 +7,27 @@ const TerrainBlendMapClass := preload("res://scripts/level/terrain_blend_map.gd"
 const PLAYER_AVATAR_SCENE := preload("res://scenes/player_avatar_visual.tscn")
 const CollisionBatch := preload("res://scripts/level/terrain_collision_batch.gd")
 const CHUNK_SIZE := 8
+const ChunkStream := preload("res://scripts/level/terrain_chunk_stream.gd")
+
+signal object_loaded(object: Node3D)
+signal chunks_changed
+## Small fixtures keep the original complete-build path. Large maps stream automatically.
+@export var chunk_loading := true
+@export var chunk_loading_threshold := 16384
+var chunk_stream: TerrainChunkStream
+var _objects_by_chunk := {}
+var _object_stream_chunks := {}
+var _object_index_positions := {}
+var _details_by_chunk := {}
+var _runtime_object_states := {}
+var _definition_cache := {}
+var _definition_valid := {}
+var _water_materials := {}
+var _stream_mode := false
+var _bottom_groups := {}
+var _bottom_meshes := {}
+var _zone_groups := {}
+var _stream_extras := {}
 
 @export var level_data: LevelData
 @export var show_grid := true
@@ -47,11 +68,54 @@ var _slice_collision_batches := {}
 func _ready() -> void:
 	rebuild()
 
+func _exit_tree() -> void:
+	if chunk_stream != null:
+		chunk_stream.cancel_job(self)
+	for nodes: Array in _stream_extras.values():
+		for node in nodes:
+			if is_instance_valid(node):
+				node.free()
+	_stream_extras.clear()
+
+func is_streaming() -> bool:
+	return chunk_loading and _stream_mode
+
+func _process(delta: float) -> void:
+	if is_streaming() and chunk_stream != null and is_instance_valid(generated):
+		if not Engine.is_editor_hint() and not is_instance_valid(chunk_stream.camera):
+			chunk_stream.camera = get_viewport().get_camera_3d()
+		chunk_stream.step(self, delta)
+
+func follow_stream_camera(camera: Camera3D, actor: Node3D = null) -> void:
+	if chunk_stream == null:
+		return
+	chunk_stream.camera = camera
+	chunk_stream.actor = actor
+
+func ensure_stream_position(position: Vector3, radius := 4.0) -> void:
+	if is_streaming() and chunk_stream != null:
+		chunk_stream.ensure_position(self, to_local(position), radius)
+
+func stream_cell_loaded(cell: Vector2i) -> bool:
+	return not is_streaming() or _chunk_nodes.has(_chunk_for(cell))
+
 func set_data(value: LevelData) -> void:
 	level_data = value
 	rebuild()
 
 func rebuild() -> void:
+	if chunk_stream != null:
+		chunk_stream.cancel_job(self)
+	if _built_data != level_data:
+		_runtime_object_states.clear()
+		for nodes: Array in _stream_extras.values():
+			for node in nodes:
+				if is_instance_valid(node):
+					node.free()
+		_stream_extras.clear()
+	elif not Engine.is_editor_hint():
+		for id: String in _object_nodes:
+			_capture_object_state(id)
 	if generated and is_instance_valid(generated):
 		remove_child(generated)
 		generated.free()
@@ -63,6 +127,11 @@ func rebuild() -> void:
 	if style_profile == null:
 		style_profile = load(DEFAULT_STYLE) as TerrainStyleProfile
 	level_data.ensure_layout()
+	var occupied := 0
+	for column in level_data.columns:
+		if not (column.get("layers", []) as Array).is_empty():
+			occupied += 1
+	_stream_mode = occupied > chunk_loading_threshold
 	_prepare_materials()
 	_chunk_nodes.clear()
 	_blend_resources.clear()
@@ -71,10 +140,24 @@ func rebuild() -> void:
 	_object_nodes.clear()
 	_object_signatures.clear()
 	_affordance_nodes.clear()
+	_definition_cache.clear()
+	_definition_valid.clear()
+	_water_materials.clear()
 	_applied_slice_limit = -1
 	_built_bounds = level_data.map_bounds()
 	_built_data = level_data
 	_built_grid_origin = level_data.grid_world_origin
+	_index_stream_content()
+	if is_streaming():
+		if chunk_stream == null:
+			chunk_stream = ChunkStream.new()
+		chunk_stream.reset(level_data)
+		chunk_stream.select(self, true)
+		# Only the spawn/initial focus must be synchronous. The rest is budgeted.
+		chunk_stream.ensure_position(self, chunk_stream.focus, 4.0)
+		_built_stairs = level_data.stairs.duplicate(true)
+		return
+	chunk_stream = null
 	var chunks := {}
 	for index in level_data.columns.size():
 		if (level_data.columns[index].get("layers", []) as Array).is_empty():
@@ -89,7 +172,7 @@ func rebuild() -> void:
 		_build_grid()
 	_build_spawn_marker()
 	_build_objects()
-	rebuild_details()
+	rebuild_details(false)
 	_built_stairs = level_data.stairs.duplicate(true)
 	_apply_slice_visibility()
 
@@ -101,52 +184,149 @@ func _surface(layer: int) -> LevelData:
 		_surface_views[layer] = level_data.surface_view(layer)
 	return _surface_views[layer]
 
+func _unload_chunk(chunk: Vector2i) -> void:
+	for node in _chunk_nodes.get(chunk, []):
+		if is_instance_valid(node):
+			node.free()
+	_chunk_nodes.erase(chunk)
+	for key: Vector3i in _blend_resources.keys():
+		if key.x == chunk.x and key.z == chunk.y:
+			_blend_resources.erase(key)
+
+func _index_stream_content() -> void:
+	_objects_by_chunk.clear()
+	_object_stream_chunks.clear()
+	_object_index_positions.clear()
+	_details_by_chunk.clear()
+	for record in level_data.objects:
+		var position: Vector3 = record.get("position", Vector3.ZERO)
+		if not Engine.is_editor_hint():
+			var state: Dictionary = _runtime_object_states.get(str(record.id), {})
+			position = state.get("prop_position", state.get("position", position))
+			var prop: AffordanceProp = _affordance_nodes.get(str(record.id))
+			if is_instance_valid(prop):
+				position = prop.position
+		_index_object_stream_record(record, position)
+	for record in level_data.details:
+		var chunk := _chunk_for(record["anchor_cell"])
+		if not _details_by_chunk.has(chunk):
+			_details_by_chunk[chunk] = []
+		_details_by_chunk[chunk].append(record)
+
+func _index_object_stream_record(record: Dictionary, position: Vector3) -> void:
+	var id := str(record.id)
+	if _object_index_positions.get(id) == position:
+		return
+	for chunk: Vector2i in _object_stream_chunks.get(id, {}):
+		var records: Array = _objects_by_chunk.get(chunk, [])
+		for i in range(records.size() - 1, -1, -1):
+			if str(records[i].id) == id:
+				records.remove_at(i)
+		if records.is_empty():
+			_objects_by_chunk.erase(chunk)
+	var actual := record.duplicate()
+	actual["position"] = position
+	actual["anchor_cell"] = level_data.world_to_cell(position)
+	var chunks := {_chunk_for(actual.anchor_cell): true}
+	if ObjectRules.definition(actual) != null:
+		for cell in ObjectRules.covered_cells(level_data, actual):
+			chunks[_chunk_for(cell)] = true
+	for chunk: Vector2i in chunks:
+		if not _objects_by_chunk.has(chunk):
+			_objects_by_chunk[chunk] = []
+		_objects_by_chunk[chunk].append(record)
+	_object_stream_chunks[id] = chunks
+	_object_index_positions[id] = position
+
+func _stream_content_changed() -> void:
+	_raster_cache.clear()
+	_build_objects()
+	rebuild_details(false)
+	for node in generated.get_children():
+		if node.name == "SpawnMarker":
+			node.free()
+	_build_spawn_marker()
+	_apply_slice_visibility()
+	chunks_changed.emit()
+
 func _build_chunk(chunk: Vector2i) -> void:
+	if not ChunkStream.chunk_region(level_data, chunk).has_area():
+		return
+	_begin_chunk(chunk)
+	for y in range(_build_region.position.y, _build_region.end.y):
+		_build_chunk_row(y)
+	_finish_chunk()
+
+func _begin_chunk(chunk: Vector2i) -> void:
 	_current_chunk = chunk
 	_used_blends.clear()
 	_build_region = Rect2i(chunk * CHUNK_SIZE, Vector2i.ONE * CHUNK_SIZE).intersection(
 		level_data.map_bounds())
 	if _build_region.size.x <= 0 or _build_region.size.y <= 0:
 		return
-	var first_child := generated.get_child_count()
+	_chunk_first_child = generated.get_child_count()
 	_top_groups.clear()
 	_blend_groups.clear()
 	_overlay_groups.clear()
+	_bottom_groups.clear()
+	_bottom_meshes.clear()
+	_zone_groups.clear()
 	_collision_batch = CollisionBatch.new(generated)
 	_prepare_multi_blend_levels()
-	for y in range(_build_region.position.y, _build_region.end.y):
-		for x in range(_build_region.position.x, _build_region.end.x):
-			var cell := Vector2i(x, y)
-			if level_data.cell_exists(cell):
-				for water_layer in level_data.layer_count(cell):
-					if level_data.is_water_layer(cell, water_layer):
-						_build_water(cell, water_layer)
-				for layer in level_data.exposed_layers(cell):
-					if level_data.is_solid_layer(cell, layer) and level_data.stair_at(cell, layer) < 0:
-						_build_cell(cell, _surface(layer))
-				_build_bottoms(cell)
-				if build_collision:
-					_build_side_collisions(cell)
+
+var _chunk_first_child := 0
+
+func _build_chunk_row(y: int) -> void:
+	for x in range(_build_region.position.x, _build_region.end.x):
+		var cell := Vector2i(x, y)
+		if level_data.cell_exists(cell):
+			for water_layer in level_data.layer_count(cell):
+				if level_data.is_water_layer(cell, water_layer):
+					_build_water(cell, water_layer)
+			for layer in level_data.exposed_layers(cell):
+				if level_data.is_solid_layer(cell, layer) and level_data.stair_at(cell, layer) < 0:
+					_build_cell(cell, _surface(layer))
+			_build_bottoms(cell)
+			if build_collision:
+				_build_side_collisions(cell)
+
+func _finish_chunk_geometry() -> void:
 	_build_top_groups()
+	_build_bottom_groups()
 	_build_overlays()
+
+func _finish_chunk_edges() -> void:
 	_build_cliffs_and_rims()
 	_build_shore_foam()
+
+func _finish_chunk() -> void:
+	_finish_chunk_geometry()
+	_finish_chunk_edges()
+	_publish_chunk_metadata()
+
+func _publish_chunk_metadata() -> void:
+	if is_streaming() and show_grid:
+		_build_grid_region(_build_region)
 	for stair in level_data.stairs:
-		if _chunk_for(stair["cell"]) == chunk:
+		if _chunk_for(stair["cell"]) == _current_chunk:
 			_build_stair(stair)
 	_mark_limb_surfaces(_build_region)
+	_flush_surface_groups()
 	_collision_batch = null
+	_bottom_meshes.clear()
 	var nodes: Array[Node] = []
-	for i in range(first_child, generated.get_child_count()):
+	for i in range(_chunk_first_child, generated.get_child_count()):
 		var node := generated.get_child(i)
-		node.set_meta("terrain_chunk", chunk)
+		node.set_meta("terrain_chunk", _current_chunk)
 		nodes.append(node)
-	_chunk_nodes[chunk] = nodes
+	_chunk_nodes[_current_chunk] = nodes
 	for key: Vector3i in _blend_resources.keys():
-		if key.x == chunk.x and key.z == chunk.y and not _used_blends.has(key):
+		if key.x == _current_chunk.x and key.z == _current_chunk.y and not _used_blends.has(key):
 			_blend_resources.erase(key)
 
 func rebuild_cells(changed: Array[Vector2i]) -> void:
+	if chunk_stream != null:
+		chunk_stream.cancel_job(self)
 	if not is_instance_valid(generated) or level_data != _built_data \
 			or _built_grid_origin != level_data.grid_world_origin:
 		rebuild()
@@ -195,7 +375,9 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 					repaint.append(Vector2i(point))
 	_update_blend_pixels(repaint)
 	for chunk: Vector2i in dirty:
-		for node: Node in _chunk_nodes.get(chunk, []):
+		if is_streaming() and not _chunk_nodes.has(chunk):
+			continue
+		for node in _chunk_nodes.get(chunk, []):
 			if is_instance_valid(node):
 				node.free()
 		_chunk_nodes.erase(chunk)
@@ -203,29 +385,61 @@ func rebuild_cells(changed: Array[Vector2i]) -> void:
 	_raster_cache.clear()
 	for node in generated.get_children():
 		if node.name == "SpawnMarker" \
-				or (bounds_changed and node.has_meta("terrain_grid")):
+				or (bounds_changed and not is_streaming() and node.has_meta("terrain_grid")):
 			node.free()
-	if bounds_changed and show_grid:
+	if bounds_changed and show_grid and not is_streaming():
 		_build_grid()
+	_index_stream_content()
+	if is_streaming():
+		for cell in changed:
+			chunk_stream.max_height = maxf(chunk_stream.max_height,
+				level_data.layer_count(cell) * LevelData.ELEVATION_STEP)
+			var chunk := _chunk_for(cell)
+			var region := ChunkStream.chunk_region(level_data, chunk)
+			var height := 0.0
+			for y in range(region.position.y, region.end.y):
+				for x in range(region.position.x, region.end.x):
+					height = maxf(height, level_data.layer_count(Vector2i(x, y)) * LevelData.ELEVATION_STEP)
+			chunk_stream.chunk_heights[chunk] = height
+		chunk_stream.select(self, true)
 	_build_objects()
-	rebuild_details()
+	rebuild_details(false)
 	_build_spawn_marker()
 	_built_stairs = level_data.stairs.duplicate(true)
 	_apply_slice_visibility()
 
 func _build_objects() -> void:
+	if is_streaming() and not Engine.is_editor_hint():
+		for id: String in _affordance_nodes:
+			var prop: AffordanceProp = _affordance_nodes[id]
+			if is_instance_valid(prop) and _object_index_positions.get(id) != prop.position:
+				var record := ObjectRules.find_record(level_data, id)
+				if not record.is_empty():
+					_index_object_stream_record(record, prop.position)
 	var wanted := {}
 	var definitions := {}
 	var visibility := {}
-	for record in level_data.objects:
+	var seen := {}
+	var records: Array = level_data.objects
+	if is_streaming():
+		records = []
+		for chunk: Vector2i in _chunk_nodes:
+			records.append_array(_objects_by_chunk.get(chunk, []))
+	for record in records:
 		var id := str(record.get("id", ""))
+		if seen.has(id):
+			continue
+		seen[id] = true
 		var path := str(record.get("definition", ""))
-		if not definitions.has(path):
-			definitions[path] = ObjectRules.definition(record)
+		if not _definition_cache.has(path):
+			_definition_cache[path] = ObjectRules.definition(record)
+			var asset: PlaceableDefinition = _definition_cache[path]
+			_definition_valid[path] = asset != null and asset.validate_asset().is_empty()
+		definitions[path] = _definition_cache[path]
 		if ObjectRules.is_hidden(level_data, record, visibility):
 			continue
 		var definition: PlaceableDefinition = definitions[path]
-		if definition == null or not definition.validate_asset().is_empty():
+		if definition == null or not bool(_definition_valid.get(path, false)):
 			continue
 		wanted[id] = true
 		var signature := hash([record, build_collision])
@@ -233,6 +447,7 @@ func _build_objects() -> void:
 		if is_instance_valid(previous) and _object_signatures.get(id) == signature:
 			continue
 		if is_instance_valid(previous):
+			_capture_object_state(id)
 			previous.free()
 		if is_instance_valid(_affordance_nodes.get(id)):
 			(_affordance_nodes[id] as Node).free()
@@ -264,6 +479,8 @@ func _build_objects() -> void:
 		_object_nodes[id] = object
 		_object_signatures[id] = signature
 		_bind_affordance(object, definition.asset_id)
+		_restore_object_state(id)
+		object_loaded.emit(object)
 		if not build_collision:
 			for collision in object.find_children("*", "CollisionObject3D", true, false):
 				collision.collision_layer = 0
@@ -272,7 +489,18 @@ func _build_objects() -> void:
 		if wanted.has(id):
 			continue
 		var object: Node3D = _object_nodes[id]
+		if not Engine.is_editor_hint() and is_instance_valid(object):
+			var position := object.position
+			var prop: AffordanceProp = _affordance_nodes.get(id)
+			if is_instance_valid(prop):
+				position = prop.position
+			# A pushed/carried prop can leave its original anchor chunk.
+			if is_streaming() and not seen.has(id) \
+					and not ObjectRules.find_record(level_data, id).is_empty() \
+					and _chunk_nodes.has(_chunk_for(level_data.world_to_cell(position))):
+				continue
 		if is_instance_valid(object):
+			_capture_object_state(id)
 			object.free()
 		if is_instance_valid(_affordance_nodes.get(id)):
 			(_affordance_nodes[id] as Node).free()
@@ -280,7 +508,69 @@ func _build_objects() -> void:
 		_object_nodes.erase(id)
 		_object_signatures.erase(id)
 
+func _capture_object_state(id: String) -> void:
+	if Engine.is_editor_hint():
+		return
+	var object: Node3D = _object_nodes.get(id)
+	if not is_instance_valid(object):
+		return
+	var state := {"position": object.position}
+	var lid := object.get_node_or_null("ChestLid") as Node3D
+	if lid != null:
+		state["lid_rotation"] = lid.rotation
+	if object is GameplayProp:
+		state.merge({"state": object.state, "health": object.health})
+		if object is SceneMechanism:
+			state.merge({"collected": object.collected, "fruit_ready": object._fruit_ready,
+				"vine_revealed": object.has_meta("vine_revealed")})
+	var prop: AffordanceProp = _affordance_nodes.get(id)
+	if is_instance_valid(prop):
+		state.merge({"prop_health": prop.health, "spent": prop.spent, "prop_position": prop.position})
+	_runtime_object_states[id] = state
+	var extras: Array = _stream_extras.get(id, [])
+	for node in generated.get_children():
+		if node.get_meta("stream_source_id", "") == id:
+			generated.remove_child(node)
+			extras.append(node)
+	_stream_extras[id] = extras
+
+func _restore_object_state(id: String) -> void:
+	if Engine.is_editor_hint() or not _runtime_object_states.has(id):
+		return
+	for node in _stream_extras.get(id, []):
+		if is_instance_valid(node):
+			generated.add_child(node)
+	_stream_extras.erase(id)
+	var state: Dictionary = _runtime_object_states[id]
+	var object: Node3D = _object_nodes[id]
+	object.position = state.position
+	# Keep an opened chest's actual hinge pose, not only its state enum.
+	var lid := object.get_node_or_null("ChestLid") as Node3D
+	if lid != null and state.has("lid_rotation"):
+		lid.rotation = state.lid_rotation
+	if object is GameplayProp:
+		object.health = state.health
+		object.set_state(state.state)
+		if object is SceneMechanism:
+			object.collected = state.collected
+			object._fruit_ready = state.fruit_ready
+			if object.collected:
+				object.hide()
+				for shape in object.find_children("*", "CollisionShape3D", true, false):
+					shape.disabled = true
+			if state.get("vine_revealed", false):
+				object.set_meta("vine_revealed", true)
+	var prop: AffordanceProp = _affordance_nodes.get(id)
+	if is_instance_valid(prop) and state.has("prop_health"):
+		prop.health = state.prop_health
+		prop.spent = state.spent
+		prop.position = state.prop_position
+		if prop.spent:
+			object.hide()
+			prop._set_host_collision(false)
+
 func refresh_objects() -> void:
+	_index_stream_content()
 	_build_objects()
 	if slice_layer_limit >= 0:
 		for node: Node3D in _object_nodes.values():
@@ -324,12 +614,24 @@ func _bind_affordance(object: Node3D, asset_id: String) -> void:
 	_affordance_nodes[str(object.get_meta("object_id", ""))] = prop
 
 
-func rebuild_details() -> void:
+func rebuild_details(reindex := true) -> void:
+	if reindex:
+		_details_by_chunk.clear()
+		for record in level_data.details:
+			var chunk := _chunk_for(record["anchor_cell"])
+			if not _details_by_chunk.has(chunk):
+				_details_by_chunk[chunk] = []
+			_details_by_chunk[chunk].append(record)
 	if not is_instance_valid(detail_renderer) or detail_renderer.get_parent() != generated:
 		detail_renderer = DetailRenderer.new()
 		detail_renderer.name = "Details"
 		generated.add_child(detail_renderer)
-	detail_renderer.refresh(level_data)
+	var records: Array = level_data.details
+	if is_streaming():
+		records = []
+		for chunk: Vector2i in _chunk_nodes:
+			records.append_array(_details_by_chunk.get(chunk, []))
+	detail_renderer.refresh(level_data, records)
 	detail_renderer.set_slice_layer(slice_layer_limit)
 
 func _prepare_materials() -> void:
@@ -445,12 +747,16 @@ func _build_water(cell: Vector2i, layer: int) -> void:
 	volume.set_meta("terrain_layer", layer)
 	volume.set_meta("water_volume", true)
 	generated.add_child(volume)
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color = Color(tile.base_color, 0.22)
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.render_priority = 1
+	var volume_key := "volume/" + tile.tile_id
+	var material: StandardMaterial3D = _water_materials.get(volume_key)
+	if material == null:
+		material = StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.albedo_color = Color(tile.base_color, 0.22)
+		material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		material.render_priority = 1
+		_water_materials[volume_key] = material
 	var faces := [
 		[Vector3(-1,-1,-1), Vector3(-1,1,-1), Vector3(1,1,-1), Vector3(1,-1,-1)],
 		[Vector3(1,-1,-1), Vector3(1,1,-1), Vector3(1,1,1), Vector3(1,-1,1)],
@@ -482,9 +788,24 @@ func _build_water(cell: Vector2i, layer: int) -> void:
 		plane.size = Vector2.ONE * LevelData.CELL_SIZE
 		surface.mesh = plane
 		surface.position.y = LevelData.ELEVATION_STEP * 0.5 + 0.015
-		var top_material := ShaderMaterial.new()
-		var shader := Shader.new()
-		shader.code = """shader_type spatial;
+		surface.material_override = _water_top_material(tile)
+		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		volume.add_child(surface)
+	if build_collision and not Engine.is_editor_hint():
+		_mark_surface(center, PackedStringArray(["fluid", "ocean"]),
+			Vector3.ONE * LevelData.CELL_SIZE, layer)
+		if level_data.is_surface_exposed(cell, layer):
+			_mark_surface(level_data.world_center(cell, layer),
+				PackedStringArray(["fluid", "ocean", "water_surface"]),
+				Vector3(LevelData.CELL_SIZE, 0.25, LevelData.CELL_SIZE), layer)
+
+func _water_top_material(tile: TileDefinition) -> ShaderMaterial:
+	var key := "top/" + tile.tile_id
+	if _water_materials.has(key):
+		return _water_materials[key]
+	var material := ShaderMaterial.new()
+	var shader := Shader.new()
+	shader.code = """shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never;
 uniform sampler2D water_art : source_color, repeat_enable;
 uniform vec2 world_origin;
@@ -497,21 +818,13 @@ void fragment() {
 	ALPHA = 0.42;
 }
 """
-		top_material.shader = shader
-		top_material.render_priority = 2
-		top_material.set_shader_parameter("water_art", load(tile.texture_path))
-		top_material.set_shader_parameter("world_origin", level_data.grid_world_origin)
-		top_material.set_shader_parameter("water_tint", level_data.terrain_tint(tile.tile_id))
-		surface.material_override = top_material
-		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		volume.add_child(surface)
-	if build_collision and not Engine.is_editor_hint():
-		_mark_surface(center, PackedStringArray(["fluid", "ocean"]),
-			Vector3.ONE * LevelData.CELL_SIZE, layer)
-		if level_data.is_surface_exposed(cell, layer):
-			_mark_surface(level_data.world_center(cell, layer),
-				PackedStringArray(["fluid", "ocean", "water_surface"]),
-				Vector3(LevelData.CELL_SIZE, 0.25, LevelData.CELL_SIZE), layer)
+	material.shader = shader
+	material.render_priority = 2
+	material.set_shader_parameter("water_art", load(tile.texture_path))
+	material.set_shader_parameter("world_origin", level_data.grid_world_origin)
+	material.set_shader_parameter("water_tint", level_data.terrain_tint(tile.tile_id))
+	_water_materials[key] = material
+	return material
 
 func _build_top_groups() -> void:
 	_build_blended_top_groups()
@@ -668,8 +981,11 @@ func _build_side_collisions(cell: Vector2i) -> void:
 			continue
 		var faces := PackedVector3Array()
 		if not level_data.has_terrain_volume(cell, layer - 1):
-			faces.append_array(TerrainEdgeBuilder.make_bottom_mesh(
-				level_data, cell, layer, style_profile.corner_segments).get_faces())
+			var bottom: ArrayMesh = _bottom_meshes.get(Vector3i(cell.x, layer, cell.y))
+			if bottom == null:
+				bottom = TerrainEdgeBuilder.make_bottom_mesh(
+					level_data, cell, layer, style_profile.corner_segments)
+			faces.append_array(bottom.get_faces())
 		for path in TerrainEdgeBuilder.exposed_layer_paths(
 				level_data, cell, layer, style_profile.corner_segments):
 			var mesh := TerrainEdgeBuilder.make_cliff_mesh(path,
@@ -690,16 +1006,39 @@ func _build_bottoms(cell: Vector2i) -> void:
 		var tile := TileRegistry.find(level_data.solid_tile_id(cell, layer))
 		if tile == null:
 			continue
+		var mesh := TerrainEdgeBuilder.make_bottom_mesh(
+			level_data, cell, layer, style_profile.corner_segments)
+		_bottom_meshes[Vector3i(cell.x, layer, cell.y)] = mesh
+		if is_streaming():
+			var key := "%s/%d" % [tile.tile_id, layer]
+			if not _bottom_groups.has(key):
+				var tool := SurfaceTool.new()
+				tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+				_bottom_groups[key] = {"tool": tool, "tile": tile, "layer": layer, "cells": []}
+			(_bottom_groups[key].tool as SurfaceTool).append_from(mesh, 0, Transform3D.IDENTITY)
+			_bottom_groups[key].cells.append(cell)
+			continue
 		var bottom := MeshInstance3D.new()
 		bottom.name = "Bottom"
-		bottom.mesh = TerrainEdgeBuilder.make_bottom_mesh(
-			level_data, cell, layer, style_profile.corner_segments)
+		bottom.mesh = mesh
 		bottom.material_override = TerrainMaterials.cliff_material(
 			tile, level_data.terrain_tint(tile.tile_id))
 		bottom.set_meta("terrain_cell", cell)
 		bottom.set_meta("terrain_layer", layer)
 		bottom.set_meta("terrain_bottom", true)
 		generated.add_child(bottom)
+
+func _build_bottom_groups() -> void:
+	for group: Dictionary in _bottom_groups.values():
+		var node := MeshInstance3D.new()
+		node.name = "TerrainBottomBatch"
+		node.mesh = (group.tool as SurfaceTool).commit()
+		node.material_override = TerrainMaterials.cliff_material(group.tile,
+			level_data.terrain_tint(group.tile.tile_id))
+		node.set_meta("terrain_layer", group.layer)
+		node.set_meta("terrain_cells", group.cells)
+		node.set_meta("terrain_bottom", true)
+		generated.add_child(node)
 
 func _build_cliffs_and_rims() -> void:
 	for group in TerrainEdgeBuilder.cliff_groups(level_data, _build_region,
@@ -922,6 +1261,44 @@ func _surface_tags_for_cell(cell: Vector2i, layer: int) -> PackedStringArray:
 
 func _mark_surface(center: Vector3, zone_tags: PackedStringArray,
 		size := Vector3(LevelData.CELL_SIZE, 1.2, LevelData.CELL_SIZE), layer := -1) -> void:
+	if is_streaming() and is_equal_approx(size.x, LevelData.CELL_SIZE) \
+			and is_equal_approx(size.z, LevelData.CELL_SIZE):
+		var key := str([center.y, size.y, layer, zone_tags])
+		if not _zone_groups.has(key):
+			_zone_groups[key] = {"cells": {}, "y": center.y, "height": size.y, "tags": zone_tags, "layer": layer}
+		_zone_groups[key].cells[level_data.world_to_cell(center)] = true
+		return
+	_add_surface_zone(center, zone_tags, size, layer)
+
+func _flush_surface_groups() -> void:
+	for group: Dictionary in _zone_groups.values():
+		var cells: Dictionary = group.cells
+		while not cells.is_empty():
+			var first: Vector2i = cells.keys()[0]
+			var width := 1
+			while cells.has(first + Vector2i(width, 0)):
+				width += 1
+			var depth := 1
+			var extend := true
+			while extend:
+				for x in width:
+					if not cells.has(first + Vector2i(x, depth)):
+						extend = false
+						break
+				if extend:
+					depth += 1
+			for y in depth:
+				for x in width:
+					cells.erase(first + Vector2i(x, y))
+			var start := level_data.world_layer_center(first, 0)
+			var center := start + Vector3((width - 1) * LevelData.CELL_SIZE * 0.5, 0,
+				(depth - 1) * LevelData.CELL_SIZE * 0.5)
+			center.y = group.y
+			_add_surface_zone(center, group.tags,
+				Vector3(width * LevelData.CELL_SIZE, group.height, depth * LevelData.CELL_SIZE), group.layer)
+
+func _add_surface_zone(center: Vector3, zone_tags: PackedStringArray,
+		size: Vector3, layer: int) -> void:
 	var zone := SurfaceZone.new()
 	zone.tags = zone_tags
 	zone.bind_volume(size)
@@ -943,20 +1320,24 @@ func _mark_climb(face: Vector3, top_y: float, onto: Vector3, layer: int) -> void
 
 
 func _build_grid() -> void:
+	_build_grid_region(level_data.map_bounds())
+
+func _build_grid_region(region: Rect2i) -> void:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = Color(0.95, 0.95, 1.0, 0.25)
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	var total_x := level_data.map_size.x * LevelData.CELL_SIZE
-	var total_z := level_data.map_size.y * LevelData.CELL_SIZE
-	var origin := level_data.map_world_origin()
+	var total_x := region.size.x * LevelData.CELL_SIZE
+	var total_z := region.size.y * LevelData.CELL_SIZE
+	var center_cell := level_data.world_layer_center(region.position, 0)
+	var origin := Vector2(center_cell.x, center_cell.z) - Vector2.ONE * LevelData.CELL_SIZE * 0.5
 	var center := origin + Vector2(total_x, total_z) * 0.5
-	for x in level_data.map_size.x + 1:
+	for x in region.size.x + 1:
 		var world_x := origin.x + x * LevelData.CELL_SIZE
 		var line := _box("Grid", Vector3(world_x, 0.025, center.y),
 			Vector3(0.018, 0.018, total_z), material, false)
 		line.set_meta("terrain_grid", true)
-	for z in level_data.map_size.y + 1:
+	for z in region.size.y + 1:
 		var world_z := origin.y + z * LevelData.CELL_SIZE
 		var line := _box("Grid", Vector3(center.x, 0.025, world_z),
 			Vector3(total_x, 0.018, 0.018), material, false)
@@ -964,6 +1345,7 @@ func _build_grid() -> void:
 
 func _build_spawn_marker() -> void:
 	if not Engine.is_editor_hint() \
+			or not stream_cell_loaded(level_data.spawn_cell) \
 			or not level_data.is_surface_exposed(level_data.spawn_cell, level_data.spawn_layer):
 		return
 	var marker := PLAYER_AVATAR_SCENE.instantiate() as Node3D
@@ -1000,24 +1382,15 @@ func _apply_slice_visibility() -> void:
 	_slice_caps.name = "SliceCaps"
 	generated.add_child(_slice_caps)
 	var groups := {}
-	for y in level_data.map_size.y:
-		for x in level_data.map_size.x:
-			var cell := level_data.map_origin + Vector2i(x, y)
-			if not level_data.is_solid_layer(cell, slice_layer_limit):
-				continue
-			var stair := level_data.stair_at(cell, slice_layer_limit)
-			var cut_stair := stair >= 0 and int(level_data.stairs[stair].get(
-				"layer", level_data.top_layer(level_data.stairs[stair]["cell"]))) + 1 > slice_layer_limit
-			if level_data.is_surface_exposed(cell, slice_layer_limit) and not cut_stair:
-				continue
-			var tile_id := level_data.solid_tile_id(cell, slice_layer_limit)
-			var turns := int(level_data.get_layer(cell, slice_layer_limit).get("rotation", 0))
-			var key := "%s|%d" % [tile_id, turns]
-			if not groups.has(key):
-				groups[key] = {"tile": tile_id, "turns": turns, "cells": []}
-			groups[key]["cells"].append(cell)
-			if build_collision:
-				_add_slice_cap_collision(cell, slice_layer_limit)
+	var regions: Array[Rect2i] = [level_data.map_bounds()]
+	if is_streaming():
+		regions.clear()
+		for chunk: Vector2i in _chunk_nodes:
+			regions.append(ChunkStream.chunk_region(level_data, chunk))
+	for region in regions:
+		for y in range(region.position.y, region.end.y):
+			for x in range(region.position.x, region.end.x):
+				_build_slice_cell(Vector2i(x, y), groups)
 	for group: Dictionary in groups.values():
 		var tile_id: String = group["tile"]
 		var tile := TileRegistry.find(tile_id)
@@ -1036,18 +1409,29 @@ func _apply_slice_visibility() -> void:
 		cap.name = "SliceCap_%s_%d" % [tile_id, slice_layer_limit]
 		cap.mesh = mesh
 		cap.material_override = TerrainMaterials.top_material(
-			tile,
-			null,
-			null,
-			0,
-			TerrainTopology.full_texture(),
-			level_data.terrain_tint(tile_id),
-			tile.tint_default(),
-			int(group["turns"]))
+			tile, null, null, 0, TerrainTopology.full_texture(),
+			level_data.terrain_tint(tile_id), tile.tint_default(), int(group["turns"]))
 		cap.set_meta("terrain_cells", group["cells"])
 		cap.set_meta("terrain_layer", slice_layer_limit)
 		cap.set_meta("slice_cap", true)
 		_slice_caps.add_child(cap)
+
+func _build_slice_cell(cell: Vector2i, groups: Dictionary) -> void:
+	if not level_data.is_solid_layer(cell, slice_layer_limit):
+		return
+	var stair := level_data.stair_at(cell, slice_layer_limit)
+	var cut_stair := stair >= 0 and int(level_data.stairs[stair].get(
+		"layer", level_data.top_layer(level_data.stairs[stair]["cell"]))) + 1 > slice_layer_limit
+	if level_data.is_surface_exposed(cell, slice_layer_limit) and not cut_stair:
+		return
+	var tile_id := level_data.solid_tile_id(cell, slice_layer_limit)
+	var turns := int(level_data.get_layer(cell, slice_layer_limit).get("rotation", 0))
+	var key := "%s|%d" % [tile_id, turns]
+	if not groups.has(key):
+		groups[key] = {"tile": tile_id, "turns": turns, "cells": []}
+	groups[key]["cells"].append(cell)
+	if build_collision:
+		_add_slice_cap_collision(cell, slice_layer_limit)
 
 func _set_slice_visible(node: Node, visible: bool) -> void:
 	if node.has_meta("slice_visible") and node.get_meta("slice_visible") == visible:

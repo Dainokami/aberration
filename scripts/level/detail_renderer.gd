@@ -60,10 +60,12 @@ void fragment() {
 	return material
 
 ## Only changed (chunk, set, layer) batches are replaced, even during a long brush stroke.
-func refresh(data: LevelData) -> void:
+func refresh(data: LevelData, selected_records: Variant = null) -> void:
 	var batches := {}
 	var sets := {}
-	for record in data.details:
+	if selected_records == null:
+		selected_records = data.details
+	for record in selected_records:
 		var path := str(record["set"])
 		if not sets.has(path):
 			sets[path] = DetailRules.definition(record)

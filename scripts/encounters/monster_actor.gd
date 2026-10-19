@@ -73,7 +73,7 @@ func _update_label() -> void:
 			ceili(health.current), ceili(health.maximum)]
 
 func repath() -> void:
-	if health.dead or not is_instance_valid(target):
+	if health.dead or not is_instance_valid(target) or navigation == null:
 		return
 	returning_home = not player_in_spawn_range()
 	path = navigation.path(global_position, home_position if returning_home else target.global_position)

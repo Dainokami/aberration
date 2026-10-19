@@ -23,13 +23,24 @@ var last_regular_positions: Array[Vector3] = []
 var point_clocks := {}
 var automatic_point_radius := 32.0
 var radius_clock := 0.0
+var stream_builder: TerrainBuilder
+var _navigation_center := Vector2i(-99999, -99999)
+var pending_points := {}
+var _navigation_working_set := -1
 
 func setup(level: LevelData, actor: Node3D) -> void:
 	data = level
 	player = actor
+	if is_inside_tree() and get_parent() != null:
+		for node in get_parent().get_children():
+			if node is TerrainBuilder and node.level_data == level:
+				stream_builder = node
+				break
 	config = data.encounter.duplicate(true) as EncounterConfig \
 		if data.encounter != null else EncounterConfig.default_config()
 	point_clocks.clear()
+	pending_points.clear()
+	navigation.clear()
 	random.seed = config.seed_value
 	timeline.setup(config)
 	_update_point_ranges()
@@ -42,14 +53,25 @@ func nav_for(monster: MonsterDefinition) -> EncounterNavigation:
 	var key := "%s/%.2f/%.2f" % [monster.movement, monster.body_radius, monster.body_height]
 	if not navigation.has(key):
 		var nav := EncounterNavigation.new()
-		nav.build(data, monster)
+		if is_instance_valid(stream_builder) and stream_builder.is_streaming():
+			var records: Array = []
+			var seen := {}
+			for chunk: Vector2i in stream_builder._chunk_nodes:
+				for record in stream_builder._objects_by_chunk.get(chunk, []):
+					if not seen.has(record.id):
+						seen[record.id] = true
+						records.append(record)
+			nav.build_incremental(data, monster, stream_builder._chunk_nodes, records)
+		else:
+			nav.build(data, monster)
 		navigation[key] = nav
 	return navigation[key]
 
 func invalidate_navigation() -> void:
 	navigation.clear()
 	for actor in actors:
-		actor.navigation = nav_for(actor.definition)
+		if is_instance_valid(actor) and actor.get_meta("stream_sleeping", false) != true:
+			actor.navigation = nav_for(actor.definition)
 
 func player_surface() -> Vector3i:
 	var feet := player.global_position - Vector3.UP * 0.8
@@ -73,17 +95,30 @@ func is_exploring() -> bool:
 func _physics_process(delta: float) -> void:
 	if config == null or not timeline.running or not control_ready:
 		return
+	_step_navigation()
 	actors = actors.filter(func(actor: MonsterActor): return is_instance_valid(actor))
 	radius_clock -= delta
 	if radius_clock <= 0:
 		_update_point_ranges()
+		_update_stream_actors()
+		if is_instance_valid(stream_builder) and stream_builder.is_streaming():
+			for point in data.monster_spawn_points:
+				if not point_active(point):
+					continue
+				for rule in config.monster_pool:
+					if not bool(rule.get("enabled", true)):
+						continue
+					var species := config.ordinary_definition(rule)
+					if species != null and species.available() and _point_supports_species(point, species):
+						nav_for(species)
 		radius_clock = 0.5
 	path_clock += delta
 	if path_clock >= 0.1 and not actors.is_empty():
 		path_clock = 0
 		for i in mini(4, actors.size()):
 			path_cursor %= actors.size()
-			actors[path_cursor].repath()
+			if not bool(actors[path_cursor].get_meta("stream_sleeping", false)):
+				actors[path_cursor].repath()
 			path_cursor += 1
 	retry_left -= delta
 	advance_spawn_points(delta * time_scale)
@@ -129,6 +164,21 @@ func advance_spawn_points(delta: float) -> void:
 			_spawn_point(point)
 		point_clocks[id] = clock
 
+func _step_navigation() -> void:
+	var start := Time.get_ticks_usec()
+	for nav: EncounterNavigation in navigation.values():
+		if nav.building:
+			nav.step_build(2000)
+		if Time.get_ticks_usec() - start >= 2000:
+			break
+	for id: String in pending_points.keys():
+		var point := MonsterSpawnPoints.find(data, id)
+		if point.is_empty() or not point_active(point):
+			pending_points.erase(id)
+		elif navigation.values().all(func(nav): return not nav.building):
+			pending_points.erase(id)
+			_spawn_point(point)
+
 func _update_point_ranges() -> void:
 	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
 	var focus := player.global_position - Vector3.UP * 0.8
@@ -157,6 +207,12 @@ func point_alive(id: String) -> int:
 func _spawn_point(point: Dictionary) -> void:
 	if not point_active(point):
 		return
+	if is_instance_valid(stream_builder) and stream_builder.is_streaming():
+		for cell: Vector3i in point.get("cells", []):
+			if not stream_builder.stream_cell_loaded(Vector2i(cell.x, cell.z)):
+				stream_builder.ensure_stream_position(
+					data.world_center(Vector2i(cell.x, cell.z), cell.y), 2.0)
+				navigation.clear()
 	var vacancy := int(point.get("max_alive", 2)) - point_alive(str(point.id))
 	var amount := mini(vacancy, random.randi_range(config.count_min, config.count_max))
 	for i in amount:
@@ -168,11 +224,17 @@ func _spawn_point(point: Dictionary) -> void:
 			var monster := config.ordinary_definition(rule)
 			if monster == null or not monster.available():
 				continue
+			if is_instance_valid(stream_builder) and stream_builder.is_streaming() \
+					and not _point_supports_species(point, monster):
+				continue
 			var nav := nav_for(monster)
 			if not nav.point_candidates(point, monster, _occupied()).is_empty():
 				total += float(rule.get("weight", 1))
 				choices.append({"monster": monster, "nav": nav, "weight": float(rule.get("weight", 1))})
 		if choices.is_empty():
+			if navigation.values().any(func(nav): return nav.building):
+				pending_points[str(point.id)] = true
+				break
 			skipped += 1
 			diagnostics = "%s：无适配生态或空闲落脚格，请检查怪池、禁刷与障碍" % point.get("name", "刷新点")
 			break
@@ -188,6 +250,54 @@ func _spawn_point(point: Dictionary) -> void:
 			last_regular_positions.append(actor.global_position)
 		else:
 			skipped += 1
+
+func _point_supports_species(point: Dictionary, monster: MonsterDefinition) -> bool:
+	for ecology in MonsterSpawnPoints.ecosystems(data, point):
+		if ecology in monster.ecosystems:
+			return true
+	return false
+
+func _update_stream_actors() -> void:
+	if not is_instance_valid(stream_builder) or not stream_builder.is_streaming():
+		return
+	var center := TerrainChunkStream.chunk_for(data.world_to_cell(player.global_position))
+	var moved := center.distance_squared_to(_navigation_center) >= 4
+	var stream := stream_builder.chunk_stream
+	var working_set := stream.loaded_total + stream.unloaded_total
+	if stream.pending.is_empty() and not is_instance_valid(stream.job_root) \
+			and working_set != _navigation_working_set:
+		_navigation_working_set = working_set
+		moved = true
+	if moved:
+		_navigation_center = center
+		navigation.clear()
+	for actor in actors:
+		if not is_instance_valid(actor):
+			continue
+		var far := (actor.spawn_radius < 0 or not actor.player_in_spawn_range()) and (
+			actor.global_position.distance_to(player.global_position) > 96.0 \
+			or not stream_builder.chunk_stream.retained.has(
+				TerrainChunkStream.chunk_for(data.world_to_cell(actor.global_position))))
+		var sleeping := bool(actor.get_meta("stream_sleeping", false))
+		if far:
+			if not sleeping:
+				actor.windup_left = -1
+				actor.path.clear()
+				actor.navigation = null
+				actor.set_physics_process(false)
+				actor.collision_layer = 0
+				actor.set_meta("stream_sleeping", true)
+			continue
+		stream_builder.ensure_stream_position(actor.global_position, 3.0)
+		if actor.returning_home:
+			stream_builder.ensure_stream_position(actor.home_position, 3.0)
+		if sleeping or moved:
+			actor.navigation = nav_for(actor.definition)
+			actor.repath()
+		if sleeping:
+			actor.set_physics_process(true)
+			actor.collision_layer = 2
+			actor.set_meta("stream_sleeping", false)
 
 func _spawn(monster: MonsterDefinition, nav: EncounterNavigation, elite: int,
 		point: Dictionary = {}) -> MonsterActor:
@@ -242,6 +352,8 @@ func _spawn_gate() -> void:
 	definition.body_radius = 0.8
 	definition.body_height = 3.5
 	var nav := nav_for(definition)
+	if nav.building:
+		return
 	var player_id := nav.nearest_id(player.global_position)
 	if player_id < 0:
 		diagnostics = "Boss 门等待可达位置"

@@ -422,7 +422,7 @@ func refresh_overlay() -> void:
 		var positions: Array = []
 		for cell: Vector3i in point.cells:
 			var flat := Vector2i(cell.x, cell.z)
-			if host.data.is_surface_exposed(flat, cell.y) \
+			if host.builder.stream_cell_loaded(flat) and host.data.is_surface_exposed(flat, cell.y) \
 					and (host.builder.slice_layer_limit < 0 or cell.y <= host.builder.slice_layer_limit):
 				positions.append(host.data.world_center(flat, cell.y) + Vector3.UP * 0.14)
 		var selected: bool = str(point.id) == point_editor.selected_id
@@ -450,17 +450,23 @@ func refresh_overlay() -> void:
 		return
 	var batches := [[], [], []]
 	var level: LevelData = host.data
-	for y in level.map_size.y:
-		for x in level.map_size.x:
-			var cell := level.map_origin + Vector2i(x, y)
-			for layer in level.layer_count(cell):
-				if not level.is_surface_exposed(cell, layer):
-					continue
-				if host.builder.slice_layer_limit >= 0 and layer > host.builder.slice_layer_limit:
-					continue
-				var kind := 2 if EncounterRegions.forbidden(level, cell, layer) \
-					else EncounterRegions.zone(level, cell, layer)
-				batches[kind].append(level.world_center(cell, layer) + Vector3.UP * 0.08)
+	var regions: Array[Rect2i] = [level.map_bounds()]
+	if host.builder.is_streaming():
+		regions.clear()
+		for chunk: Vector2i in host.builder._chunk_nodes:
+			regions.append(TerrainChunkStream.chunk_region(level, chunk))
+	for region in regions:
+		for y in range(region.position.y, region.end.y):
+			for x in range(region.position.x, region.end.x):
+				var cell := Vector2i(x, y)
+				for layer in level.layer_count(cell):
+					if not level.is_surface_exposed(cell, layer):
+						continue
+					if host.builder.slice_layer_limit >= 0 and layer > host.builder.slice_layer_limit:
+						continue
+					var kind := 2 if EncounterRegions.forbidden(level, cell, layer) \
+						else EncounterRegions.zone(level, cell, layer)
+					batches[kind].append(level.world_center(cell, layer) + Vector3.UP * 0.08)
 	for kind in 3:
 		_batch(batches[kind], [Color(0.85, 0.43, 0.33, 0.25),
 			Color(0.2, 0.8, 0.7, 0.4), Color(1, 0.1, 0.2, 0.6)][kind])

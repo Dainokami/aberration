@@ -138,7 +138,9 @@ func _enter_tree() -> void:
 	RenderingServer.frame_pre_draw.connect(_apply_fixed_view)
 	get_tree().root.focus_exited.connect(_clear_view_input)
 	get_tree().root.gui_focus_changed.connect(_view_focus_changed)
-	if "--test-v2-editor" in OS.get_cmdline_user_args():
+	if "--test-stream-editor" in OS.get_cmdline_user_args():
+		_run_stream_checks.call_deferred()
+	elif "--test-v2-editor" in OS.get_cmdline_user_args():
 		_run_editor_checks.call_deferred()
 	elif "--test-scene-placement" in OS.get_cmdline_user_args():
 		_run_scene_placement_checks.call_deferred()
@@ -154,6 +156,11 @@ func _run_transition_checks() -> void:
 	while EditorInterface.get_resource_filesystem().is_scanning():
 		await get_tree().process_frame
 	await load("res://tests/editor_level_transition_checks.gd").new().run(self)
+
+func _run_stream_checks() -> void:
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
+	await load("res://tests/editor_chunk_streaming_checks.gd").new().run(self)
 
 func _run_encounter_checks() -> void:
 	while EditorInterface.get_resource_filesystem().is_scanning():
@@ -220,6 +227,8 @@ func _edit(object: Object) -> void:
 		if builder != object:
 			_disable_2_5d_view()
 		builder = object
+		if not builder.chunks_changed.is_connected(_stream_overlay_changed):
+			builder.chunks_changed.connect(_stream_overlay_changed)
 		data = builder.level_data
 		if data:
 			data.ensure_layout()
@@ -242,6 +251,10 @@ func _edit(object: Object) -> void:
 func _enable_initial_view(target: TerrainBuilder) -> void:
 	if builder == target and not fixed_view_active and not free_view_active:
 		_enable_2_5d_view()
+
+func _stream_overlay_changed() -> void:
+	if encounter_tools and is_instance_valid(builder) and builder.is_streaming():
+		encounter_tools.refresh_overlay()
 
 func _open_editor_workspace() -> void:
 	if opening_workspace:
@@ -1394,6 +1407,14 @@ func _sync_view_buttons() -> void:
 	_refresh_view_mode_badges()
 
 func _process(delta: float) -> void:
+	if is_instance_valid(builder) and builder.is_inside_tree():
+		var stream_camera := editing_camera
+		if not is_instance_valid(stream_camera):
+			var viewport := EditorInterface.get_editor_viewport_3d(0)
+			if viewport != null:
+				stream_camera = viewport.get_camera_3d()
+		if is_instance_valid(stream_camera):
+			builder.follow_stream_camera(stream_camera)
 	if transition_tools and (transition_tools.observed_data != data \
 			or data != null and transition_tools.observed_config != data.level_transition):
 		transition_tools.sync()

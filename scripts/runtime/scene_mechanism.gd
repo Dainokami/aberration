@@ -114,6 +114,7 @@ func drop_items(item: String, count: int) -> void:
 		visual.material_override = material
 		pickup.add_child(visual)
 		get_parent().add_child(pickup)
+		pickup.set_meta("stream_source_id", str(get_meta("object_id", "")))
 		pickup.global_position = global_position + Vector3.UP * 1.0
 		var angle := TAU * index / count
 		pickup.linear_velocity = Vector3(cos(angle) * 2.5, 4.0, sin(angle) * 2.5)
@@ -133,6 +134,7 @@ func reveal_vine() -> void:
 		if vine is SceneMechanism:
 			vine.level_data = level_data
 		get_parent().add_child(vine)
+		vine.set_meta("stream_source_id", str(get_meta("object_id", "")))
 		vine.global_position = global_position + ObjectRules.wall_normal(direction) \
 			* LevelData.CELL_SIZE * 0.5 - Vector3.UP * LevelData.ELEVATION_STEP
 		vine.rotation.y = atan2(ObjectRules.wall_normal(direction).x, ObjectRules.wall_normal(direction).z)
@@ -141,6 +143,7 @@ func reveal_vine() -> void:
 		marker.ledge_height = global_position.y
 		marker.ledge_point = global_position + Vector3.UP * 0.08
 		get_parent().add_child(marker)
+		marker.set_meta("stream_source_id", str(get_meta("object_id", "")))
 		marker.global_position = vine.global_position
 		set_meta("vine_revealed", true)
 		return

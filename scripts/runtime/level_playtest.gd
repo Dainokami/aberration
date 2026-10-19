@@ -66,12 +66,14 @@ func _ready() -> void:
 	builder.show_grid = false
 	builder.build_collision = true
 	builder.level_data = data
+	builder.object_loaded.connect(_connect_prop)
 	add_child(builder)
 	_setup_interaction_course()
 	_connect_props()
 	_setup_player()
 	LimbField.scatter_ahead(self, spawn_position)
 	_setup_camera()
+	builder.follow_stream_camera(camera, player)
 	_setup_ui(requested)
 	_setup_encounters()
 	_restore_session_state()
@@ -284,9 +286,12 @@ func _setup_ui(path: String) -> void:
 
 func _connect_props() -> void:
 	for node in builder.generated.get_children():
-		if node is GameplayProp:
-			node.broken.connect(_prop_broken)
-			node.opened.connect(func(_prop: Node3D, _actor: Node3D): _feedback("宝箱已打开"))
+		_connect_prop(node)
+
+func _connect_prop(node: Node3D) -> void:
+	if node is GameplayProp and not node.broken.is_connected(_prop_broken):
+		node.broken.connect(_prop_broken)
+		node.opened.connect(func(_prop: Node3D, _actor: Node3D): _feedback("宝箱已打开"))
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
@@ -593,6 +598,22 @@ static func runtime_font() -> Font:
 func _physics_process(delta: float) -> void:
 	if player == null:
 		return
+	builder.ensure_stream_position(player.global_position + player.velocity * 0.35, 3.0)
+	if builder.is_streaming():
+		builder.chunk_stream.anchors.clear()
+		if transition_controller != null and is_instance_valid(transition_controller.portal):
+			builder.chunk_stream.anchors.append(builder.to_local(transition_controller.portal.global_position))
+		if encounter_director != null and is_instance_valid(encounter_director.gate):
+			builder.chunk_stream.anchors.append(builder.to_local(encounter_director.gate.global_position))
+		if encounter_director != null:
+			for actor in encounter_director.actors:
+				if not is_instance_valid(actor) or bool(actor.get_meta("stream_sleeping", false)):
+					continue
+				var predicted := actor.global_position + actor.velocity * 0.35
+				builder.chunk_stream.anchors.append(builder.to_local(predicted))
+				builder.ensure_stream_position(predicted, 3.0)
+				if actor.returning_home:
+					builder.chunk_stream.anchors.append(builder.to_local(actor.home_position))
 	if transition_controller != null \
 			and transition_controller.state == LevelTransitionController.State.TRANSITIONING:
 		player.velocity = Vector3.ZERO
@@ -663,6 +684,7 @@ func _physics_process(delta: float) -> void:
 			feedback_label.text = ""
 
 func reset_player() -> void:
+	builder.ensure_stream_position(to_global(spawn_position), 4.0)
 	climbing = false
 	climb_moving = false
 	climb_attached = false
