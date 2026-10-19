@@ -9,6 +9,7 @@ const PLAYER_RADIUS := 20.0
 const FRAME_BUDGET_USEC := 4000
 const MAX_BUILDS_PER_FRAME := 2
 
+var view_margin_cells := CELL_MARGIN
 var wanted: Dictionary = {}
 var retained: Dictionary = {}
 var pending: Array[Vector2i] = []
@@ -110,7 +111,8 @@ func select(builder: TerrainBuilder, force := false) -> bool:
 				- Vector3(LevelData.CELL_SIZE * 0.5, LevelData.ELEVATION_STEP * 0.5,
 					LevelData.CELL_SIZE * 0.5)
 			var box := AABB(corner, Vector3(region.size.x * LevelData.CELL_SIZE,
-				chunk_heights[chunk], region.size.y * LevelData.CELL_SIZE)).grow(CELL_MARGIN * LevelData.CELL_SIZE)
+				chunk_heights[chunk], region.size.y * LevelData.CELL_SIZE)).grow(
+					view_margin_cells * LevelData.CELL_SIZE)
 			box = builder.global_transform * box
 			var inside := true
 			for plane: Plane in planes:
@@ -235,3 +237,22 @@ func ensure_position(builder: TerrainBuilder, position: Vector3, radius := 4.0) 
 		pending.erase(chunk)
 	if changed:
 		builder._stream_content_changed()
+
+func ensure_wanted(builder: TerrainBuilder) -> int:
+	cancel_job(builder)
+	var chunks: Array[Vector2i] = []
+	for chunk: Vector2i in pending:
+		if wanted.has(chunk) and not builder._chunk_nodes.has(chunk):
+			chunks.append(chunk)
+	for chunk: Vector2i in wanted:
+		if not builder._chunk_nodes.has(chunk) and chunk not in chunks:
+			chunks.append(chunk)
+	var loaded := 0
+	for chunk in chunks:
+		builder._build_chunk(chunk)
+		loaded_total += 1
+		loaded += 1
+	pending.clear()
+	if loaded > 0:
+		builder._stream_content_changed()
+	return loaded

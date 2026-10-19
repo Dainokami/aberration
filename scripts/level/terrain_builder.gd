@@ -92,6 +92,15 @@ func follow_stream_camera(camera: Camera3D, actor: Node3D = null) -> void:
 	chunk_stream.camera = camera
 	chunk_stream.actor = actor
 
+func preload_stream_view(camera: Camera3D, actor: Node3D = null,
+		margin_cells := TerrainChunkStream.CELL_MARGIN) -> int:
+	if not is_streaming() or chunk_stream == null:
+		return 0
+	follow_stream_camera(camera, actor)
+	chunk_stream.view_margin_cells = maxi(TerrainChunkStream.CELL_MARGIN, margin_cells)
+	chunk_stream.select(self, true)
+	return chunk_stream.ensure_wanted(self)
+
 func ensure_stream_position(position: Vector3, radius := 4.0) -> void:
 	if is_streaming() and chunk_stream != null:
 		chunk_stream.ensure_position(self, to_local(position), radius)

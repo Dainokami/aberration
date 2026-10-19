@@ -71,6 +71,8 @@ func run() -> void:
 	camera.look_at(focus)
 	builder.follow_stream_camera(camera)
 	builder.chunk_stream.select(builder, true)
+	check(builder.chunk_stream.view_margin_cells == TerrainChunkStream.CELL_MARGIN,
+		"non-runtime camera keeps original streaming margin")
 	await drain(builder)
 	check(builder._chunk_nodes.size() < 80, "camera working set is bounded")
 	check(builder.stream_cell_loaded(map.spawn_cell), "camera focus ground loaded")

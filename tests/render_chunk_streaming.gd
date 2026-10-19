@@ -21,6 +21,21 @@ func frames(count: int, measure := false) -> void:
 		stamp = Time.get_ticks_usec()
 		await physics_frame
 
+func camera_ground_loaded(builder: TerrainBuilder, camera: Camera3D, data: LevelData) -> bool:
+	var size := camera.get_viewport().get_visible_rect().size
+	var plane := Plane(Vector3.UP, builder.global_position.y + data.surface_y(0))
+	for screen in [Vector2.ZERO, Vector2(size.x, 0), size, Vector2(0, size.y), size * 0.5]:
+		var hit: Variant = plane.intersects_ray(
+			camera.project_ray_origin(screen), camera.project_ray_normal(screen))
+		if hit == null:
+			return false
+		if camera.global_position.distance_to(hit) > camera.far:
+			continue
+		var cell := data.world_to_cell(builder.to_local(hit))
+		if data.in_bounds(cell) and not builder.stream_cell_loaded(cell):
+			return false
+	return true
+
 func run() -> void:
 	var map := LevelData.new()
 	map.setup_blank(Vector2i(200, 200))
@@ -73,7 +88,21 @@ func run() -> void:
 		quit(0 if failures.is_empty() else 1)
 		return
 	check(builder.is_streaming() and builder.chunk_stream.actor == player, "runtime automatically streams around player and camera")
+	check(builder.chunk_stream.view_margin_cells == TerrainChunkStream.CELL_MARGIN,
+		"runtime keeps prefetch border beyond camera frustum")
+	check(is_equal_approx(level.camera.far, 96.0),
+		"runtime camera and stream share finite view distance")
+	check(builder.chunk_stream.pending.is_empty() and not is_instance_valid(builder.chunk_stream.job_root)
+		and builder.chunk_stream.wanted.keys().all(
+			func(chunk): return builder._chunk_nodes.has(chunk)),
+		"initial runtime view finishes before level becomes playable")
+	check(builder.chunk_stream.wanted.size() > 9
+		and camera_ground_loaded(builder, level.camera, level.data),
+		"initial runtime load covers viewport and surrounding buffer")
 	print("STREAM STARTUP MS ", (Time.get_ticks_usec() - start) / 1000.0)
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("/tmp/aberration-stream-initial.png")
 	await frames(180)
 	check(player.is_on_floor(), "player stands safely while remaining chunks stream")
 	print("STREAM LOADED CHUNKS ", builder._chunk_nodes.size())

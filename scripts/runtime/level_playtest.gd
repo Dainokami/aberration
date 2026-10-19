@@ -31,6 +31,9 @@ const INTERACTION_REACH := 1.7
 const CLIMB_WALL_OFFSET := 0.38
 const CLIMB_MOVE_SPEED := 3.0
 const CLIMB_LINK_TOLERANCE := 0.35
+const RUNTIME_STREAM_MARGIN_CELLS := TerrainChunkStream.CELL_MARGIN
+const RUNTIME_VIEW_DISTANCE := 96.0
+const RUNTIME_FOG_BEGIN := 72.0
 ## Set before entering the tree to bypass the editor's playtest request file.
 @export_file("*.tres") var level_override := ""
 var encounter_director: EncounterDirector
@@ -73,7 +76,9 @@ func _ready() -> void:
 	_setup_player()
 	LimbField.scatter_ahead(self, spawn_position)
 	_setup_camera()
-	builder.follow_stream_camera(camera, player)
+	# Finish the first camera footprint before gameplay is exposed. Later movement
+	# stays budgeted, with the normal prefetch border available beyond the viewport.
+	builder.preload_stream_view(camera, player, RUNTIME_STREAM_MARGIN_CELLS)
 	_setup_ui(requested)
 	_setup_encounters()
 	_restore_session_state()
@@ -206,12 +211,21 @@ func _setup_camera() -> void:
 	camera_rig.add_child(camera)
 	add_child(camera_rig)
 	camera.current = true
+	camera.far = RUNTIME_VIEW_DISTANCE
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
 	environment.background_color = Color("#121722")
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color("#b8c0d6")
 	environment.ambient_light_energy = 0.75
+	environment.fog_enabled = true
+	environment.fog_mode = Environment.FOG_MODE_DEPTH
+	environment.fog_light_color = environment.background_color
+	environment.fog_light_energy = 0.55
+	environment.fog_sky_affect = 1.0
+	environment.fog_depth_begin = RUNTIME_FOG_BEGIN
+	environment.fog_depth_end = RUNTIME_VIEW_DISTANCE
+	environment.fog_depth_curve = 1.0
 	var grade: Resource = load("res://data/color_grade_profile.tres")
 	if grade != null:
 		grade.apply(environment)
