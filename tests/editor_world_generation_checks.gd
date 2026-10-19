@@ -45,12 +45,23 @@ func run(plugin: EditorPlugin) -> void:
 			dialog.map_ready.connect(func(data: LevelData):
 				_show_aligned_world.call_deferred(plugin, data))
 		return
+	# Finish restoring the real editor scene/selection before binding a test host.
+	# Otherwise a delayed startup selection can replace it during worker awaits.
+	await plugin._open_editor_workspace()
+	await tree.process_frame
 	var host := TerrainBuilder.new()
 	var original := LevelData.new()
 	original.setup_blank(Vector2i(16, 16))
 	original.set_layer(Vector2i(4, 4), 0, {"tile_id": "grass"})
 	host.level_data = original
-	tree.root.add_child(host)
+	var scene_root := EditorInterface.get_edited_scene_root()
+	scene_root.add_child(host)
+	host.owner = scene_root
+	var selection := EditorInterface.get_selection()
+	selection.clear()
+	selection.add_node(host)
+	EditorInterface.edit_node(host)
+	await tree.process_frame
 	plugin._edit(host)
 	plugin.current_path = "res://data/levels/unsaved_test_source.tres"
 	plugin._set_dirty(true)
@@ -186,13 +197,43 @@ func run(plugin: EditorPlugin) -> void:
 	dialog.config.prefabs.assign([{"path": "res://data/levels/special_desert_oasis.tres",
 		"minimum": 1, "maximum": 1, "terrain": "sand", "zone": "static", "rotate": false}])
 	dialog.config.static_count = 0
+	dialog.config.width = 16
+	dialog.config.height = 16
+	dialog.config.spawn_point_edits.clear()
 	dialog._sync()
 	dialog._start()
 	while dialog._thread != null:
 		await tree.process_frame
-	check(dialog._apply.disabled and dialog._status.text.contains("源地图")
-		and dialog._status.text.contains("筛选结果") and dialog._status.text.contains("静止"),
-		"worker failure shows specific prefab placement diagnostics in the editor")
+	check(not dialog._apply.disabled and dialog.result.map_size.x > 16
+		and dialog._report.text.begins_with("%d×%d 格" % [dialog.result.map_size.x, dialog.result.map_size.y])
+		and dialog._size_label.text.contains("实际")
+		and dialog._inputs.width.value == 16 and dialog.result.generation.recipe.width == 16,
+		"worker expands small map, reserves static terrain and reports actual size without changing recipe")
+	var expanded_before: Dictionary = dialog.result.clone_data()
+	dialog._file_action = "save"
+	dialog._file_selected("/tmp/aberration-worldgen-autosize-recipe.tres")
+	dialog._file_action = "load"
+	dialog._file_selected("/tmp/aberration-worldgen-autosize-recipe.tres")
+	dialog._start()
+	while dialog._thread != null:
+		await tree.process_frame
+	check(not dialog._apply.disabled and dialog.result.clone_data() == expanded_before,
+		"editor save reload and regenerate reproduce expanded result")
+	if "--worldgen-capture" in OS.get_cmdline_user_args():
+		dialog.popup_centered()
+		await tree.process_frame
+		await RenderingServer.frame_post_draw
+		var image: Image = dialog.get_texture().get_image()
+		check(image != null and image.save_png("/tmp/worldgen-fit-expanded-preview.png") == OK,
+			"actual visible expanded preview captured")
+	dialog.config.prefab_gap = 600
+	dialog._sync()
+	dialog._start()
+	while dialog._thread != null:
+		await tree.process_frame
+	check(dialog._apply.disabled and dialog._status.text.contains("600×600")
+		and dialog._status.text.contains("必选地块"),
+		"impossible layout reports maximum bounds and leaves old preview inapplicable")
 	dialog.config = saved_config
 	dialog._sync()
 	second_card = dialog._source_rows.get_child(1) as PanelContainer
@@ -249,7 +290,12 @@ func run(plugin: EditorPlugin) -> void:
 	plugin.builder = null
 	plugin.data = null
 	host.queue_free()
+	var point_history: UndoRedo = dialog.point_undo
+	dialog.queue_free()
 	await tree.process_frame
+	check(not is_instance_valid(point_history), "destroying preview releases its owned point undo history")
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await tree.process_frame
 	print("WORLDGEN EDITOR FAILURES ", failures)
 	tree.quit(0 if failures.is_empty() else 1)
 

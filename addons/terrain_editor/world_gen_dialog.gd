@@ -67,15 +67,16 @@ func _ready() -> void:
 	_number(basic, "seed_value", "随机种子", 0, 2147483647, 1)
 	_button(basic, "换一个种子", func():
 		_inputs.seed_value.value = randi_range(0, 2147483647))
-	_number(basic, "width", "宽 / 格", 16, 600, 1)
-	_number(basic, "height", "高 / 格", 16, 600, 1)
+	_number(basic, "width", "起始宽 / 格", 16, 600, 1)
+	_number(basic, "height", "起始高 / 格", 16, 600, 1)
 	_size_label = _label(basic, "")
+	_label(basic, "先定位特殊地图，再向外延伸生态，最大 600×600 格。\n为生态过渡、出生净空与通路按需扩图。")
 	_number(basic, "region_count", "生态区域数", 1, 64, 1)
 	_number(basic, "boundary_noise", "边界起伏", 0, 1, 0.01)
 	for spec in [["grass_weight", "草原权重"], ["rock_weight", "岩石权重"],
 			["sand_weight", "沙漠权重"], ["water_weight", "海洋权重"]]:
 		_number(basic, spec[0], spec[1], 0, 20, 0.5)
-	_label(basic, "权重控制生态种子比例；出生核心始终有陆地。\n600格是数据上限，大图应用会增加3D重建耗时。")
+	_label(basic, "特殊地图是所选生态的生长起点，其余起点按权重选择。\n出生核心始终有陆地；大图应用会增加3D重建耗时。")
 	var zones := _page("功能区")
 	_number(zones, "spawn_radius", "出生核心半径 / 格", 2, 290, 1)
 	_number(zones, "static_count", "静止核心数", 0, 16, 1)
@@ -91,7 +92,7 @@ func _ready() -> void:
 	_number(special, "prefab_gap", "最小间距 / 格", 1, 30, 1)
 	_button(special, "添加已保存地图 / 预制…", func(): _choose("source"))
 	_label(special, "保留手工地形、内部孔洞、物件与阶梯。\n默认融合外缘并对齐地面，内部高差保留。\n最少为必选，最多与权重控制额外投放。\n含食物/材料的格子必须落在静止区。")
-	_label(special, "每张地图单独选择放置地形。\n整张占地及外侧一圈须匹配，避免跨生态。")
+	_label(special, "每张地图单独选择放置地形。\n生态从必选地图向外生长，形成连续区域，无需寻找种子。\n可选地块仍受剩余空间、生态与功能区限制。")
 	_source_rows = VBoxContainer.new()
 	_source_rows.add_theme_constant_override("separation", 12)
 	special.add_child(_source_rows)
@@ -278,7 +279,7 @@ func _rebuild_sources() -> void:
 		for label in WorldGenConfig.TERRAIN_LABELS:
 			terrain.add_item(label)
 		terrain.select(maxi(0, WorldGenConfig.TERRAIN_IDS.find(str(rule.get("terrain", "any")))))
-		terrain.tooltip_text = "按你选择的地形寻找位置；检查整张地图占地和外侧一格。\n保留特殊地图内部原有地形，不根据源地图推测生态。"
+		terrain.tooltip_text = "生态从必选地图向外延伸，与其他区域自然相接。\n完整占地和外侧一格须匹配，特殊地图内部地形保持原样。\n可选地块在已生成的生态中寻找位置。"
 		terrain.item_selected.connect(func(index: int):
 			rule.terrain = WorldGenConfig.TERRAIN_IDS[index]
 			_style_source_frame(frame, rule.terrain)
@@ -432,10 +433,13 @@ func _process(_delta: float) -> void:
 	_preview.show_map(result, _mode.selected)
 	_apply.disabled = false
 	var static_cells := (result.generation.zones as PackedByteArray).count(1)
+	var actual_size := result.map_size
+	_size_label.text = "起始 %d×%d 格 → 实际 %d×%d 格（%d×%d 米）" % [
+		config.width, config.height, actual_size.x, actual_size.y, actual_size.x * 2, actual_size.y * 2]
 	_report.text = "%d×%d 格 / %d×%d 米　种子 %d\n特殊地块 %d　物件 %d　通路 %d 格\n静止区 %.1f%%　草/岩/沙/海实际格数 %s\n%s" % [
-		config.width, config.height, config.width * 2, config.height * 2, config.seed_value,
+		actual_size.x, actual_size.y, actual_size.x * 2, actual_size.y * 2, config.seed_value,
 		result.generation.placements.size(), result.objects.size(), result.generation.roads.size(),
-		100.0 * static_cells / (config.width * config.height), str(result.generation.biome_counts),
+		100.0 * static_cells / (actual_size.x * actual_size.y), str(result.generation.biome_counts),
 		"\n".join(output.warnings)]
 	_status.text = "生成成功 · 校验通过 · %.2fs" % ((Time.get_ticks_msec() - _started) / 1000.0)
 
@@ -507,3 +511,8 @@ func _exit_tree() -> void:
 		_generator.cancel()
 		_thread.wait_to_finish()
 		_thread = null
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE and is_instance_valid(point_undo):
+		# UndoRedo is an Object, not RefCounted; this window owns its lifetime.
+		point_undo.free()

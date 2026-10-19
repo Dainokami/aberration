@@ -2,7 +2,7 @@
 class_name WorldGenConfig
 extends Resource
 
-const ALGORITHM_VERSION := 7
+const ALGORITHM_VERSION := 9
 const TERRAIN_IDS := ["unset", "grass", "rock", "sand", "water", "any"]
 const TERRAIN_LABELS := ["请选择地形", "草原", "岩石", "沙漠", "海洋", "不限制地形"]
 const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_noise",
@@ -12,6 +12,7 @@ const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_nois
 	"cluster_gap", "item_gap", "prefabs", "spawn_point_edits", "encounter_settings"]
 
 @export var seed_value := 20261018
+## Requested minimum bounds. Mandatory prefabs can expand the output up to 600.
 @export var width := 64
 @export var height := 64
 @export var region_count := 12
@@ -34,6 +35,7 @@ const FIELDS := ["seed_value", "width", "height", "region_count", "boundary_nois
 @export var item_gap := 2.0
 ## path, minimum, maximum, weight, terrain, zone (any/explore/static), rotate, blend_edges, align_height.
 ## terrain: grass/rock/sand/water; unset requires selection, missing means legacy any.
+## Mandatory maps seed outward biome/zone growth before any world terrain is built.
 ## The original world must match across the full rectangle and a one-cell border.
 ## Fixed-camera objects automatically lock a prefab to its authored orientation.
 ## Missing blend_edges defaults to true; disable for intentional exterior voids.
