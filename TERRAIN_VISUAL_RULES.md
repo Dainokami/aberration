@@ -3,6 +3,11 @@
 当前正式接入标准来自 `assets/source_art/terrain_handoff_v02/`。原始交付说明和
 校验记录保存在 `docs/terrain_art_handoff_v02/`。
 
+2026-10-19 已在原路径替换内置 `grass / rock / sand / water` 的顶面、立面、
+收边和泡沫图片，地块 ID 不变，因此已有地图直接升级显示。来源与哈希见
+`assets/source_art/terrain_handoff_v02/replacement_manifest_20261019.json`。
+`painted_grass / painted_meadow` 及其 `scene_pack_20261014` 图片保持原样。
+
 ## 相机
 
 - 使用 `data/art_profile.tres` 作为唯一相机规范。

@@ -18,4 +18,4 @@ terrain_role = 1
 foam_texture_path = "res://assets/source_art/terrain_handoff_v02/water/shore_foam.png"
 foam_u_span_m = 8.0
 foam_width_m = 0.35
-foam_alpha_range = Vector2(0.43508288, 0.5690608)
+foam_alpha_range = Vector2(0.234375, 0.72265625)
