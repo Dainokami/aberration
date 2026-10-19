@@ -22,6 +22,7 @@ var _definitions: Array[PlaceableDefinition] = []
 var _placement_prefixes := {}
 var _last_placement_report := {}
 var _point_base: Array[Dictionary] = []
+var _layout: Array[Dictionary] = []
 
 func cancel() -> void:
 	_mutex.lock()
@@ -267,16 +268,25 @@ func generate() -> Dictionary:
 		if bool(source.rule.get("rotate", true)) and not str(source.rotation_blocker).is_empty():
 			_warnings.append("特殊地块「%s」包含固定视角物件「%s」，已保持原方向" % [
 				source.name, source.rotation_blocker])
+	_set_stage("按必选地块规划地图尺寸与位置")
+	var plan := WorldLayoutPlanner.new().plan(_config, _sources, _stopped)
+	if not str(plan.error).is_empty():
+		return {"error": plan.error}
+	_layout.assign(plan.placements)
+	if plan.size != Vector2i(_config.width, _config.height):
+		_warnings.append("为容纳必选地块、出生净空与通路，地图已从 %d×%d 自动扩大至 %d×%d 格。" % [
+			_config.width, _config.height, plan.size.x, plan.size.y])
 	_data = LevelData.new()
-	_data.setup_blank(Vector2i(_config.width, _config.height))
+	_data.setup_blank(plan.size)
 	_data.encounter = EncounterConfig.from_snapshot(_config.encounter_settings) \
 		if not _config.encounter_settings.is_empty() else EncounterConfig.default_config()
-	_data.spawn_cell = _data.map_size / 2
+	_data.spawn_cell = plan.spawn
 	_data.spawn_layer = 1
 	_set_stage("生成生态与功能区")
 	_build_terrain()
 	if _stopped():
 		return {"error": "已取消"}
+	_prepare_planned_terrain()
 	_set_stage("投放特殊地块")
 	var error := _place_prefabs()
 	if not error.is_empty():
@@ -343,8 +353,8 @@ func generate() -> Dictionary:
 	return {"error": "", "data": _data, "warnings": _warnings}
 
 func _random_cell(margin := 0) -> Vector2i:
-	return Vector2i(_rng.randi_range(margin, _config.width - 1 - margin),
-		_rng.randi_range(margin, _config.height - 1 - margin))
+	return Vector2i(_rng.randi_range(margin, _data.map_size.x - 1 - margin),
+		_rng.randi_range(margin, _data.map_size.y - 1 - margin))
 
 func _weighted(weights: Array) -> int:
 	var total := 0.0
@@ -392,14 +402,14 @@ func _build_terrain() -> void:
 		static_centers.append(best)
 	var noise := FastNoiseLite.new()
 	noise.seed = int(_rng.randi())
-	noise.frequency = 2.5 / minf(_config.width, _config.height)
-	var amplitude := minf(_config.width, _config.height) * _config.boundary_noise * 0.35
-	_zones.resize(_config.width * _config.height)
-	_biomes.resize(_config.width * _config.height)
-	for y in _config.height:
+	noise.frequency = 2.5 / minf(_data.map_size.x, _data.map_size.y)
+	var amplitude := minf(_data.map_size.x, _data.map_size.y) * _config.boundary_noise * 0.35
+	_zones.resize(_data.map_size.x * _data.map_size.y)
+	_biomes.resize(_data.map_size.x * _data.map_size.y)
+	for y in _data.map_size.y:
 		if _stopped():
 			return
-		for x in _config.width:
+		for x in _data.map_size.x:
 			var cell := Vector2i(x, y)
 			var warped := Vector2(cell) + Vector2(noise.get_noise_2d(x, y),
 				noise.get_noise_2d(x + 901, y - 513)) * amplitude
@@ -426,6 +436,31 @@ func _build_terrain() -> void:
 				> 0.5 + noise.get_noise_2d(x - 420, y + 601) * 0.15
 			_zones[_data.index(cell)] = 1 if is_static else 0
 
+## Build the required ecology before stamping, including the one-cell border.
+## Random ecology/zone weights govern the remaining world; mandatory rules take
+## precedence locally, even when that biome or static core has zero weight.
+func _prepare_planned_terrain() -> void:
+	for placement in _layout:
+		if _stopped():
+			return
+		var source := _sources[int(placement.source_index)]
+		var terrain := TILES.find(str(source.rule.get("terrain", "any")))
+		var zone := str(source.rule.get("zone", "any"))
+		var area: Rect2i = placement.rect.grow(1)
+		for y in range(area.position.y, area.end.y):
+			for x in range(area.position.x, area.end.x):
+				var index := _data.index(Vector2i(x, y))
+				if terrain >= 0:
+					_biomes[index] = terrain
+					_data.columns[index] = _column(TILES[terrain])
+				if zone != "any":
+					_zones[index] = 1 if zone == "static" else 0
+		var prefab: LevelPrefab = source.prefab
+		for cell: Vector2i in source.collectibles:
+			_zones[_data.index(placement.rect.position + prefab.rotate_cell(cell, placement.turns))] = 1
+	if not _layout.is_empty():
+		_warnings.append("已为 %d 件必选地块预留完整占地、指定生态及功能区；生态权重和静止核心参数控制其余区域。" % _layout.size())
+
 func _column(tile: String) -> Dictionary:
 	return {"layers": [{"tile_id": "rock" if tile == "water" else tile, "rotation": 0},
 		{"tile_id": tile, "rotation": 0}]}
@@ -434,8 +469,22 @@ func _place_prefabs() -> String:
 	var counts: Array[int] = []
 	counts.resize(_sources.size())
 	var total := 0
+	# Planned mandatory slots cannot be stolen by earlier random placements.
+	# Keep source order stable for generated object/spawn-point identifiers.
 	for i in _sources.size():
-		for repeat in int(_sources[i].rule.get("minimum", 1)):
+		for placement in _layout:
+			if int(placement.source_index) != i:
+				continue
+			_reset_placement_report()
+			if not _try_prefab_candidate(_sources[i], placement.rect.position, placement.turns):
+				if _stopped():
+					return "已取消"
+				return "必选地块「%s」已预留位置，但内容或入口校验失败。\n%s" % [
+					_sources[i].name, _placement_failure_description(_sources[i], true)]
+			counts[i] += 1
+			total += 1
+	for i in _sources.size():
+		for repeat in range(counts[i], int(_sources[i].rule.get("minimum", 1))):
 			if not _try_place(i):
 				if _stopped():
 					return "已取消"
@@ -486,13 +535,12 @@ func _try_place(source_index: int) -> bool:
 	var source: Dictionary = _sources[source_index]
 	var prefab: LevelPrefab = source.prefab
 	var rule: Dictionary = source.rule
-	_last_placement_report = {"checked": 0, "rejected": {}, "stamp_errors": [],
-		"stamp_attempts": 0, "limited": false, "seen": {}}
+	_reset_placement_report()
 	var rotations: Array[int] = []
 	var can_rotate := bool(rule.get("rotate", true)) and str(source.rotation_blocker).is_empty()
 	for turns in (4 if can_rotate else 1):
 		var size := prefab.rotated_size(turns)
-		if size.x + 4 <= _config.width and size.y + 4 <= _config.height:
+		if size.x + 4 <= _data.map_size.x and size.y + 4 <= _data.map_size.y:
 			rotations.append(turns)
 	if rotations.is_empty():
 		_reject_placement("size")
@@ -503,8 +551,8 @@ func _try_place(source_index: int) -> bool:
 			return false
 		var turns := rotations[_rng.randi_range(0, rotations.size() - 1)] if can_rotate else 0
 		var size := prefab.rotated_size(turns)
-		var anchor := Vector2i(_rng.randi_range(2, _config.width - size.x - 2),
-			_rng.randi_range(2, _config.height - size.y - 2))
+		var anchor := Vector2i(_rng.randi_range(2, _data.map_size.x - size.x - 2),
+			_rng.randi_range(2, _data.map_size.y - size.y - 2))
 		if _try_prefab_candidate(source, anchor, turns):
 			return true
 		if bool(_last_placement_report.limited):
@@ -513,8 +561,8 @@ func _try_place(source_index: int) -> bool:
 	# rectangle/biome/zone check O(1), even when inspecting a 600x600 world.
 	for turns in rotations:
 		var size := prefab.rotated_size(turns)
-		var width := _config.width - size.x - 3
-		var height := _config.height - size.y - 3
+		var width := _data.map_size.x - size.x - 3
+		var height := _data.map_size.y - size.y - 3
 		var total := width * height
 		var start := _rng.randi_range(0, total - 1)
 		for step in total:
@@ -527,6 +575,10 @@ func _try_place(source_index: int) -> bool:
 			if bool(_last_placement_report.limited):
 				return false
 	return false
+
+func _reset_placement_report() -> void:
+	_last_placement_report = {"checked": 0, "rejected": {}, "stamp_errors": [],
+		"stamp_attempts": 0, "limited": false, "seen": {}}
 
 func _try_prefab_candidate(source: Dictionary, anchor: Vector2i, turns: int) -> bool:
 	var key := Vector3i(anchor.x, turns, anchor.y)
@@ -543,7 +595,7 @@ func _try_prefab_candidate(source: Dictionary, anchor: Vector2i, turns: int) -> 
 	if Rect2(rect).grow(_config.spawn_radius + 1).has_point(_data.spawn_cell):
 		return _reject_placement("spawn")
 	for placement in _placements:
-		if rect.grow(_config.prefab_gap).intersects(placement.rect):
+		if rect.grow(maxi(2, _config.prefab_gap)).intersects(placement.rect):
 			return _reject_placement("spacing")
 	var zone := str(rule.get("zone", "any"))
 	if zone != "any" and _placement_sum("zone:" + zone, rect) > 0:
@@ -615,19 +667,19 @@ func _reject_placement(reason: String) -> bool:
 func _placement_sum(key: String, rect: Rect2i) -> int:
 	if not _data.map_bounds().encloses(rect):
 		return 1
-	var stride := _config.width + 1
+	var stride := _data.map_size.x + 1
 	if not _placement_prefixes.has(key):
 		var prefix := PackedInt32Array()
-		prefix.resize(stride * (_config.height + 1))
+		prefix.resize(stride * (_data.map_size.y + 1))
 		var terrain := key.begins_with("terrain:")
 		var expected := TILES.find(key.trim_prefix("terrain:")) if terrain \
 			else (1 if key == "zone:static" else 0)
-		for y in _config.height:
+		for y in _data.map_size.y:
 			if y % 64 == 0 and _stopped():
 				return 1
 			var row := 0
-			for x in _config.width:
-				var value := _biomes[y * _config.width + x] if terrain else _zones[y * _config.width + x]
+			for x in _data.map_size.x:
+				var value := _biomes[y * _data.map_size.x + x] if terrain else _zones[y * _data.map_size.x + x]
 				row += 1 if value != expected else 0
 				prefix[(y + 1) * stride + x + 1] = prefix[y * stride + x + 1] + row
 		_placement_prefixes[key] = prefix
@@ -635,11 +687,11 @@ func _placement_sum(key: String, rect: Rect2i) -> int:
 	return prefix[rect.end.y * stride + rect.end.x] - prefix[rect.position.y * stride + rect.end.x] \
 		- prefix[rect.end.y * stride + rect.position.x] + prefix[rect.position.y * stride + rect.position.x]
 
-func _placement_failure_description(source: Dictionary) -> String:
+func _placement_failure_description(source: Dictionary, planned := false) -> String:
 	var prefab: LevelPrefab = source.prefab
 	var size := prefab.fragment.map_size
 	var summary := "源地图 %d×%d 格，生成地图 %d×%d 格；出生净空 %.1f 格，地块间距 %d 格。" % [
-		size.x, size.y, _config.width, _config.height, _config.spawn_radius, _config.prefab_gap]
+		size.x, size.y, _data.map_size.x, _data.map_size.y, _config.spawn_radius, _config.prefab_gap]
 	var counts: Dictionary = _last_placement_report.rejected
 	if counts.has("size"):
 		return summary + "\n所有允许的朝向都放不下源地图及两格边缘留白，请增大生成地图。"
@@ -654,7 +706,9 @@ func _placement_failure_description(source: Dictionary) -> String:
 	summary += "\n筛选结果：" + "；".join(reasons) + "。"
 	if not _last_placement_report.stamp_errors.is_empty():
 		summary += "\n地图校验原因：" + str(_last_placement_report.stamp_errors[0]).left(400)
-	if bool(_last_placement_report.limited):
+	if planned:
+		summary += "\n空间、生态与功能区已按规则预留；请检查上述源地图内容或入口限制。"
+	elif bool(_last_placement_report.limited):
 		summary += "\n投放校验达到上限（%d 个通过区域筛选的位置），仍未找到合法内容和入口；为控制开销停止继续尝试。" % MAX_STAMP_ATTEMPTS
 	else:
 		summary += "\n已检查所有允许的朝向和位置；请按上述具体限制调整地形、静止区、尺寸或间距。"
@@ -722,7 +776,7 @@ func _scatter(collectible: bool, density: float) -> void:
 		if (definition.mechanism in COLLECTIBLES) == collectible:
 			pool.append(definition)
 			seen[definition.resource_path] = true
-	var wanted := roundi(_config.width * _config.height * density / 1000.0)
+	var wanted := roundi(_data.map_size.x * _data.map_size.y * density / 1000.0)
 	if wanted == 0:
 		return
 	if pool.is_empty():

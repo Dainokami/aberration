@@ -93,13 +93,13 @@ func run() -> void:
 			"terrain": spec[1], "minimum": 1, "maximum": 1, "weight": 1, "rotate": true})
 	var mixed_generator := WorldGenerator.new()
 	var mixed_output := {}
-	for seed_value in range(20):
+	for seed_value in range(8):
 		mixed.seed_value = seed_value
 		if not mixed_generator.prepare(mixed).is_empty():
 			break
 		mixed_output = mixed_generator.generate()
-		if str(mixed_output.error).is_empty():
-			break
+		check(str(mixed_output.error).is_empty(),
+			"three mixed mandatory biomes work without seed search: %d" % seed_value)
 	check(mixed_output.has("data") and mixed_output.data.generation.placements.size() == 3,
 		"three independent manual choices generate together in a mixed world")
 	if mixed_output.has("data"):
@@ -138,10 +138,11 @@ func run() -> void:
 	var missing := configuration("grass")
 	missing.prefabs[0].terrain = "sand"
 	var generator := WorldGenerator.new()
-	check(generator.prepare(missing).is_empty(), "absent target terrain is a placement issue")
-	var failed := generator.generate()
-	check(str(failed.error).contains("沙漠") and str(failed.error).contains("无法投放")
-		and not failed.has("data"), "missing chosen biome reports failure without fallback or partial result")
+	check(generator.prepare(missing).is_empty(), "required target terrain can have zero random weight")
+	var required := generator.generate()
+	check(str(required.error).is_empty() and required.data.generation.placements.size() == 1
+		and generator._terrain_matches(required.data.generation.placements[0].rect, "sand"),
+		"required desert is reserved in its chosen biome without fallback")
 	missing.prefabs[0].minimum = 0
 	check(generator.prepare(missing).is_empty(), "optional missing terrain prepares")
 	var optional := generator.generate()
