@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnvironmentLightingProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/assets/environment_lighting_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ambient_color = Color(0.831373, 0.870588, 0.92549, 1)
+ambient_energy = 0.62
+sun_color = Color(1, 0.941176, 0.847059, 1)
+sun_energy = 0.78
+sun_rotation_degrees = Vector3(-55, 135, 0)
+sun_angular_distance = 1.0
+shadow_distance = 80.0
+shadow_opacity = 0.85
+shadow_bias = 0.02
+shadow_normal_bias = 0.35
+contact_occlusion = true
+occlusion_radius = 1.0
+occlusion_intensity = 0.8

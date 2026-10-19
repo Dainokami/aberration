@@ -33,6 +33,8 @@ var _stream_extras := {}
 @export var show_grid := true
 @export var build_collision := true
 @export var style_profile: TerrainStyleProfile
+## Supplied by the game loader; editor previews keep the original art materials.
+var runtime_lighting: RuntimeLighting
 
 var generated: Node3D
 var grass_material: Material
@@ -327,6 +329,8 @@ func _publish_chunk_metadata() -> void:
 	for i in range(_chunk_first_child, generated.get_child_count()):
 		var node := generated.get_child(i)
 		node.set_meta("terrain_chunk", _current_chunk)
+		if runtime_lighting != null:
+			runtime_lighting.apply(node)
 		nodes.append(node)
 	_chunk_nodes[_current_chunk] = nodes
 	for key: Vector3i in _blend_resources.keys():
@@ -464,6 +468,7 @@ func _build_objects() -> void:
 		var object := AssetFactory.instantiate_asset(definition)
 		if object is SceneMechanism:
 			object.level_data = level_data
+			object.runtime_lighting = runtime_lighting
 		if definition.fade_when_occluding and object.get_script() == null:
 			object.set_script(load("res://scripts/assets/occlusion_fade.gd"))
 		object.position = record.get("position", Vector3.ZERO)
@@ -484,6 +489,9 @@ func _build_objects() -> void:
 		object.set_meta("terrain_layer", int(record.get(
 			"anchor_layer",
 			level_data.elevation(level_data.world_to_cell(object.position)))))
+		if runtime_lighting != null:
+			runtime_lighting.apply(object, definition.carrier != PlaceableDefinition.Carrier.GROUND \
+				and definition.mechanism not in ["bubbles", "quicksand", "thorns"])
 		generated.add_child(object)
 		_object_nodes[id] = object
 		_object_signatures[id] = signature
@@ -641,6 +649,8 @@ func rebuild_details(reindex := true) -> void:
 		for chunk: Vector2i in _chunk_nodes:
 			records.append_array(_details_by_chunk.get(chunk, []))
 	detail_renderer.refresh(level_data, records)
+	if runtime_lighting != null:
+		runtime_lighting.apply(detail_renderer, false)
 	detail_renderer.set_slice_layer(slice_layer_limit)
 
 func _prepare_materials() -> void:
@@ -1424,6 +1434,8 @@ func _apply_slice_visibility() -> void:
 		cap.set_meta("terrain_layer", slice_layer_limit)
 		cap.set_meta("slice_cap", true)
 		_slice_caps.add_child(cap)
+		if runtime_lighting != null:
+			runtime_lighting.apply(cap)
 
 func _build_slice_cell(cell: Vector2i, groups: Dictionary) -> void:
 	if not level_data.is_solid_layer(cell, slice_layer_limit):

@@ -45,6 +45,7 @@ var ready_for_play := false
 ## Prepared before adding a destination to the tree, so a bad target cannot exit the game.
 var prepared_level: LevelData
 var incoming_state: Dictionary = {}
+@export var lighting_profile: EnvironmentLightingProfile = preload("res://data/environment_lighting_profile.tres")
 
 func _ready() -> void:
 	var request := ConfigFile.new()
@@ -69,6 +70,8 @@ func _ready() -> void:
 	builder.show_grid = false
 	builder.build_collision = true
 	builder.level_data = data
+	if lighting_profile != null:
+		builder.runtime_lighting = RuntimeLighting.new()
 	builder.object_loaded.connect(_connect_prop)
 	add_child(builder)
 	_setup_interaction_course()
@@ -152,6 +155,7 @@ func _transition_to_level(path: String) -> void:
 	next.level_override = path
 	next.prepared_level = candidate
 	next.incoming_state = session
+	next.lighting_profile = lighting_profile
 	next.lower_part_id = lower_part_id
 	next.climb_enabled = climb_enabled
 	var previous_mode := process_mode
@@ -226,16 +230,22 @@ func _setup_camera() -> void:
 	environment.fog_depth_begin = RUNTIME_FOG_BEGIN
 	environment.fog_depth_end = RUNTIME_VIEW_DISTANCE
 	environment.fog_depth_curve = 1.0
+	if lighting_profile != null:
+		lighting_profile.apply_environment(environment)
 	var grade: Resource = load("res://data/color_grade_profile.tres")
 	if grade != null:
 		grade.apply(environment)
 	var world := WorldEnvironment.new()
+	world.name = "WorldLighting"
 	world.environment = environment
 	add_child(world)
 	var sun := DirectionalLight3D.new()
+	sun.name = "Sun"
 	sun.rotation_degrees = Vector3(-55, -35, 0)
 	sun.light_energy = 0.9
 	sun.shadow_enabled = true
+	if lighting_profile != null:
+		lighting_profile.apply_sun(sun)
 	add_child(sun)
 
 func _setup_player() -> void:
@@ -255,6 +265,8 @@ func _setup_player() -> void:
 	visual.name = "CharacterVisual"
 	visual.position = Vector3.DOWN * PLAYER_HALF_HEIGHT
 	player.add_child(visual)
+	if builder.runtime_lighting != null:
+		builder.runtime_lighting.apply(visual)
 	spawn_position = data.world_center(data.spawn_cell, data.spawn_layer) + Vector3(0, 0.82, 0)
 	player.position = spawn_position
 

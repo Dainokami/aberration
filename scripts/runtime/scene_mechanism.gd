@@ -3,6 +3,7 @@ class_name SceneMechanism
 extends GameplayProp
 
 var level_data: LevelData
+var runtime_lighting: RuntimeLighting
 var collected := false
 var _damage_clock := 0.0
 var _fruit_ready := true
@@ -113,6 +114,8 @@ func drop_items(item: String, count: int) -> void:
 		material.albedo_color = Color("#da8352") if item == "food" else Color("#edcf71")
 		visual.material_override = material
 		pickup.add_child(visual)
+		if runtime_lighting != null:
+			runtime_lighting.apply(pickup)
 		get_parent().add_child(pickup)
 		pickup.set_meta("stream_source_id", str(get_meta("object_id", "")))
 		pickup.global_position = global_position + Vector3.UP * 1.0
@@ -133,6 +136,9 @@ func reveal_vine() -> void:
 		var vine := AssetFactory.instantiate_asset(load(path))
 		if vine is SceneMechanism:
 			vine.level_data = level_data
+			vine.runtime_lighting = runtime_lighting
+		if runtime_lighting != null:
+			runtime_lighting.apply(vine)
 		get_parent().add_child(vine)
 		vine.set_meta("stream_source_id", str(get_meta("object_id", "")))
 		vine.global_position = global_position + ObjectRules.wall_normal(direction) \

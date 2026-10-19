@@ -317,6 +317,8 @@ func _spawn(monster: MonsterDefinition, nav: EncounterNavigation, elite: int,
 			actor.set_meta("spawn_point_id", str(point.id))
 		add_child(actor)
 		actor.setup(monster, player, nav, elite, config)
+		if is_instance_valid(stream_builder) and stream_builder.runtime_lighting != null:
+			stream_builder.runtime_lighting.apply(actor.visual)
 		if not point.is_empty():
 			actor.set_spawn_range(MonsterSpawnPoints.center(data, point), point_radius(point))
 		actor.defeated.connect(_defeated)

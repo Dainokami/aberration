@@ -7,6 +7,8 @@ func _ready() -> void:
 	fade_material = material_override.duplicate() as StandardMaterial3D
 	fade_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material_override = fade_material
+	if has_meta("runtime_lighting"):
+		RuntimeLighting.add_fade_shadow(self)
 
 func _process(delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()

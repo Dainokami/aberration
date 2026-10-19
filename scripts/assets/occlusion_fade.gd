@@ -10,6 +10,8 @@ func _ready() -> void:
 			var material := (mesh.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
 			material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			mesh.material_override = material
+			if mesh.has_meta("runtime_lighting"):
+				RuntimeLighting.add_fade_shadow(mesh)
 			visual_meshes.append(mesh)
 			fade_materials.append(material)
 

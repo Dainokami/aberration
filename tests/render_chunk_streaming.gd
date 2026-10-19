@@ -156,6 +156,22 @@ func run() -> void:
 	check(player.position.x > walked.x + 25 and player.position.y > 2.5
 		and player.is_on_floor(), "continuous walking across streamed chunk borders never falls")
 	check(builder._chunk_nodes.size() < 300, "travel does not retain the complete map")
+	var lit_tops := 0
+	var tops := 0
+	for nodes: Array in builder._chunk_nodes.values():
+		for node in nodes:
+			if is_instance_valid(node) and node is MeshInstance3D and node.has_meta("terrain_cells") \
+					and not node.has_meta("terrain_bottom") and not node.has_meta("terrain_overlay"):
+				tops += 1
+				if node.material_override is ShaderMaterial \
+						and "unshaded" not in node.material_override.shader.code:
+					lit_tops += 1
+	check(tops > 0 and tops == lit_tops, "newly streamed terrain continues receiving runtime light")
+	if monster != null:
+		check(monster.visual.sprites.all(func(sprite):
+			return sprite.alpha_cut == SpriteBase3D.ALPHA_CUT_DISCARD \
+				and sprite.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF),
+			"spawned monsters retain transparent silhouette shadows after sleep")
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("/tmp/aberration-stream-walk.png")
