@@ -32,6 +32,7 @@ static func uppers() -> Array[PartDefinition]:
 	_uppers = [
 		_part({
 			"id": "gorilla_arm",
+			"texture": "res://assets/derived_art/limbs_peipei_20261018/gorilla_arm/primary.png",
 			"name": "类猩猩胳膊",
 			"slot": PartDefinition.Slot.UPPER,
 			"power": PartDefinition.Band.HIGH,
@@ -57,6 +58,7 @@ static func uppers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "goose_wing",
+			"texture": "res://assets/derived_art/limbs_peipei_20261018/goose_wing/primary.png",
 			"name": "类鹅翅膀",
 			"slot": PartDefinition.Slot.UPPER,
 			"power": PartDefinition.Band.LOW,
@@ -68,6 +70,7 @@ static func uppers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "octopus_arm",
+			"texture": "res://assets/derived_art/limbs_peipei_20261018/octopus_tentacle/primary.png",
 			"name": "类章鱼触手",
 			"slot": PartDefinition.Slot.UPPER,
 			"power": PartDefinition.Band.NORMAL,
@@ -192,6 +195,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "demon_dog_leg",
+			"texture": "res://assets/derived_art/limbs_peipei_20261018/demon_dog_leg/full_body_primary.png",
 			"name": "类恶魔犬腿",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R2,
@@ -200,6 +204,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "octopus_leg",
+			"texture": "res://assets/derived_art/limbs_peipei_20261018/octopus_tentacle/primary.png",
 			"name": "类章鱼触手",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R2,
@@ -211,6 +216,7 @@ static func lowers() -> Array[PartDefinition]:
 		}),
 		_part({
 			"id": "goose_foot",
+			"texture": "res://assets/derived_art/limbs_peipei_20261018/goose_foot/primary.png",
 			"name": "类鹅蹼",
 			"slot": PartDefinition.Slot.LOWER,
 			"rank": PartDefinition.Rank.R1,
