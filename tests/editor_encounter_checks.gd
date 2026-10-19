@@ -22,7 +22,7 @@ func run(plugin: EditorPlugin) -> void:
 		EditorInterface.get_selection().add_node(demo)
 		plugin._edit(demo)
 		plugin.editor_dock.make_visible()
-		plugin.tabs.current_tab = plugin.tabs.get_tab_count()-1
+		plugin.tabs.current_tab = plugin.tabs.get_node("怪物").get_index()
 		plugin.encounter_tools.overlay_toggle.button_pressed = true
 		plugin._enable_2_5d_view()
 		print("ENCOUNTER INTERACTIVE READY ",plugin.data.resource_path)
@@ -47,9 +47,9 @@ func run(plugin: EditorPlugin) -> void:
 	builder.level_data = map
 	viewport.add_child(builder)
 	plugin._edit(builder)
-	plugin.tabs.current_tab = plugin.tabs.get_tab_count() - 1
+	plugin.tabs.current_tab = plugin.tabs.get_node("怪物").get_index()
 	var tools = plugin.encounter_tools
-	check(tools.active() and not map.encounter, "new final tab and old map default off")
+	check(tools.active() and not map.encounter, "monster tab and old map default off")
 	check(not tools.page.visible and tools.point_editor.visible, "planner main page focuses on points with advanced settings collapsed")
 	tools.controls.enabled.button_pressed = true
 	await tree.process_frame

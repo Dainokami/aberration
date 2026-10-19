@@ -36,6 +36,8 @@ const DEFAULT_SOLID_TILE := "grass"
 ## Generation provenance and per-cell zone labels; edits retain the original recipe.
 @export var generation: Dictionary = {}
 @export var encounter: EncounterConfig
+## Null uses the standard countdown; an explicit disabled config marks an endpoint.
+@export var level_transition: LevelTransitionConfig
 ## Sparse authored region overrides keyed by Vector3i(x, support_layer, z).
 @export var encounter_regions: Dictionary = {}
 ## Fixed ordinary-monster spawn groups anchored to adjacent cells at one height.
@@ -61,6 +63,7 @@ func setup_blank(size := Vector2i(16, 16)) -> void:
 	terrain_tints.clear()
 	generation.clear()
 	encounter = null
+	level_transition = null
 	encounter_regions.clear()
 	monster_spawn_points.clear()
 	spawn_cell = Vector2i(-1, -1)
@@ -583,6 +586,8 @@ func validate_content(check_assets := true) -> PackedStringArray:
 	errors.append_array(MonsterSpawnPoints.errors(self))
 	if encounter != null and encounter.enabled:
 		errors.append_array(encounter.errors())
+	if level_transition != null:
+		errors.append_array(level_transition.errors(check_assets))
 	return errors
 
 ## Copy the index, share unchanged columns, and copy only columns on write.
@@ -604,6 +609,8 @@ func fork_for_edit() -> LevelData:
 	copy.terrain_tints = terrain_tints
 	copy.generation = generation.duplicate(true)
 	copy.encounter = encounter.duplicate(true) as EncounterConfig if encounter != null else null
+	copy.level_transition = level_transition.duplicate(true) as LevelTransitionConfig \
+		if level_transition != null else null
 	copy.encounter_regions = encounter_regions.duplicate(true)
 	copy.monster_spawn_points = monster_spawn_points.duplicate(true)
 	return copy
@@ -660,6 +667,7 @@ func clone_data() -> Dictionary:
 		"terrain_tints": terrain_tints.duplicate(true),
 		"generation": generation.duplicate(true),
 		"encounter": encounter.snapshot() if encounter != null else null,
+		"level_transition": level_transition.snapshot() if level_transition != null else null,
 		"encounter_regions": encounter_regions.duplicate(true),
 		"monster_spawn_points": monster_spawn_points.duplicate(true),
 		"format_version": FORMAT_VERSION,
@@ -682,6 +690,9 @@ func restore_data(snapshot: Dictionary) -> void:
 	var encounter_values: Variant = snapshot.get("encounter")
 	encounter = EncounterConfig.from_snapshot(encounter_values.duplicate(true)) \
 		if encounter_values is Dictionary else null
+	var transition_values: Variant = snapshot.get("level_transition")
+	level_transition = LevelTransitionConfig.from_snapshot(transition_values) \
+		if transition_values is Dictionary else null
 	encounter_regions = snapshot.get("encounter_regions", {}).duplicate(true)
 	monster_spawn_points.assign(snapshot.get("monster_spawn_points", []).duplicate(true))
 	format_version = int(snapshot.get("format_version", 2))

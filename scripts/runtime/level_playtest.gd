@@ -32,10 +32,16 @@ const CLIMB_WALL_OFFSET := 0.38
 const CLIMB_MOVE_SPEED := 3.0
 const CLIMB_LINK_TOLERANCE := 0.35
 ## Set before entering the tree to bypass the editor's playtest request file.
-var level_override := ""
+@export_file("*.tres") var level_override := ""
 var encounter_director: EncounterDirector
 var combat_health: CombatHealth
 var attack_cooldown := 0.0
+var transition_controller: LevelTransitionController
+var loaded_level_path := ""
+var ready_for_play := false
+## Prepared before adding a destination to the tree, so a bad target cannot exit the game.
+var prepared_level: LevelData
+var incoming_state: Dictionary = {}
 
 func _ready() -> void:
 	var request := ConfigFile.new()
@@ -44,7 +50,8 @@ func _ready() -> void:
 	if not level_override.is_empty():
 		requested = level_override
 	testing = "--test-editor-level" in OS.get_cmdline_user_args()
-	var source := ResourceLoader.load(requested, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
+	var source := prepared_level if prepared_level != null else \
+		ResourceLoader.load(requested, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
 	if source == null:
 		push_error("无法加载关卡：" + requested)
 		get_tree().quit(2)
@@ -67,8 +74,93 @@ func _ready() -> void:
 	_setup_camera()
 	_setup_ui(requested)
 	_setup_encounters()
+	_restore_session_state()
+	_setup_transition()
+	loaded_level_path = requested
+	ready_for_play = true
 	if testing:
 		run_physics_checks.call_deferred()
+
+func _setup_transition() -> void:
+	transition_controller = LevelTransitionController.new()
+	transition_controller.name = "LevelTransitionController"
+	add_child(transition_controller)
+	transition_controller.report.connect(_feedback)
+	transition_controller.transition_requested.connect(func(path: String):
+		_transition_to_level.call_deferred(path))
+	transition_controller.setup(data, player)
+	if combat_health != null:
+		combat_health.died.connect(func(_cause: String): transition_controller.stop())
+	var layer := CanvasLayer.new()
+	layer.name = "LevelTransitionLayer"
+	add_child(layer)
+	var hud := LevelTransitionHUD.new()
+	layer.add_child(hud)
+	hud.setup(transition_controller, runtime_font())
+
+func _session_state() -> Dictionary:
+	var state := {"lower_part_id": lower_part_id, "climb_enabled": climb_enabled}
+	for key in ["scene_inventory", "scene_inventory_capacity", "scene_oxygen"]:
+		if player.has_meta(key):
+			var value: Variant = player.get_meta(key)
+			state[key] = value.duplicate(true) if value is Array or value is Dictionary else value
+	if combat_health != null:
+		state.health = combat_health.current
+		state.maximum_health = combat_health.maximum
+	elif player.has_meta("scene_health"):
+		state.health = float(player.get_meta("scene_health"))
+		state.maximum_health = 100.0
+	return state
+
+func _restore_session_state() -> void:
+	for key in ["scene_inventory", "scene_inventory_capacity", "scene_oxygen"]:
+		if incoming_state.has(key):
+			player.set_meta(key, incoming_state[key])
+	if incoming_state.has("health"):
+		if combat_health == null:
+			combat_health = CombatHealth.new()
+			combat_health.name = "CombatHealth"
+			player.add_child(combat_health)
+		combat_health.setup(float(incoming_state.maximum_health))
+		combat_health.damage(maxf(0, combat_health.maximum - float(incoming_state.health)))
+
+func _transition_to_level(path: String) -> void:
+	if transition_controller.state != LevelTransitionController.State.TRANSITIONING:
+		return
+	if path.is_empty() or not ResourceLoader.exists(path):
+		transition_controller.transition_failed("目标地图不存在，请检查流程配置")
+		return
+	var target := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as LevelData
+	if target == null:
+		transition_controller.transition_failed("目标资源不是可玩的地图")
+		return
+	var candidate := target.fork_for_edit()
+	var errors := candidate.validate()
+	if not errors.is_empty():
+		transition_controller.transition_failed("目标地图无法进入：" + errors[0])
+		return
+	var session := _session_state()
+	# Use the same loader without changing user://terrain_playtest.cfg.
+	var next := (load("res://scenes/level_playtest.tscn") as PackedScene).instantiate()
+	next.level_override = path
+	next.prepared_level = candidate
+	next.incoming_state = session
+	next.lower_part_id = lower_part_id
+	next.climb_enabled = climb_enabled
+	var previous_mode := process_mode
+	process_mode = Node.PROCESS_MODE_DISABLED
+	hide()
+	get_tree().root.add_child(next)
+	if not next.ready_for_play:
+		next.queue_free()
+		show()
+		process_mode = previous_mode
+		transition_controller.transition_failed("目标地图初始化失败，请检查地图")
+		return
+	get_tree().current_scene = next
+	if encounter_director != null:
+		encounter_director.stop()
+	queue_free()
 
 static func resolve_level_path(request: ConfigFile, args: PackedStringArray) -> String:
 	var requested: String = request.get_value("playtest", "level_path",
@@ -99,7 +191,7 @@ func _setup_encounters() -> void:
 	var hud := EncounterHUD.new()
 	hud.name = "EncounterHUD"
 	layer.add_child(hud)
-	hud.setup(encounter_director, combat_health, runtime_font())
+	hud.setup(encounter_director, combat_health, runtime_font(), 52.0)
 	encounter_director.control_ready = true
 
 func _setup_camera() -> void:
@@ -152,6 +244,7 @@ func _setup_player() -> void:
 
 func _setup_ui(path: String) -> void:
 	var layer := CanvasLayer.new()
+	layer.offset.y = 52
 	add_child(layer)
 	var label := Label.new()
 	label.position = Vector2(18, 18)
@@ -197,6 +290,9 @@ func _connect_props() -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if transition_controller != null \
+			and transition_controller.state == LevelTransitionController.State.TRANSITIONING:
 		return
 	match event.physical_keycode:
 		KEY_SPACE:
@@ -272,9 +368,16 @@ static func _interaction_shape(prop: Node) -> CollisionShape3D:
 	return null
 
 func attempt_interact() -> bool:
+	if player == null or float(player.get_meta("scene_health", 100.0)) <= 0:
+		return false
 	if climbing:
 		_end_climb(false)
 		return true
+	if transition_controller != null:
+		if transition_controller.state == LevelTransitionController.State.TRANSITIONING:
+			return true
+		if transition_controller.attempt_interact():
+			return true
 	if encounter_director != null and not combat_health.dead:
 		var message := encounter_director.interact()
 		if not message.is_empty():
@@ -490,8 +593,12 @@ static func runtime_font() -> Font:
 func _physics_process(delta: float) -> void:
 	if player == null:
 		return
+	if transition_controller != null \
+			and transition_controller.state == LevelTransitionController.State.TRANSITIONING:
+		player.velocity = Vector3.ZERO
+		return
 	attack_cooldown = maxf(0, attack_cooldown - delta)
-	if combat_health != null and combat_health.dead:
+	if float(player.get_meta("scene_health", 100.0)) <= 0:
 		player.velocity = Vector3.ZERO
 		return
 	if climbing:
@@ -548,6 +655,10 @@ func _physics_process(delta: float) -> void:
 			interaction_label.text = focused_prop.interaction_text() if focused_prop != null else ""
 			if focused_prop != null and focused_prop.definition.behaviour == PlaceableDefinition.Behaviour.CLIMBABLE:
 				interaction_label.text = "E 攀爬" if climb_enabled else "E 攀爬 · 需要攀爬能力"
+			if transition_controller != null:
+				var portal_hint := transition_controller.interaction_text()
+				if not portal_hint.is_empty():
+					interaction_label.text = portal_hint
 		if feedback_label != null and Time.get_ticks_msec() > feedback_until:
 			feedback_label.text = ""
 

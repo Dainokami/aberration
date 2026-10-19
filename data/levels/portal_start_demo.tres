@@ -1,0 +1,598 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" path="res://scripts/level/level_transition_config.gd" id="1_44j5j"]
+[ext_resource type="Script" path="res://scripts/level/level_data.gd" id="2_q8f4m"]
+
+[sub_resource type="Resource" id="Resource_b5pnw"]
+script = ExtResource("1_44j5j")
+countdown_seconds = 5.0
+
+[resource]
+script = ExtResource("2_q8f4m")
+map_size = Vector2i(12, 12)
+grid_world_origin = Vector2(-12, -12)
+has_grid_world_origin = true
+columns = Array[Dictionary]([{
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}, {
+"layers": [{
+"tile_id": "grass"
+}]
+}])
+spawn_cell = Vector2i(6, 7)
+spawn_layer = 0
+format_version = 9
+terrain_tints = {
+"grass": Color(0.3, 0.45, 0.27, 0.25)
+}
+level_transition = SubResource("Resource_b5pnw")

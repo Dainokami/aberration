@@ -5,26 +5,27 @@ var director: EncounterDirector
 var text_label: Label
 var health: CombatHealth
 
-func setup(value: EncounterDirector, component: CombatHealth, font: Font) -> void:
+func setup(value: EncounterDirector, component: CombatHealth, font: Font,
+		text_offset := 0.0) -> void:
 	director = value
 	health = component
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	text_label = Label.new()
-	text_label.position = Vector2(18, 205)
+	text_label.position = Vector2(18, 205 + text_offset)
 	text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	text_label.add_theme_font_override("font", font)
 	add_child(text_label)
 	var scale_select := OptionButton.new()
 	scale_select.name = "EncounterTimeScale"
-	scale_select.position = Vector2(18, 350)
+	scale_select.position = Vector2(18, 350 + text_offset)
 	scale_select.add_theme_font_override("font", font)
 	for option in ["刷新计时 1×", "刷新计时 10×", "刷新计时 60×"]:
 		scale_select.add_item(option)
 	scale_select.item_selected.connect(func(index: int): director.time_scale = [1, 10, 60][index])
 	add_child(scale_select)
 	var hint := Label.new()
-	hint.position = Vector2(18, 390)
+	hint.position = Vector2(18, 390 + text_offset)
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hint.text = "K 攻击怪物 · E 拾取/进入Boss门"
 	hint.add_theme_font_override("font", font)
