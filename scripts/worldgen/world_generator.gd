@@ -23,6 +23,8 @@ var _placement_prefixes := {}
 var _last_placement_report := {}
 var _point_base: Array[Dictionary] = []
 var _layout: Array[Dictionary] = []
+var _growth_sites: Array[Dictionary] = []
+var _growth_owners := PackedInt32Array()
 
 func cancel() -> void:
 	_mutex.lock()
@@ -274,7 +276,7 @@ func generate() -> Dictionary:
 		return {"error": plan.error}
 	_layout.assign(plan.placements)
 	if plan.size != Vector2i(_config.width, _config.height):
-		_warnings.append("为容纳必选地块、出生净空与通路，地图已从 %d×%d 自动扩大至 %d×%d 格。" % [
+		_warnings.append("为容纳必选地块、生态过渡、出生净空与通路，地图已从 %d×%d 自动扩大至 %d×%d 格。" % [
 			_config.width, _config.height, plan.size.x, plan.size.y])
 	_data = LevelData.new()
 	_data.setup_blank(plan.size)
@@ -282,11 +284,10 @@ func generate() -> Dictionary:
 		if not _config.encounter_settings.is_empty() else EncounterConfig.default_config()
 	_data.spawn_cell = plan.spawn
 	_data.spawn_layer = 1
-	_set_stage("生成生态与功能区")
+	_set_stage("从特殊地图向外生成生态与功能区")
 	_build_terrain()
 	if _stopped():
 		return {"error": "已取消"}
-	_prepare_planned_terrain()
 	_set_stage("投放特殊地块")
 	var error := _place_prefabs()
 	if not error.is_empty():
@@ -374,19 +375,51 @@ func _build_terrain() -> void:
 	var biomes: Array[int] = []
 	var weights := [_config.grass_weight, _config.rock_weight,
 		_config.sand_weight, _config.water_weight]
+	_growth_sites.clear()
+	_growth_owners.clear()
+	for placement in _layout:
+		var source := _sources[int(placement.source_index)]
+		var terrain := TILES.find(str(source.rule.get("terrain", "any")))
+		var zone := str(source.rule.get("zone", "any"))
+		if zone == "any" and not source.collectibles.is_empty():
+			zone = "static"
+		# Equal head starts keep larger maps from crowding smaller neighbours.
+		_growth_sites.append({"rect": placement.rect.grow(1),
+			"terrain": terrain if terrain >= 0 else _weighted(weights), "zone": zone,
+			"lead": 128})
+	if not _layout.is_empty():
+		var radius := ceili(_config.spawn_radius)
+		_growth_sites.append({"rect": Rect2i(_data.spawn_cell - Vector2i.ONE * radius,
+			Vector2i.ONE * (radius * 2 + 1)), "radius": _config.spawn_radius,
+			"terrain": 0, "zone": "explore", "lead": 32})
 	for i in _config.region_count:
-		var best := _random_cell()
+		var best := _random_cell() if _layout.is_empty() else Vector2i(-1, -1)
 		var best_distance := -1.0
-		for attempt in 16:
+		for attempt in (16 if _layout.is_empty() else 64):
 			var candidate := _random_cell()
+			if not _free_biome_seed(candidate):
+				continue
 			var distance := INF
 			for center in centers:
 				distance = minf(distance, Vector2(candidate).distance_squared_to(center))
+			for site in _growth_sites:
+				distance = minf(distance, Vector2(candidate).distance_squared_to(
+					Vector2((site.rect as Rect2i).get_center())))
 			if distance > best_distance:
 				best = candidate
 				best_distance = distance
+		if best.x < 0:
+			break
 		centers.append(best)
 		biomes.append(_weighted(weights))
+	if not _layout.is_empty():
+		for i in centers.size():
+			_growth_sites.append({"rect": Rect2i(centers[i], Vector2i.ONE),
+				"terrain": biomes[i], "zone": "any", "locked": false})
+		_growth_owners = BiomeGrowth.new().build(_data.map_size, _growth_sites,
+			int(_rng.randi()), _config.boundary_noise, _stopped)
+		if _stopped():
+			return
 	var static_centers: Array[Vector2i] = []
 	for i in _config.static_count:
 		var best := _random_cell(2)
@@ -415,11 +448,16 @@ func _build_terrain() -> void:
 				noise.get_noise_2d(x + 901, y - 513)) * amplitude
 			var distance := INF
 			var selected := 0
-			for i in centers.size():
-				var d := warped.distance_squared_to(centers[i])
-				if d < distance:
-					distance = d
-					selected = biomes[i]
+			var owner := -1
+			if not _layout.is_empty():
+				owner = _growth_owners[_data.index(cell)]
+				selected = int(_growth_sites[owner].terrain)
+			else:
+				for i in centers.size():
+					var d := warped.distance_squared_to(centers[i])
+					if d < distance:
+						distance = d
+						selected = biomes[i]
 			var from_spawn := Vector2(cell).distance_to(_data.spawn_cell)
 			if from_spawn <= _config.spawn_radius:
 				selected = 0
@@ -434,32 +472,20 @@ func _build_terrain() -> void:
 				_config.spawn_radius + maxf(0.01, _config.falloff), from_spawn)
 			var is_static := static_influence * (1.0 - exploration) \
 				> 0.5 + noise.get_noise_2d(x - 420, y + 601) * 0.15
+			if owner >= 0 and _growth_sites[owner].zone != "any":
+				is_static = _growth_sites[owner].zone == "static"
 			_zones[_data.index(cell)] = 1 if is_static else 0
 
-## Build the required ecology before stamping, including the one-cell border.
-## Random ecology/zone weights govern the remaining world; mandatory rules take
-## precedence locally, even when that biome or static core has zero weight.
-func _prepare_planned_terrain() -> void:
+## Other regions must originate outside the room needed for outward growth.
+func _free_biome_seed(cell: Vector2i) -> bool:
+	if _layout.is_empty():
+		return true
+	if Vector2(cell).distance_to(_data.spawn_cell) <= _config.spawn_radius + 4:
+		return false
 	for placement in _layout:
-		if _stopped():
-			return
-		var source := _sources[int(placement.source_index)]
-		var terrain := TILES.find(str(source.rule.get("terrain", "any")))
-		var zone := str(source.rule.get("zone", "any"))
-		var area: Rect2i = placement.rect.grow(1)
-		for y in range(area.position.y, area.end.y):
-			for x in range(area.position.x, area.end.x):
-				var index := _data.index(Vector2i(x, y))
-				if terrain >= 0:
-					_biomes[index] = terrain
-					_data.columns[index] = _column(TILES[terrain])
-				if zone != "any":
-					_zones[index] = 1 if zone == "static" else 0
-		var prefab: LevelPrefab = source.prefab
-		for cell: Vector2i in source.collectibles:
-			_zones[_data.index(placement.rect.position + prefab.rotate_cell(cell, placement.turns))] = 1
-	if not _layout.is_empty():
-		_warnings.append("已为 %d 件必选地块预留完整占地、指定生态及功能区；生态权重和静止核心参数控制其余区域。" % _layout.size())
+		if (placement.rect as Rect2i).grow(int(placement.growth_margin) + 4).has_point(cell):
+			return false
+	return true
 
 func _column(tile: String) -> Dictionary:
 	return {"layers": [{"tile_id": "rock" if tile == "water" else tile, "rotation": 0},

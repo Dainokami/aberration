@@ -16,7 +16,11 @@ func plan(config: WorldGenConfig, sources: Array[Dictionary], stopped: Callable)
 			return {"error": "必选地块「%s」的规则冲突：采集物必须在静止区，不能整图指定为探索战斗区。" % source.name}
 		for copy in int(source.rule.get("minimum", 1)):
 			var prefab: LevelPrefab = source.prefab
+			var size := prefab.fragment.map_size
+			# Leave room for biome fronts to meet outside the authored rectangle.
+			var growth_margin := maxi(margin, clampi(ceili(mini(size.x, size.y) * 0.25), 6, 24))
 			items.append({"source_index": i, "copy": copy, "size": prefab.fragment.map_size,
+				"margin": growth_margin,
 				"rotate": bool(source.rule.get("rotate", true)) and str(source.rotation_blocker).is_empty()})
 	items.sort_custom(func(a: Dictionary, b: Dictionary):
 		var area_a: int = a.size.x * a.size.y
@@ -53,7 +57,8 @@ func plan(config: WorldGenConfig, sources: Array[Dictionary], stopped: Callable)
 					for turns in (4 if item.rotate else 1):
 						var footprint: Vector2i = item.size if turns % 2 == 0 \
 							else Vector2i(item.size.y, item.size.x)
-						var padded := footprint + Vector2i.ONE * margin * 2
+						var buffer: int = item.margin
+						var padded := footprint + Vector2i.ONE * buffer * 2
 						var left := space.size - padded
 						if left.x < 0 or left.y < 0:
 							continue
@@ -69,11 +74,12 @@ func plan(config: WorldGenConfig, sources: Array[Dictionary], stopped: Callable)
 							ties += 1
 							if rng.randi_range(1, ties) == 1:
 								best = {"source_index": item.source_index, "turns": turns,
-									"rect": Rect2i(space.position + corner + Vector2i.ONE * margin, footprint)}
+									"growth_margin": buffer,
+									"rect": Rect2i(space.position + corner + Vector2i.ONE * buffer, footprint)}
 				if best.is_empty():
 					break
 				placements.append(best)
-				free = _subtract(free, (best.rect as Rect2i).grow(margin))
+				free = _subtract(free, (best.rect as Rect2i).grow(int(best.growth_margin)))
 			if placements.size() == items.size():
 				return {"error": "", "size": size, "spawn": spawn, "placements": placements}
 		if size == Vector2i.ONE * MAX_SIZE:

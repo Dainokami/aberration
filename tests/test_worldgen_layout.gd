@@ -63,6 +63,10 @@ func verify_world(generator: WorldGenerator, output: Dictionary, label: String) 
 			valid = valid and not rect.grow(maxi(2, generator._config.prefab_gap)).intersects(
 				data.generation.placements[j].rect)
 	check(valid, label + " strict biome, border, spacing and spawn clearance")
+	var extended := true
+	for placement in data.generation.placements:
+		extended = extended and generator._terrain_matches(placement.rect.grow(1), placement.terrain)
+	check(extended, label + " biome grows beyond the required one-cell border")
 	check(data.validate().is_empty() and generator._check_reachability().is_empty(),
 		label + " data and actual entrance reachability")
 	var spawn_index := data.index(data.spawn_cell)
