@@ -182,6 +182,14 @@ func generated_world(size: Vector2i) -> void:
 	world.add_child(player)
 	map.encounter=EncounterConfig.default_config()
 	map.encounter.enabled=true
+	var point := MonsterSpawnPoints.create("大地图碰撞回归刷新点")
+	var first := map.spawn_cell + Vector2i(2,0)
+	var second := first + Vector2i.RIGHT
+	point.cells = [
+		Vector3i(first.x,map.spawn_layer,first.y),
+		Vector3i(second.x,map.spawn_layer,second.y),
+	]
+	map.monster_spawn_points.append(point)
 	var director := EncounterDirector.new()
 	world.add_child(director)
 	director.setup(map,player)
@@ -189,7 +197,7 @@ func generated_world(size: Vector2i) -> void:
 	director.set_physics_process(false)
 	await physics_frame
 	await physics_frame
-	director._physics_process(10)
+	director._physics_process(30)
 	check(director.actors.size() in [1,2],"large mixed world can actually spawn enemies")
 	director.stop()
 	reports.append({"size":str(size),"scenario":"mixed_world",
