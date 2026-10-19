@@ -98,6 +98,7 @@ var view_settings
 var world_gen_dialog
 var world_gen_target: TerrainBuilder
 var encounter_tools
+var transition_tools
 var preview_fov := -1.0
 var preview_pitch := -1.0
 var preview_distance := -1.0
@@ -121,6 +122,8 @@ func _enter_tree() -> void:
 	world_tools.add_detail_page()
 	encounter_tools = load("res://addons/terrain_editor/encounter_tools.gd").new()
 	encounter_tools.setup(self, tabs)
+	transition_tools = load("res://addons/terrain_editor/level_transition_tools.gd").new()
+	transition_tools.setup(self, tabs)
 	editor_dock = EditorDock.new()
 	editor_dock.title = "关卡编辑器"
 	editor_dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BR
@@ -143,6 +146,14 @@ func _enter_tree() -> void:
 		_run_worldgen_checks.call_deferred()
 	elif "--test-encounter-editor" in OS.get_cmdline_user_args():
 		_run_encounter_checks.call_deferred()
+	elif "--test-transition-editor" in OS.get_cmdline_user_args():
+		_run_transition_checks.call_deferred()
+
+func _run_transition_checks() -> void:
+	await get_tree().create_timer(1.0).timeout
+	while EditorInterface.get_resource_filesystem().is_scanning():
+		await get_tree().process_frame
+	await load("res://tests/editor_level_transition_checks.gd").new().run(self)
 
 func _run_encounter_checks() -> void:
 	while EditorInterface.get_resource_filesystem().is_scanning():
@@ -225,6 +236,8 @@ func _edit(object: Object) -> void:
 			preview.queue_free()
 	if encounter_tools:
 		encounter_tools.sync()
+	if transition_tools:
+		transition_tools.sync()
 
 func _enable_initial_view(target: TerrainBuilder) -> void:
 	if builder == target and not fixed_view_active and not free_view_active:
@@ -796,6 +809,9 @@ func _apply_generated_world(generated: LevelData) -> void:
 	if generated.encounter == null:
 		generated.encounter = data.encounter.duplicate(true) as EncounterConfig \
 			if data.encounter != null else null
+	if generated.level_transition == null:
+		generated.level_transition = data.level_transition.duplicate(true) as LevelTransitionConfig \
+			if data.level_transition != null else null
 	var before := {"map": data, "path": current_path, "dirty": dirty}
 	var after := {"map": generated, "path": "", "dirty": true}
 	var history := get_undo_redo()
@@ -826,6 +842,8 @@ func _switch_generated_map(target: TerrainBuilder, outgoing: Dictionary, incomin
 		_sync_tint_controls()
 		if encounter_tools:
 			encounter_tools.sync()
+		if transition_tools:
+			transition_tools.sync()
 		_set_status("已切换地图 · 世界生成支持撤销/重做 · 请另存新地图")
 
 func _require_builder(message := "请先在场景树中选择 TerrainBuilder") -> bool:
@@ -1376,6 +1394,9 @@ func _sync_view_buttons() -> void:
 	_refresh_view_mode_badges()
 
 func _process(delta: float) -> void:
+	if transition_tools and (transition_tools.observed_data != data \
+			or data != null and transition_tools.observed_config != data.level_transition):
+		transition_tools.sync()
 	if encounter_tools and (encounter_tools.observed_data != data \
 			or data != null and encounter_tools.observed_config != data.encounter):
 		encounter_tools.sync()

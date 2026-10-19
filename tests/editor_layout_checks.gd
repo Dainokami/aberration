@@ -51,10 +51,10 @@ func run(plugin: EditorPlugin, suite: RefCounted) -> void:
 	plugin.data = real_data
 	suite.check(plugin.mode_select.buttons.size() == 3 and not plugin.mode_select.buttons.has(1),
 		"terrain has three horizontal modes and no height mode")
-	suite.check(plugin.tabs.get_child_count() == 7 and
+	suite.check(plugin.tabs.get_child_count() == 8 and
 		plugin.tabs.get_child(4).name == "视角" and plugin.tabs.get_child(5).name == "细节"
-		and plugin.tabs.get_child(6).name == "怪物",
-		"monster tab appended while preserving all existing tab indices")
+		and plugin.tabs.get_child(6).name == "怪物" and plugin.tabs.get_child(7).name == "流程",
+		"flow tab appended while preserving all existing tab indices")
 	for mode in [0, 3, 4]:
 		plugin.mode_select.selected = mode
 		var correct := true

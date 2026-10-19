@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/level_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/level/level_transition_config.gd" id="2"]
+
+[sub_resource type="Resource" id="TransitionEndpoint"]
+script = ExtResource("2")
+enabled = false
+
+[resource]
+script = ExtResource("1")
+map_size = Vector2i(8, 8)
+grid_world_origin = Vector2(-8, -8)
+has_grid_world_origin = true
+columns = Array[Dictionary]([
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}, {"tile_id": "rock"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}, {"tile_id": "rock"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "rock"}]}, {"layers": [{"tile_id": "rock"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "rock"}]}, {"layers": [{"tile_id": "rock"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]},
+{"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}, {"layers": [{"tile_id": "sand"}]}
+])
+spawn_cell = Vector2i(4, 6)
+spawn_layer = 0
+format_version = 9
+level_transition = SubResource("TransitionEndpoint")
