@@ -1,0 +1,9 @@
+六种机械怪动画（修正版）
+
+1. 解压整个 ZIP。双击“打开预览.html”查看网页动画。
+2. Godot 资源位于 assets/animations/mechanical_monsters_20261019/。
+3. 每只怪有 walk.png、attack.png、death.png，均为透明 RGBA 横向 8 帧精灵表；每帧 384×384 像素。
+4. 原始 JPG 参考图保存在 assets/source_art/mechanical_monsters_20261019/。
+5. 构建脚本为 scripts/build_mechanical_monster_animations.py。
+
+怪物：机械鹰、机械信天翁、机械猩猩、机械长臂猿、机械鸵鸟、机械沙鼠。

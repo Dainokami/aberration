@@ -2,6 +2,7 @@ class_name PlayerController
 extends CharacterBody3D
 
 const MovementConfig := preload("res://scripts/movement_table.gd")
+const MonsterTable := preload("res://scripts/monsters/monster_table.gd")
 
 signal air_action_changed(mode: AirAction)
 signal jumped
@@ -14,7 +15,7 @@ enum AirAction {
 }
 
 @export_category("Ground Movement")
-@export var move_speed := 6.0
+@export var move_speed := 5.0
 @export var ground_acceleration := 34.0
 @export var ground_deceleration := 42.0
 @export var air_control := 0.55
@@ -53,6 +54,7 @@ var parts: PartLoadout
 func _ready() -> void:
 	add_to_group("player")
 	_apply_movement_table()
+	_apply_combat_table()
 	floor_snap_length = 0.25
 	floor_max_angle = deg_to_rad(48.0)
 	respawn_position = global_position
@@ -104,6 +106,16 @@ func set_air_action(new_action: AirAction) -> void:
 	_is_flying = false
 	_jump_buffer_remaining = 0.0
 	air_action_changed.emit(air_action)
+
+
+func _apply_combat_table() -> void:
+	var hero := MonsterTable.player()
+	if hero.is_empty():
+		return
+	max_health = int(hero.get("health", max_health))
+	health = max_health
+	if hero.has("speed"):
+		move_speed = float(hero["speed"])
 
 
 func _apply_movement_table() -> void:

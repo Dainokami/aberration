@@ -1,6 +1,6 @@
 {
   "body": {
-    "move_speed": 6.0,
+    "move_speed": 5.0,
     "ground_acceleration": 34.0,
     "ground_deceleration": 42.0,
     "air_control": 0.55,

@@ -1,0 +1,94 @@
+{
+  "monsters": [
+    {
+      "id": "eagle",
+      "name": "机械鹰",
+      "accent": "#f6c741",
+      "air": true,
+      "action": "俯冲抓击",
+      "frame_size": 384,
+      "frames": 8,
+      "fps": {
+        "walk": 9,
+        "attack": 12,
+        "death": 9
+      },
+      "source": "res://assets/source_art/mechanical_monsters_20261019/eagle_reference.jpg"
+    },
+    {
+      "id": "albatross",
+      "name": "机械信天翁",
+      "accent": "#50b9e8",
+      "air": true,
+      "action": "俯冲突袭",
+      "frame_size": 384,
+      "frames": 8,
+      "fps": {
+        "walk": 9,
+        "attack": 12,
+        "death": 9
+      },
+      "source": "res://assets/source_art/mechanical_monsters_20261019/albatross_reference.jpg"
+    },
+    {
+      "id": "gorilla",
+      "name": "机械猩猩",
+      "accent": "#b99475",
+      "air": false,
+      "action": "前冲重拳",
+      "frame_size": 384,
+      "frames": 8,
+      "fps": {
+        "walk": 9,
+        "attack": 12,
+        "death": 9
+      },
+      "source": "res://assets/source_art/mechanical_monsters_20261019/gorilla_reference.jpg"
+    },
+    {
+      "id": "gibbon",
+      "name": "机械长臂猿",
+      "accent": "#e0ab72",
+      "air": false,
+      "action": "前扑挥臂",
+      "frame_size": 384,
+      "frames": 8,
+      "fps": {
+        "walk": 9,
+        "attack": 12,
+        "death": 9
+      },
+      "source": "res://assets/source_art/mechanical_monsters_20261019/gibbon_reference.jpg"
+    },
+    {
+      "id": "ostrich",
+      "name": "机械鸵鸟",
+      "accent": "#ead05c",
+      "air": false,
+      "action": "前踢",
+      "frame_size": 384,
+      "frames": 8,
+      "fps": {
+        "walk": 11,
+        "attack": 12,
+        "death": 9
+      },
+      "source": "res://assets/source_art/mechanical_monsters_20261019/ostrich_reference.jpg"
+    },
+    {
+      "id": "gerbil",
+      "name": "机械沙鼠",
+      "accent": "#e8bc95",
+      "air": false,
+      "action": "前掌挥击",
+      "frame_size": 384,
+      "frames": 8,
+      "fps": {
+        "walk": 9,
+        "attack": 12,
+        "death": 9
+      },
+      "source": "res://assets/source_art/mechanical_monsters_20261019/gerbil_reference.jpg"
+    }
+  ]
+}

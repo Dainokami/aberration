@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>畸变｜机械怪动画预览</title>
+  <style>
+    :root{color-scheme:dark;--ink:#ebf3f2;--muted:#99acb4;--panel:#18262c;--line:#2b4248;--bg:#0c171b}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#1d353a 0%,var(--bg) 55%);color:var(--ink);font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;min-height:100vh}
+    .shell{max-width:1480px;margin:auto;padding:34px clamp(18px,4vw,58px) 70px}
+    header{display:flex;justify-content:space-between;gap:24px;align-items:end;padding-bottom:24px;border-bottom:1px solid var(--line)}
+    .eyebrow{color:#7bd9ce;letter-spacing:.24em;font-size:11px;font-weight:800;text-transform:uppercase;margin:0 0 12px}
+    h1{font-size:clamp(30px,3.8vw,56px);letter-spacing:-.055em;line-height:1.07;margin:0;font-weight:800}
+    .intro{color:var(--muted);line-height:1.65;max-width:600px;font-size:14px;margin:16px 0 0}
+    .count{min-width:160px;text-align:right;color:#7bd9ce;font-weight:800;font-size:28px;line-height:1}.count small{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.13em;margin-top:8px}
+    .toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:20px 0 24px}
+    .tool{border:1px solid var(--line);background:#142126;color:var(--ink);border-radius:999px;padding:9px 15px;cursor:pointer;font:inherit;font-size:12px;font-weight:700}.tool:hover{border-color:#6fc9bd}
+    .tool[aria-pressed="true"]{background:#1d514c;border-color:#6fc9bd;color:white}
+    label.speed{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);margin-left:auto}input[type=range]{accent-color:#7bd9ce;width:110px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .card{--accent:#7bd9ce;background:linear-gradient(150deg,#1d2b31,#142328 68%);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 15px 42px #0003}
+    .card:hover{border-color:color-mix(in srgb,var(--accent),#2b4248 50%)}
+    .cardhead{display:flex;align-items:center;gap:13px;padding:17px 18px 12px}
+    .index{width:28px;height:28px;border:1px solid color-mix(in srgb,var(--accent),transparent 45%);border-radius:8px;display:grid;place-items:center;color:var(--accent);font-size:10px;font-weight:800}
+    .names{flex:1}.names h2{font-size:19px;line-height:1;margin:0 0 5px}.names span{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+    .live{display:flex;align-items:center;gap:5px;font-size:10px;color:#92c2b8;font-weight:700}.live::before{content:"";height:6px;width:6px;border-radius:50%;background:#6cdbbb;box-shadow:0 0 10px #6cdbbb}
+    .stage{height:292px;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,color-mix(in srgb,var(--accent),transparent 91%),transparent 62%),linear-gradient(#1c2c31,#101e23)}
+    body.light .stage{background-color:#e5e8e4;background-image:linear-gradient(45deg,#d6dbda 25%,transparent 25%),linear-gradient(-45deg,#d6dbda 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#d6dbda 75%),linear-gradient(-45deg,transparent 75%,#d6dbda 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+    .stage::after{content:"";position:absolute;bottom:25px;left:17%;right:17%;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent),transparent 60%),transparent);pointer-events:none}
+    canvas{width:100%;height:100%;max-width:344px;max-height:292px;object-fit:contain;position:relative;z-index:1;image-rendering:auto}
+    .state-badge{position:absolute;top:12px;left:14px;z-index:2;font-size:10px;letter-spacing:.1em;color:#c3d5d4;background:#0f2025b9;border:1px solid #ffffff1e;padding:6px 9px;border-radius:99px;font-weight:800}
+    .frame-count{position:absolute;right:14px;bottom:13px;z-index:2;font:700 10px ui-monospace,monospace;color:#a1b9ba;background:#0f2025b9;padding:5px 7px;border-radius:5px}
+    .cardbody{padding:14px 18px 18px}.description{min-height:17px;margin:0 0 13px;color:#a9c0bd;font-size:12px}
+    .buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.state{border:1px solid #365057;background:#1d3036;color:#cadad8;border-radius:8px;padding:9px 2px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}.state:hover{border-color:var(--accent);color:white}.state.active{background:color-mix(in srgb,var(--accent),#18262c 77%);color:white;border-color:var(--accent)}
+    .foot{display:flex;justify-content:space-between;gap:10px;margin-top:14px;font-size:11px;color:#78939a}.foot a{color:var(--accent);text-decoration:none}.foot a:hover{text-decoration:underline}
+    .note{margin:28px 0 0;color:#90a8ad;font-size:12px;line-height:1.6}
+    @media(max-width:1080px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:690px){header{align-items:start}.count{display:none}.grid{grid-template-columns:1fr}.stage{height:300px}label.speed{margin-left:0}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header><div><p class="eyebrow">ABERRATION · MONSTER MOTION STUDY</p><h1>机械怪动画预览</h1><p class="intro">六种怪物，分别查看移动、攻击和烟雾消散死亡。鹰与信天翁用飞行代替地面行走；死亡消散后停留在透明帧，点击移动或攻击可重新播放。</p></div><div class="count">06 × 03<small>角色 × 动画状态</small></div></header>
+  <div class="toolbar"><button class="tool" id="allWalk">全部移动</button><button class="tool" id="allAttack">全部攻击</button><button class="tool" id="allDeath">全部死亡</button><button class="tool" id="pause" aria-pressed="false">暂停</button><button class="tool" id="background" aria-pressed="false">浅色背景</button><label class="speed">播放速度 <input id="speed" type="range" min="0.5" max="1.75" step="0.05" value="1"><output id="speedValue">1.00×</output></label></div>
+  <section class="grid" id="grid" aria-label="怪物动画"></section>
+  <p class="note">基于你提供的六张 JPG 参考图切帧和制作。源图不是透明分层文件，边缘仍带少量压缩痕迹；页面中的每段动画同时提供透明 PNG 精灵表，可在 Godot 中继续调整。</p>
+</main>
+<script>
+const roster=[
+  {id:'eagle',name:'机械鹰',accent:'#f6c741',move:'振翅飞行',action:'俯冲抓击',source:'eagle_reference.jpg',fps:9},
+  {id:'albatross',name:'机械信天翁',accent:'#50b9e8',move:'振翅飞行',action:'俯冲突袭',source:'albatross_reference.jpg',fps:9},
+  {id:'gorilla',name:'机械猩猩',accent:'#b99475',move:'交替踏步',action:'前冲重拳',source:'gorilla_reference.jpg',fps:9},
+  {id:'gibbon',name:'机械长臂猿',accent:'#e0ab72',move:'四肢交错',action:'前扑挥臂',source:'gibbon_reference.jpg',fps:9},
+  {id:'ostrich',name:'机械鸵鸟',accent:'#ead05c',move:'双腿交替',action:'前踢',source:'ostrich_reference.jpg',fps:11},
+  {id:'gerbil',name:'机械沙鼠',accent:'#e8bc95',move:'小步快跑',action:'前掌挥击',source:'gerbil_reference.jpg',fps:9}
+];
+const labels={walk:'移动',attack:'攻击',death:'死亡'};
+const cards=new Map();let paused=false;let speed=1;
+const grid=document.getElementById('grid');
+for(const [number,monster] of roster.entries()){
+  const card=document.createElement('article');card.className='card';card.style.setProperty('--accent',monster.accent);
+  card.innerHTML=`<div class="cardhead"><div class="index">${String(number+1).padStart(2,'0')}</div><div class="names"><h2>${monster.name}</h2><span>${monster.id}</span></div><div class="live">预览中</div></div><div class="stage"><span class="state-badge">移动</span><canvas width="384" height="384" aria-label="${monster.name}动画"></canvas><span class="frame-count">01 / 08</span></div><div class="cardbody"><p class="description">${monster.move} · ${monster.action} · 烟雾消散</p><div class="buttons"><button class="state active" data-state="walk">移动</button><button class="state" data-state="attack">攻击</button><button class="state" data-state="death">死亡</button></div><div class="foot"><span>8 帧 / 状态</span><span><a class="download" download>下载当前精灵表 ↗</a> · <a href="../../source_art/mechanical_monsters_20261019/${monster.source}" target="_blank">原图 ↗</a></span></div></div>`;
+  grid.append(card);
+  const images={};for(const state of ['walk','attack','death']){const img=new Image();img.src=`${monster.id}/${state}.png?v=2`;images[state]=img;}
+  const player={monster,card,images,state:'walk',frame:0,elapsed:0,hold:0};cards.set(monster.id,player);
+  card.querySelectorAll('button.state').forEach(button=>button.addEventListener('click',()=>setState(player,button.dataset.state)));
+  card.querySelector('a.download').href=`${monster.id}/walk.png`;
+}
+function setState(player,state){player.state=state;player.frame=0;player.elapsed=0;player.hold=0;player.card.querySelector('.state-badge').textContent=labels[state];player.card.querySelectorAll('button.state').forEach(button=>button.classList.toggle('active',button.dataset.state===state));player.card.querySelector('a.download').href=`${player.monster.id}/${state}.png`;}
+function draw(player){const canvas=player.card.querySelector('canvas'),ctx=canvas.getContext('2d'),img=player.images[player.state];ctx.clearRect(0,0,384,384);if(img.complete&&img.naturalWidth){ctx.drawImage(img,player.frame*384,0,384,384,0,0,384,384)}player.card.querySelector('.frame-count').textContent=`${String(player.frame+1).padStart(2,'0')} / 08`;}
+let last=performance.now();function tick(now){const delta=Math.min(80,now-last);last=now;for(const player of cards.values()){if(!paused){player.elapsed+=delta*speed;const fps=player.state==='walk'?player.monster.fps:player.state==='attack'?12:9;const step=1000/fps;while(player.elapsed>=step){player.elapsed-=step;if(player.frame<7){player.frame++;}else if(player.state==='walk'){player.frame=0;}else if(player.state==='attack'){player.hold+=step;if(player.hold>380){setState(player,'walk');break;}}else{player.elapsed=0;break;}}}draw(player)}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+for(const [button,state] of [['allWalk','walk'],['allAttack','attack'],['allDeath','death']])document.getElementById(button).addEventListener('click',()=>{for(const player of cards.values())setState(player,state)});
+document.getElementById('pause').addEventListener('click',event=>{paused=!paused;event.currentTarget.setAttribute('aria-pressed',String(paused));event.currentTarget.textContent=paused?'继续':'暂停'});
+document.getElementById('background').addEventListener('click',event=>{const light=document.body.classList.toggle('light');event.currentTarget.setAttribute('aria-pressed',String(light));event.currentTarget.textContent=light?'深色背景':'浅色背景'});
+document.getElementById('speed').addEventListener('input',event=>{speed=Number(event.target.value);document.getElementById('speedValue').textContent=speed.toFixed(2)+'×'});
+</script>
+</body>
+</html>

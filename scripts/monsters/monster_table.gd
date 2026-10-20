@@ -34,6 +34,12 @@ static func field_ids() -> PackedStringArray:
 	return names
 
 
+static func player() -> Dictionary:
+	_ensure()
+	var row: Variant = _data.get("player", {})
+	return row if row is Dictionary else {}
+
+
 static func band(group: String, rank: String) -> float:
 	_ensure()
 	var bands: Variant = _data.get("bands", {})
@@ -52,15 +58,30 @@ static func _list() -> Array:
 
 static func _resolved(entry: Dictionary) -> Dictionary:
 	var copy := entry.duplicate()
-	copy["health"] = int(band("health", str(entry.get("health", "mid"))))
-	copy["damage"] = int(band("damage", str(entry.get("damage", "mid"))))
-	copy["speed"] = band("speed", str(entry.get("speed", "mid")))
-	copy["attack_cooldown"] = band("attack_cooldown", str(entry.get("attack_rate", "mid")))
+	copy["health"] = int(_metric(entry, "health", "health", "mid"))
+	copy["damage"] = int(_metric(entry, "damage", "damage", "mid"))
+	copy["speed"] = _metric(entry, "speed", "speed", "mid")
+	if _is_number(entry.get("attack_cooldown")):
+		copy["attack_cooldown"] = float(entry["attack_cooldown"])
+	else:
+		copy["attack_cooldown"] = _metric(entry, "attack_rate", "attack_cooldown", "mid")
+	copy["windup"] = float(entry["windup"]) if _is_number(entry.get("windup")) else 0.0
 	copy["pack"] = int(entry.get("pack", 1))
 	copy["aggressive"] = bool(entry.get("aggressive", false))
 	copy["boss"] = bool(entry.get("boss", false))
 	copy["field"] = bool(entry.get("field", false))
 	return copy
+
+
+static func _metric(entry: Dictionary, key: String, band_group: String, default_rank: String) -> float:
+	var value: Variant = entry.get(key, default_rank)
+	if _is_number(value):
+		return float(value)
+	return band(band_group, str(value))
+
+
+static func _is_number(value: Variant) -> bool:
+	return value is float or value is int
 
 
 static func _ensure() -> void:

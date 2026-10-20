@@ -11,8 +11,21 @@ func _initialize() -> void:
 	var wolf := MonsterTable.monster("prairie_wolf")
 	var ostrich := MonsterTable.monster("ostrich")
 	var boss := MonsterTable.monster("bird_demon")
-	if wolf.is_empty() or not wolf.aggressive or wolf.drop != "wolf_leg" or int(wolf.health) != 28:
+	var hero := MonsterTable.player()
+	if wolf.is_empty() or not wolf.aggressive or wolf.drop != "wolf_leg" or int(wolf.health) != 40 or int(wolf.damage) != 14 or not is_equal_approx(float(wolf.windup), 0.35):
 		_fail("wolf row")
+		return
+	if int(MonsterTable.monster("eagle").health) != 40 or int(MonsterTable.monster("eagle").damage) != 22:
+		_fail("eagle combat")
+		return
+	if int(MonsterTable.monster("gorilla").health) != 80 or not is_equal_approx(float(MonsterTable.monster("albatross").speed), 5.6):
+		_fail("gorilla or albatross combat")
+		return
+	if int(MonsterTable.monster("gerbil").health) != 20 or int(MonsterTable.monster("gerbil").damage) != 8:
+		_fail("gerbil combat")
+		return
+	if int(hero.get("health", 0)) != 100 or not is_equal_approx(float(hero.get("speed", 0.0)), 5.0) or not is_equal_approx(float(hero.get("attack_cooldown", 0.0)), 0.62):
+		_fail("player combat")
 		return
 	if ostrich.aggressive or not is_equal_approx(float(ostrich.speed), 8.4):
 		_fail("ostrich should be passive and fast")
@@ -24,7 +37,7 @@ func _initialize() -> void:
 		_fail("bird demon")
 		return
 	var field := MonsterTable.field_ids()
-	if field.has("kangaroo") or field.has("bird_demon") or field.has("bat") or not field.has("prairie_wolf") or not field.has("ibex"):
+	if field.has("kangaroo") or field.has("bird_demon") or field.has("bat") or field.has("prairie_wolf") or field.has("ibex") or not field.has("ostrich") or not field.has("gorilla"):
 		_fail("field roster %s" % field)
 		return
 	var floor_body := StaticBody3D.new()
@@ -77,6 +90,9 @@ func _initialize() -> void:
 		_fail("wolf should drop its leg")
 		return
 	var sprite := bird.get_node_or_null("Sprite3D") as Sprite3D
+	if sprite == null or sprite.hframes != 8 or sprite.texture == null or not sprite.texture.resource_path.ends_with("ostrich/walk.png"):
+		_fail("ostrich is not using the mechanical walk sheet")
+		return
 	if sprite == null:
 		for child in bird.get_children():
 			if child is Sprite3D:

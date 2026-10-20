@@ -33,6 +33,10 @@ var _alert := false
 var _returning := false
 var _flee := 0.0
 var _pause := 0.0
+var _swing := 0.0
+var _clip := "walk"
+var _frame_time := 0.0
+var _death_left := 0.0
 
 const HOME_WANDER := 7.5
 const HOME_RETURN := 9.0
@@ -70,9 +74,12 @@ func _ready() -> void:
 	_sprite = Sprite3D.new()
 	_sprite.name = "Sprite3D"
 	var drawn := _artwork()
+	var frames := _frame_count()
 	var pixel := _pixel_size(drawn)
 	var world_height := float(drawn.get_height()) * pixel
 	_sprite.texture = drawn
+	_sprite.hframes = frames
+	_sprite.frame = 0
 	_sprite.pixel_size = pixel
 	_sprite.position.y = world_height * 0.5
 	_sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
@@ -93,7 +100,12 @@ func _physics_process(delta: float) -> void:
 	if _affordance == null:
 		return
 	if _affordance.spent:
-		_drop()
+		if not _dropped:
+			_drop()
+		elif _death_left > 0.0:
+			_death_left -= delta
+			if _death_left <= 0.0:
+				queue_free()
 		return
 	var player := get_tree().get_first_node_in_group("player") as PlayerController
 	if global_position.y < _home.y - 1.2:
@@ -125,6 +137,7 @@ func _physics_process(delta: float) -> void:
 	_face(wish)
 	_tick_wind(player, delta)
 	if _affordance.health < _health_mark:
+		_swing = 0.0
 		if _windup > 0.0:
 			_windup = 0.0
 			_stun = 0.55
@@ -144,7 +157,8 @@ func _physics_process(delta: float) -> void:
 		_enter_phase2(player)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_advance_clip(delta)
 	_place_nameplate()
 
 
@@ -237,7 +251,7 @@ func _wish(player: PlayerController, delta: float) -> Vector3:
 	var home_delta := _home - global_position
 	home_delta.y = 0.0
 	if bool(spec.get("aggressive", false)):
-		var chase := _chase_wish(player, home_delta.length(), speed)
+		var chase := _chase_wish(player, home_delta.length(), speed, delta)
 		if _alert:
 			return chase
 	elif _passive_flee(player, delta):
@@ -279,7 +293,7 @@ func _wish(player: PlayerController, delta: float) -> Vector3:
 	return step * speed * 0.5
 
 
-func _chase_wish(player: PlayerController, from_home: float, speed: float) -> Vector3:
+func _chase_wish(player: PlayerController, from_home: float, speed: float, delta: float) -> Vector3:
 	if player == null:
 		_alert = false
 		return Vector3.ZERO
@@ -299,8 +313,19 @@ func _chase_wish(player: PlayerController, from_home: float, speed: float) -> Ve
 	var reach := 1.7 if str(spec.get("attack", "")) == "lunge" else 1.25
 	var hold := maxf(reach * 0.82, 1.05)
 	if distance <= reach and _attack_wait <= 0.0:
+		var windup := float(spec.get("windup", 0.0))
+		if _swing <= 0.0 and windup > 0.0:
+			_swing = windup
+			_set_clip("attack")
+			return Vector3.ZERO
+		if _swing > 0.0:
+			_swing = maxf(_swing - delta, 0.0)
+			if _swing > 0.0:
+				return Vector3.ZERO
 		_strike(player)
+		_swing = 0.0
 		return Vector3.ZERO
+	_swing = 0.0
 	if distance <= hold:
 		return Vector3.ZERO
 	var aim := to
@@ -478,6 +503,8 @@ func _boss_wish(player: PlayerController, delta: float) -> Vector3:
 
 func _strike(player: PlayerController) -> void:
 	_attack_wait = float(spec.get("attack_cooldown", 0.6))
+	if _clip != "attack":
+		_set_clip("attack")
 	GameAudio.monster_voice(str(spec.get("id", "")))
 	player.take_hit(int(spec.get("damage", 0)))
 	if str(spec.get("attack", "")) == "lunge":
@@ -537,7 +564,10 @@ func _drop() -> void:
 		pickup.position = global_position
 		get_parent().add_child(pickup)
 		pickup.call("setup", drop_id)
-	queue_free()
+	if _set_clip("death"):
+		_death_left = float(maxi(_sprite.hframes, 1)) / 9.0
+	else:
+		queue_free()
 
 
 static var _font: Font
@@ -552,11 +582,60 @@ func _artwork() -> Texture2D:
 	return _silhouette()
 
 
+func _frame_count() -> int:
+	return maxi(int(spec.get("frames", 1)), 1)
+
+
+func _advance_clip(delta: float) -> void:
+	if _sprite == null or _sprite.hframes <= 1:
+		return
+	var fps := 9.0
+	if _clip == "walk":
+		fps = float(spec.get("fps", 9))
+	elif _clip == "attack":
+		fps = 12.0
+	_frame_time += delta
+	var step := 1.0 / maxf(fps, 1.0)
+	while _frame_time >= step:
+		_frame_time -= step
+		if _sprite.frame < _sprite.hframes - 1:
+			_sprite.frame += 1
+		elif _clip == "walk":
+			_sprite.frame = 0
+		elif _clip == "attack":
+			_set_clip("walk")
+			break
+		else:
+			_frame_time = 0.0
+			break
+
+
+func _set_clip(clip: String) -> bool:
+	if _sprite == null:
+		return false
+	var path := str(spec.get("sprite", ""))
+	if clip == "attack":
+		path = str(spec.get("attack_sprite", ""))
+	elif clip == "death":
+		path = str(spec.get("death_sprite", ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return false
+	var drawn := load(path) as Texture2D
+	if drawn == null:
+		return false
+	_clip = clip
+	_frame_time = 0.0
+	_sprite.texture = drawn
+	_sprite.hframes = _frame_count()
+	_sprite.frame = 0
+	return _sprite.hframes > 1
+
+
 func _pixel_size(drawn: Texture2D) -> float:
 	var target_height := 3.1 if spec.get("boss", false) else 1.85
 	var max_width := 3.4 if spec.get("boss", false) else 2.6
 	var height := maxf(float(drawn.get_height()), 1.0)
-	var width := maxf(float(drawn.get_width()), 1.0)
+	var width := maxf(float(drawn.get_width()) / float(_frame_count()), 1.0)
 	var pixel := target_height / height
 	if width * pixel > max_width:
 		pixel = max_width / width
