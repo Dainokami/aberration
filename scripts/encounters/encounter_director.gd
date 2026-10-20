@@ -282,6 +282,7 @@ func _update_stream_actors() -> void:
 		if far:
 			if not sleeping:
 				actor.windup_left = -1
+				actor.visual.cancel_attack()
 				actor.path.clear()
 				actor.navigation = null
 				actor.set_physics_process(false)

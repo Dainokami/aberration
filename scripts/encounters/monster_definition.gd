@@ -20,6 +20,11 @@ extends Resource
 @export var image_height := 1.8
 @export var image_path := ""
 @export var parts: Array[Dictionary] = []
+@export var sprite_frames: SpriteFrames
+@export var animation_height_pixels := 384.0
+@export var animation_anchor_y := 384.0
+@export var image_faces_left := false
+@export var procedural_motion := true
 @export var drops: PackedStringArray = []
 @export var source_row := 0
 @export var source_manifest := ""
@@ -55,4 +60,13 @@ func errors() -> PackedStringArray:
 			result.append("怪物生态无效：" + ecosystem)
 	if not available():
 		result.append("缺少怪物美术：" + display_name)
+	if sprite_frames != null:
+		if not is_finite(animation_height_pixels) or animation_height_pixels <= 0 \
+				or not is_finite(animation_anchor_y):
+			result.append("怪物动画尺寸或落点无效：" + display_name)
+		for animation in [&"walk", &"attack", &"death"]:
+			if not sprite_frames.has_animation(animation) \
+					or sprite_frames.get_frame_count(animation) == 0 \
+					or sprite_frames.get_animation_speed(animation) <= 0:
+				result.append("怪物缺少有效动画：" + display_name + "/" + animation)
 	return result

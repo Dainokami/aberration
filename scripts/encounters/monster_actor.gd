@@ -87,15 +87,26 @@ func player_in_spawn_range() -> bool:
 	return spawn_radius < 0 or MonsterSpawnPoints.contains(spawn_center, spawn_radius, target.global_position)
 
 func take_damage(amount: float, cause := "environment") -> void:
+	if health.dead:
+		return
 	provoked = provoked or cause == "player"
 	hurt_left = 0.15
 	health.damage(amount, cause)
 
 func _die(cause: String) -> void:
 	collision_layer = 0
+	collision_mask = 0
+	velocity = Vector3.ZERO
+	windup_left = -1
+	set_physics_process(false)
+	remove_from_group("enemies")
 	adapter.spent = true
+	adapter.set_physics_process(false)
+	hp_label.hide()
 	defeated.emit(self, cause)
-	queue_free()
+	visual.death_finished.connect(queue_free, CONNECT_ONE_SHOT)
+	if not visual.play_death():
+		queue_free()
 
 func _physics_process(delta: float) -> void:
 	if health == null or health.dead or not is_instance_valid(target):
@@ -107,6 +118,7 @@ func _physics_process(delta: float) -> void:
 		repath()
 	if not in_spawn_range:
 		windup_left = -1
+		visual.cancel_attack()
 	var difference := target.global_position - global_position
 	var in_reach := in_spawn_range and Vector2(difference.x, difference.z).length() <= definition.attack_reach \
 		and absf(difference.y) < definition.body_height + 1
@@ -125,6 +137,12 @@ func _physics_process(delta: float) -> void:
 			cooldown = definition.attack_interval
 	elif chase and in_reach and cooldown <= 0 and _line_clear():
 		windup_left = definition.windup
+		var attack_camera := get_viewport().get_camera_3d()
+		if attack_camera != null:
+			var screen_direction := attack_camera.global_basis.x.dot(difference)
+			if absf(screen_direction) > 0.05:
+				visual.facing_left = screen_direction < 0
+		visual.play_attack(definition.windup)
 		velocity.x = 0
 		velocity.z = 0
 	elif (chase or returning_home) and path_index < path.size():

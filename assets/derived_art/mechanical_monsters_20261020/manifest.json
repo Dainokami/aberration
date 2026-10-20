@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "static_source": "GPT(1)",
+  "animation_source": "机械怪动画_6种_修正版_20261019",
+  "assets": {
+    "wolf": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/wolf.jpg",
+      "source_sha256": "ae40923ad3087598ad295b8bb14fd7180271d7238f165450f28fa59932850694",
+      "crop": [
+        54,
+        36,
+        1586,
+        954
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/wolf.png",
+      "static_sha256": "2dfca542a0c06593e3b1009cf705b03e7e9704c5712b77af1a50b0a868036473",
+      "faces_left": true,
+      "animations": {}
+    },
+    "gerbil": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/gerbil.jpg",
+      "source_sha256": "3ed27dc1a67b9decfb8b85565c1167e52b10c7c9ec0f515a3daa1c6dd84c31be",
+      "crop": [
+        66,
+        43,
+        1162,
+        1102
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/gerbil.png",
+      "static_sha256": "e20f52776b0dea549228c9713587b9b1791b908317c46001d7276c3582b02e2e",
+      "faces_left": true,
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gerbil/walk.png",
+          "sha256": "9dc85cd6fccf398eb6210bead77efe96abd56bd4b198fa6e3b5a3887bf03950a"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gerbil/attack.png",
+          "sha256": "e295ec74c48e29c5d6e7cc2ef3e78b5bd4d11319d984c6ea1fcf2934236c6a44"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gerbil/death.png",
+          "sha256": "620ffcd73886382b4e9b3e22f72f58cadb226e2a3ae81771d6d43ce86d0ac667"
+        }
+      },
+      "animation_height_pixels": 268,
+      "animation_anchor_y": 365
+    },
+    "gibbon": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/gibbon.jpg",
+      "source_sha256": "c7c281d0ece4381b73bc61e8ddfd4b3c4038fa3c5d477e1679ed380f59380fb7",
+      "crop": [
+        136,
+        30,
+        1168,
+        1208
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/gibbon.png",
+      "static_sha256": "c1b3307e10dc0a8d5b382a411ffe1076a182a360194845d2db034d4fab75dc85",
+      "faces_left": true,
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gibbon/walk.png",
+          "sha256": "7319b1f0953916f6a11e105fce08e58334194a4ec25302cf7e53f472ffd81c43"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gibbon/attack.png",
+          "sha256": "d64f41ebd4e7e664fec14aa7fbb51e7276fd6dba58163f791b079f98f22f00d9"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gibbon/death.png",
+          "sha256": "e1d5a65f6f4418de61578f681cc7e7bc9f0b79447bf0760d63a1dc626064db9d"
+        }
+      },
+      "animation_height_pixels": 345,
+      "animation_anchor_y": 365
+    },
+    "gorilla": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/gorilla.jpg",
+      "source_sha256": "0acc2bf741cf9e881d23154a69a54309dbaa1df3cb7a2bcc5c8ac271822fc754",
+      "crop": [
+        25,
+        10,
+        1247,
+        1123
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/gorilla.png",
+      "static_sha256": "5b65f51f9452aa0653fd6e864318e83b278adfa0b8023157fae912b305d7fb78",
+      "faces_left": true,
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gorilla/walk.png",
+          "sha256": "08e656f142529d16fb9102abb054248a483096a12b58978acde744f6be053802"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gorilla/attack.png",
+          "sha256": "38875dbebcc9753fe13362ce15e050cbf75bb1a43244f960a558e8ca86a215a0"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/gorilla/death.png",
+          "sha256": "c83e3df8d03f95dfba0c3e88efeef93810fa9caf390b060cf0a9e34992f7d0cd"
+        }
+      },
+      "animation_height_pixels": 345,
+      "animation_anchor_y": 365
+    },
+    "ostrich": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/ostrich.jpg",
+      "source_sha256": "93a04c0167ddc601aa80e01d6538d28e1be3221b1cbf824f14bea08c2ea6717a",
+      "crop": [
+        301,
+        9,
+        1073,
+        1270
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/ostrich.png",
+      "static_sha256": "c307a984354342128fa32322c0bb20eb1d64449ec2e3c90d8436c933c2df8a04",
+      "faces_left": true,
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/ostrich/walk.png",
+          "sha256": "2427f9c47179fe040d5bd5eada7283fe16dfd59d118a8cfb7ec2417442fa8142"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/ostrich/attack.png",
+          "sha256": "fe40e1bb1b03de36ac63f2a595fd899c5b0e16fc96dc315c24e9b1d285611ad4"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/ostrich/death.png",
+          "sha256": "51533496190cbb260a8474f657c65a74f97d697e688ea7daff4f8cb2e7de00dd"
+        }
+      },
+      "animation_height_pixels": 350,
+      "animation_anchor_y": 365
+    },
+    "eagle": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/eagle.jpg",
+      "source_sha256": "ebf413a000a5d79e52303eb2a78925ce96b792eb9a1e134470a6f9ab2a12df45",
+      "crop": [
+        72,
+        8,
+        851,
+        1107
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/eagle.png",
+      "static_sha256": "8349a1dae8ee8bb844a78d018223fb2ff4373153f943ca3f749bba8ab6230bb0",
+      "faces_left": false,
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/eagle/walk.png",
+          "sha256": "35fa7c1ab970166ae7b4ef3c3b694815ad6afd0481975a18920484fbdedece32"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/eagle/attack.png",
+          "sha256": "99a6af800de75a6faecbdea8fa8093a09d654210a2b040518dc16ab344115249"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/eagle/death.png",
+          "sha256": "9e5c4c2107658edd6457ae3d0690fa08b2156acfe149a6d1052869a801b57b63"
+        }
+      },
+      "animation_height_pixels": 304,
+      "animation_anchor_y": 304
+    },
+    "albatross": {
+      "source": "res://assets/source_art/mechanical_monsters_20261020/albatross.jpg",
+      "source_sha256": "6fc911d43ab5fb6330c1c0be09315f4a0d860a8de8cefa619045e4f54fcb49bb",
+      "crop": [
+        73,
+        1,
+        848,
+        1139
+      ],
+      "static": "res://assets/derived_art/mechanical_monsters_20261020/albatross.png",
+      "static_sha256": "ed298d2f6d9a151dada7cb3685a941a73393b981d295aa4a13c346dbb1939571",
+      "faces_left": true,
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/albatross/walk.png",
+          "sha256": "5ed4817403849726a42f539350b8f91f0f692898ce925a282235e8f55c24a7a7"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/albatross/attack.png",
+          "sha256": "ad04929d8b07f9ea02907a53f12125f70c7feac5d17b69f264cf8720075328d7"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_monsters_20261019/albatross/death.png",
+          "sha256": "d324b057510993953a52693d3fd204f0b7562cc0a3a6c9774974c9ff64503992"
+        }
+      },
+      "animation_height_pixels": 201,
+      "animation_anchor_y": 304
+    }
+  }
+}

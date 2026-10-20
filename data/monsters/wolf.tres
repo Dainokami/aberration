@@ -16,26 +16,7 @@ attack_interval = 0.62
 source_row = 3
 image_height = 1.8
 drops = PackedStringArray("wolf_limb")
-source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"
-image_path = "res://assets/derived_art/monsters_20261018/wolf/composite.png"
-parts = Array[Dictionary]([{
-"path": "res://assets/derived_art/monsters_20261018/wolf/part_00.png",
-"name": "42e726c39693536bf877a47c308d06ac",
-"order": 0
-}, {
-"path": "res://assets/derived_art/monsters_20261018/wolf/part_01.png",
-"name": "c76abfb77c849d90b8e2afbfebd21f1a",
-"order": 1
-}, {
-"path": "res://assets/derived_art/monsters_20261018/wolf/part_02.png",
-"name": "e43b66567ac9a048ae83aa0c59a0bf34",
-"order": 2
-}, {
-"path": "res://assets/derived_art/monsters_20261018/wolf/part_03.png",
-"name": "后前肢",
-"order": 3
-}, {
-"path": "res://assets/derived_art/monsters_20261018/wolf/part_04.png",
-"name": "躯干",
-"order": 4
-}])
+source_manifest = "res://assets/derived_art/mechanical_monsters_20261020/manifest.json"
+image_path = "res://assets/derived_art/mechanical_monsters_20261020/wolf.png"
+image_faces_left = true
+procedural_motion = false

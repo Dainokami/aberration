@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="MonsterDefinition" format=3]
 [ext_resource type="Script" path="res://scripts/encounters/monster_definition.gd" id="1"]
+[ext_resource type="SpriteFrames" path="res://assets/animations/mechanical_monsters_20261019/gibbon/frames.tres" id="2"]
 [resource]
 script = ExtResource("1")
 monster_id = "gibbon"
@@ -16,7 +17,11 @@ attack_interval = 0.34
 source_row = 7
 image_height = 1.8
 drops = PackedStringArray("gibbon_limb")
-source_manifest = "res://assets/derived_art/monsters_20261018/manifest.json"
-image_path = "res://assets/derived_art/monsters_20261018/gibbon/composite.png"
-parts = Array[Dictionary]([])
+source_manifest = "res://assets/derived_art/mechanical_monsters_20261020/manifest.json"
+image_path = "res://assets/derived_art/mechanical_monsters_20261020/gibbon.png"
+sprite_frames = ExtResource("2")
+animation_height_pixels = 345.0
+animation_anchor_y = 365.0
+image_faces_left = true
+procedural_motion = false
 attack_reach = 6.0

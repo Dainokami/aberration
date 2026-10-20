@@ -29,7 +29,7 @@ func run() -> void:
 	for rule in config.monster_pool:
 		if rule.enabled:
 			available += 1
-	check(available == 10, "10 supplied species have valid textures")
+	check(available == 12, "12 supplied species have valid textures including eagle and albatross")
 	var tuned := config.definition_for("res://data/monsters/wolf.tres",
 		{"max_health":123.0,"ecosystems":PackedStringArray(["rock"])})
 	check(tuned.max_health == 123 and tuned.ecosystems == PackedStringArray(["rock"]) \
