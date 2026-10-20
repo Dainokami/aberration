@@ -14,6 +14,7 @@ max_health = 40.0
 damage = 14.0
 speed = 5.6
 attack_interval = 0.62
+windup = 0.35
 source_row = 20
 image_height = 1.8
 drops = PackedStringArray("albatross_limb")

@@ -14,6 +14,7 @@ max_health = 20.0
 damage = 8.0
 speed = 8.4
 attack_interval = 1.15
+windup = 0.35
 source_row = 5
 image_height = 1.1
 drops = PackedStringArray("gerbil_limb")

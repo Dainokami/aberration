@@ -102,8 +102,8 @@ func _advance(delta: float) -> void:
 	var fps := _frames.get_animation_speed(animation)
 	var index := int(_elapsed * fps)
 	if animation == &"attack":
-		# The package's impact is frame 4. Fit its anticipation to gameplay's
-		# existing windup, then play recovery at the supplied 12 fps.
+		# Every supplied strip puts impact at its midpoint. Fit anticipation to
+		# gameplay windup, then play recovery at the strip's authored frame rate.
 		var impact := count / 2
 		index = int(_elapsed / _attack_windup * impact) if _elapsed < _attack_windup \
 			else impact + int((_elapsed - _attack_windup) * fps)

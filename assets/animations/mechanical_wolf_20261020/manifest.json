@@ -1,0 +1,13 @@
+{
+  "name": "mechanical_wolf",
+  "display_name": "恶魔狼",
+  "frame_width": 1024,
+  "frame_height": 512,
+  "columns": 4,
+  "rows": 1,
+  "animations": {
+    "walk": { "file": "walk.png", "frames": 4, "fps": 6, "loop": true },
+    "attack": { "file": "attack.png", "frames": 4, "fps": 5, "loop": false },
+    "death": { "file": "death.png", "frames": 4, "fps": 5, "loop": false }
+  }
+}

@@ -2,6 +2,7 @@
   "version": 1,
   "static_source": "GPT(1)",
   "animation_source": "机械怪动画_6种_修正版_20261019",
+  "wolf_animation_source": "恶魔狼_行走攻击死亡_4帧_同款烟雾_20261020(1)",
   "assets": {
     "wolf": {
       "source": "res://assets/source_art/mechanical_monsters_20261020/wolf.jpg",
@@ -15,7 +16,24 @@
       "static": "res://assets/derived_art/mechanical_monsters_20261020/wolf.png",
       "static_sha256": "2dfca542a0c06593e3b1009cf705b03e7e9704c5712b77af1a50b0a868036473",
       "faces_left": true,
-      "animations": {}
+      "animation_reference": "res://assets/source_art/mechanical_wolf_20261020/reference.png",
+      "animation_reference_sha256": "adcf541fe2b534c1610af48596628e036707ff051b7e783811b52af722a7bf1f",
+      "animations": {
+        "walk": {
+          "path": "res://assets/animations/mechanical_wolf_20261020/walk.png",
+          "sha256": "8becb89ed3b7be5461117f574fd7ecd85d533f60d306aa250286ae4532b1a070"
+        },
+        "attack": {
+          "path": "res://assets/animations/mechanical_wolf_20261020/attack.png",
+          "sha256": "002f541b63dfee81230630ae9b3c8fc1114efe237216d4f27534fcb603a14fdb"
+        },
+        "death": {
+          "path": "res://assets/animations/mechanical_wolf_20261020/death.png",
+          "sha256": "ba7ff03358558575744940baf7173b45826d6bb20eacbf912420b7ae07405260"
+        }
+      },
+      "animation_height_pixels": 480,
+      "animation_anchor_y": 508
     },
     "gerbil": {
       "source": "res://assets/source_art/mechanical_monsters_20261020/gerbil.jpg",

@@ -14,6 +14,7 @@ max_health = 40.0
 damage = 14.0
 speed = 8.4
 attack_interval = 0.34
+windup = 0.35
 source_row = 7
 image_height = 1.8
 drops = PackedStringArray("gibbon_limb")

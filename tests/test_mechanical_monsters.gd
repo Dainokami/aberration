@@ -16,9 +16,15 @@ func check(value: bool, label: String) -> void:
 func run() -> void:
 	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
 		"res://assets/derived_art/mechanical_monsters_20261020/manifest.json"))
+	var balance: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
+		"res://data/monsters/mechanical_balance_20261020.json"))
 	for id in SPECIES:
 		var definition := load("res://data/monsters/%s.tres" % id) as MonsterDefinition
 		check(definition.errors().is_empty(), id + " valid production definition")
+		var expected: Dictionary = balance.monsters[id]
+		for field in balance.fields:
+			check(is_equal_approx(float(definition.get(field)), float(expected[field])),
+				id + " balance " + field)
 		var art: Dictionary = manifest.assets[id]
 		check(FileAccess.get_sha256(art.source) == art.source_sha256, id + " preserved source")
 		check(FileAccess.get_sha256(art.static) == art.static_sha256, id + " static derivative")
@@ -34,53 +40,55 @@ func run() -> void:
 		visual.facing_left = not definition.image_faces_left
 		visual.animate(0.01, false, 0, false)
 		check(sprite.flip_h, id + " mirrored movement orientation")
-		if id == "wolf":
-			var original := sprite.texture
-			visual.play_attack(definition.windup)
-			visual.animate(1, true, 0.5, false)
-			check(definition.sprite_frames == null and sprite.texture == original \
-				and sprite.rotation == Vector3.ZERO, "wolf remains completely static")
-			check(not visual.play_death(), "wolf has no fabricated death animation")
-		else:
-			var frames := definition.sprite_frames
-			check(frames != null, id + " animation resource")
-			for state in [&"walk", &"attack", &"death"]:
-				check(FileAccess.get_sha256(art.animations[state].path) \
-					== art.animations[state].sha256, id + "/" + state + " unchanged strip")
-				check(frames.get_frame_count(state) == 8, id + "/" + state + " eight frames")
-				check(frames.get_animation_loop(state) == (state == &"walk"), id + "/" + state + " loop")
-				for i in 8:
-					var texture := frames.get_frame_texture(state, i) as AtlasTexture
-					check(texture.region == Rect2(i * 384, 0, 384, 384) \
-						and texture.atlas.get_size() == Vector2(3072, 384), id + " frame region")
-			check(frames.get_frame_texture(&"death", 7).get_image().is_invisible(),
-				id + " transparent final death frame")
-			visual.animate(0.12, true, 0, false)
-			check(visual.animation == &"walk" and visual.frame > 0, id + " moving animates")
-			check(is_equal_approx(sprite.position.y, 0) and is_equal_approx(
-				sprite.offset.y + 192, definition.animation_anchor_y), id + " feet pivot")
-			visual.play_attack(definition.windup)
-			visual.animate(0, false, 0, false)
-			visual.animate(definition.windup - 0.01, true, 0.5, true)
-			check(visual.animation == &"attack" and visual.frame == 3 \
-				and sprite.modulate != Color.WHITE, id + " hit flash preserves anticipation")
-			visual.animate(0.011, false, 1, false)
-			check(visual.frame == 4, id + " impact matches gameplay windup")
-			visual.animate(0.4, false, 0, false)
-			check(visual.animation == &"idle", id + " attack finishes once")
-			visual.play_attack(definition.windup)
-			visual.cancel_attack()
-			check(visual.animation == &"idle", id + " leaving range cancels attack")
-			var finished := [0]
-			visual.death_finished.connect(func(): finished[0] += 1)
-			check(visual.play_death(), id + " death starts")
-			visual.set_process(false)
-			visual._process(0.45)
-			check(visual.animation == &"death" and visual.frame == 4, id + " smoke visible before cleanup")
-			visual.animate(1, true, 1, true)
-			check(visual.animation == &"death" and visual.frame == 4, id + " death cannot be interrupted")
-			visual._process(0.45)
-			check(finished[0] == 1 and visual.frame == 7, id + " complete death signal")
+		var frames := definition.sprite_frames
+		check(frames != null, id + " animation resource")
+		for state in [&"walk", &"attack", &"death"]:
+			check(FileAccess.get_sha256(art.animations[state].path) \
+				== art.animations[state].sha256, id + "/" + state + " unchanged strip")
+			var count := frames.get_frame_count(state)
+			var atlas_size := (frames.get_frame_texture(state, 0) as AtlasTexture).atlas.get_size()
+			var frame_size := Vector2(atlas_size.x / count, atlas_size.y)
+			check(count == (4 if id == "wolf" else 8), id + "/" + state + " frame count")
+			check(frames.get_animation_loop(state) == (state == &"walk"), id + "/" + state + " loop")
+			for i in count:
+				var texture := frames.get_frame_texture(state, i) as AtlasTexture
+				check(texture.region == Rect2(i * frame_size.x, 0, frame_size.x, frame_size.y),
+					id + " frame region")
+		var death_count := frames.get_frame_count(&"death")
+		check(frames.get_frame_texture(&"death", death_count - 1).get_image().is_invisible(),
+			id + " transparent final death frame")
+		visual.animate(1.1 / frames.get_animation_speed(&"walk"), true, 0, false)
+		check(visual.animation == &"walk" and visual.frame > 0, id + " moving animates")
+		check(is_equal_approx(sprite.position.y, 0) and is_equal_approx(
+			sprite.offset.y + sprite.texture.get_height() * 0.5,
+			definition.animation_anchor_y), id + " feet pivot")
+		visual.play_attack(definition.windup)
+		visual.animate(0, false, 0, false)
+		visual.animate(definition.windup - 0.01, true, 0.5, true)
+		var impact := frames.get_frame_count(&"attack") / 2
+		check(visual.animation == &"attack" and visual.frame == impact - 1 \
+			and sprite.modulate != Color.WHITE, id + " hit flash preserves anticipation")
+		visual.animate(0.011, false, 1, false)
+		check(visual.frame == impact, id + " impact matches gameplay windup")
+		visual.animate(0.4, false, 0, false)
+		check(visual.animation == &"idle", id + " attack finishes once")
+		visual.play_attack(definition.windup)
+		visual.cancel_attack()
+		check(visual.animation == &"idle", id + " leaving range cancels attack")
+		var finished := [0]
+		visual.death_finished.connect(func(): finished[0] += 1)
+		check(visual.play_death(), id + " death starts")
+		visual.set_process(false)
+		visual._process(0.45)
+		var smoke_frame := mini(int(0.45 * frames.get_animation_speed(&"death")), death_count - 1)
+		check(visual.animation == &"death" and visual.frame == smoke_frame,
+			id + " smoke visible before cleanup")
+		visual.animate(1, true, 1, true)
+		check(visual.animation == &"death" and visual.frame == smoke_frame,
+			id + " death cannot be interrupted")
+		visual._process(0.45)
+		check(finished[0] == 1 and visual.frame == death_count - 1,
+			id + " complete death signal")
 		check(sprite.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED \
 			and sprite.alpha_cut == SpriteBase3D.ALPHA_CUT_DISCARD, id + " keeps silhouette shadows")
 		visual.free()
@@ -136,9 +144,8 @@ func combat_checks() -> void:
 		var before := hp.current
 		for i in 22:
 			await physics_frame
-		if id != "wolf":
-			check(actor.visual.animation == &"attack" and actor.visual.frame in [3, 4, 5],
-				id + " actor drives attack")
+		check(actor.visual.animation == &"attack" and actor.visual.frame > 0,
+			id + " actor drives attack")
 		for i in 8:
 			await physics_frame
 		check(hp.current < before, id + " real attack damages target")
@@ -157,9 +164,8 @@ func combat_checks() -> void:
 			id + " corpse cannot collide attack or be targeted")
 		check(get_nodes_in_group("monster_drop").size() == drop_count + monster.drop_items().size(),
 			id + " exactly one set of drops")
-		if id != "wolf":
-			check(not actor.is_queued_for_deletion() and actor.visual.animation == &"death",
-				id + " retains node for death")
+		check(not actor.is_queued_for_deletion() and actor.visual.animation == &"death",
+			id + " retains node for death")
 		for i in 60:
 			await physics_frame
 		check(not is_instance_valid(actor), id + " actor freed after death completes")

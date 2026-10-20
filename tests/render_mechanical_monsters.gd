@@ -9,14 +9,24 @@ func _initialize() -> void:
 	run.call_deferred()
 
 func capture(name: String) -> Image:
-	for i in 6:
+	print("MECHANICAL RENDER capture begin ", name)
+	var drawn := [false]
+	RenderingServer.frame_post_draw.connect(func(): drawn[0] = true, CONNECT_ONE_SHOT)
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	var deadline := Time.get_ticks_msec() + 10000
+	while Time.get_ticks_msec() < deadline:
 		await process_frame
-	await RenderingServer.frame_post_draw
+		if drawn[0]:
+			break
+	if not drawn[0]:
+		failures.append("render timeout: " + name)
 	var image := viewport.get_texture().get_image()
 	image.save_png("/tmp/mechanical-" + name + ".png")
+	print("MECHANICAL RENDER capture end ", name)
 	return image
 
 func run() -> void:
+	print("MECHANICAL RENDER setup begin")
 	viewport = SubViewport.new()
 	viewport.size = Vector2i(1440, 900)
 	viewport.own_world_3d = true
@@ -35,6 +45,7 @@ func run() -> void:
 	level.level_override = "/tmp/mechanical-render-fixture.tres"
 	viewport.add_child(level)
 	assert(level.ready_for_play)
+	print("MECHANICAL RENDER level ready")
 	level.testing = true
 	level.process_mode = Node.PROCESS_MODE_DISABLED
 	level.player.hide()
@@ -60,9 +71,10 @@ func run() -> void:
 			actor.position.y += 0.6
 		level.add_child(actor)
 		actor.setup(definition, level.player, null, -1, EncounterConfig.default_config())
-		actor.hp_label.text = definition.display_name + (" · 静态" if ids[i] == "wolf" else "")
+		actor.hp_label.text = definition.display_name
 		level.builder.runtime_lighting.apply(actor.visual)
 		actors.append(actor)
+	print("MECHANICAL RENDER actors ready ", actors.size())
 	await capture("static")
 	for actor in actors:
 		actor.visual.animate(0.24, true, 0, false)

@@ -14,6 +14,7 @@ max_health = 80.0
 damage = 22.0
 speed = 5.6
 attack_interval = 0.62
+windup = 0.35
 source_row = 8
 image_height = 1.8
 drops = PackedStringArray("gorilla_limb")

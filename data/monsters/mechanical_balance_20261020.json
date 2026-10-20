@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "source_file": "七种怪物与主角_战斗数值(1).xlsx",
+  "source_sha256": "2992d2b3c7c5beeeaa39c0374a7bc91d15e8ff7abbc4df89e6063ad265b1744e",
+  "sheet": "战斗数值",
+  "source_rows": "6:12",
+  "player_row_ignored": 13,
+  "fields": {
+    "max_health": "生命值 HP",
+    "damage": "攻击力/次",
+    "speed": "移速 m/s",
+    "windup": "前摇 s",
+    "attack_interval": "冷却 s"
+  },
+  "monsters": {
+    "eagle": {
+      "source_row": 6,
+      "max_health": 40.0,
+      "damage": 22.0,
+      "speed": 8.4,
+      "windup": 0.35,
+      "attack_interval": 0.62
+    },
+    "albatross": {
+      "source_row": 7,
+      "max_health": 40.0,
+      "damage": 14.0,
+      "speed": 5.6,
+      "windup": 0.35,
+      "attack_interval": 0.62
+    },
+    "gorilla": {
+      "source_row": 8,
+      "max_health": 80.0,
+      "damage": 22.0,
+      "speed": 5.6,
+      "windup": 0.35,
+      "attack_interval": 0.62
+    },
+    "gibbon": {
+      "source_row": 9,
+      "max_health": 40.0,
+      "damage": 14.0,
+      "speed": 8.4,
+      "windup": 0.35,
+      "attack_interval": 0.34
+    },
+    "ostrich": {
+      "source_row": 10,
+      "max_health": 40.0,
+      "damage": 14.0,
+      "speed": 8.4,
+      "windup": 0.35,
+      "attack_interval": 1.15
+    },
+    "gerbil": {
+      "source_row": 11,
+      "max_health": 20.0,
+      "damage": 8.0,
+      "speed": 8.4,
+      "windup": 0.35,
+      "attack_interval": 1.15
+    },
+    "wolf": {
+      "source_row": 12,
+      "max_health": 40.0,
+      "damage": 14.0,
+      "speed": 5.6,
+      "windup": 0.35,
+      "attack_interval": 0.62
+    }
+  }
+}
